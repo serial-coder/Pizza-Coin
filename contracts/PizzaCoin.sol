@@ -7,15 +7,15 @@ import "./SafeMath.sol";
 // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20-token-standard.md
 // ----------------------------------------------------------------------------
 contract ERC20Interface {
-    function totalSupply() public constant returns (uint);
-    function balanceOf(address tokenOwner) public constant returns (uint balance);
-    function allowance(address tokenOwner, address spender) public constant returns (uint remaining);
-    function transfer(address to, uint tokens) public returns (bool success);
-    function approve(address spender, uint tokens) public returns (bool success);
-    function transferFrom(address from, address to, uint tokens) public returns (bool success);
+    function totalSupply() public constant returns (uint256);
+    function balanceOf(address tokenOwner) public constant returns (uint256 balance);
+    function allowance(address tokenOwner, address spender) public constant returns (uint256 remaining);
+    function transfer(address to, uint256 tokens) public returns (bool success);
+    function approve(address spender, uint256 tokens) public returns (bool success);
+    function transferFrom(address from, address to, uint256 tokens) public returns (bool success);
 
-    event Transfer(address indexed from, address indexed to, uint tokens);
-    event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
+    event Transfer(address indexed from, address indexed to, uint256 tokens);
+    event Approval(address indexed tokenOwner, address indexed spender, uint256 tokens);
 }
 
 // ----------------------------------------------------------------------------
@@ -37,8 +37,14 @@ contract Owned {
 // ----------------------------------------------------------------------------
 // Pizza Coin Contract
 // ----------------------------------------------------------------------------
-contract PizzaCoin {
+contract PizzaCoin is ERC20Interface, Owned {
     using SafeMath for uint256;
+
+    // Coin info
+    string public symbol;
+    string public name;
+    uint8 public decimals;
+    //uint256 private _totalSupply;
 
     // Staff + Players
     struct VoterInfo {
@@ -68,11 +74,28 @@ contract PizzaCoin {
     address[] private voters;  // Staff + Players
     mapping(address => VoterInfo) private votersInfo;  // mapping(voter => VoterInfo)
 
-    string[] teams;
+    string[] private teams;
     mapping(string => TeamInfo) private teamsInfo;     // mapping(team => TeamInfo)
 
-    /*uint256 totalTokensSupply;
-    uint256 tokensUsed;*/
+
+    // ------------------------------------------------------------------------
+    // Constructor
+    // ------------------------------------------------------------------------
+    constructor() public {
+        symbol = "PZC";
+        name = "Pizza Coin";
+        decimals = 0;
+        //_totalSupply = 1000000 * 10**uint256(decimals);
+        //balances[owner] = _totalSupply;
+        emit Transfer(address(0), owner, 0);
+    }
+
+    // ------------------------------------------------------------------------
+    // Don't accept ETH
+    // ------------------------------------------------------------------------
+    function () public payable {
+        revert();
+    }
 
 
 
