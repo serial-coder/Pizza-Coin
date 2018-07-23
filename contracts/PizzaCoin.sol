@@ -101,6 +101,7 @@ contract PizzaCoin is ERC20Interface, Owned {
 
         voterInitialTokens = _voterInitialTokens;
 
+        // Register an owner as staff
         staff[staff.length] = owner;
         staffInfo[owner] = StaffInfo({
             wasRegistered: true,
@@ -132,6 +133,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // Register staff
     // ------------------------------------------------------------------------
     function registerStaff(string _staffName) public notRegistered returns (bool success) {
+        // Register new staff
         staff[staff.length] = msg.sender;
         staffInfo[owner] = StaffInfo({
             wasRegistered: true,
@@ -157,7 +159,7 @@ contract PizzaCoin is ERC20Interface, Owned {
 
         address creator = msg.sender;
 
-        // Team
+        // Create a new team
         teams[teams.length] = _teamName;
         teamsInfo[_teamName] = TeamInfo({
             wasCreated: true,
@@ -171,7 +173,7 @@ contract PizzaCoin is ERC20Interface, Owned {
 
         teamsInfo[_teamName].players.push(creator);
 
-        // Team player
+        // Register a team leader to a team
         players[players.length] = creator;
         playersInfo[creator] = TeamPlayerInfo({
             wasRegistered: true,
@@ -183,6 +185,36 @@ contract PizzaCoin is ERC20Interface, Owned {
                 Omit 'votesWeight'
             */
         });
+
+        return true;
+    }
+
+    // ------------------------------------------------------------------------
+    // Register a team player
+    // ------------------------------------------------------------------------
+    function registerTeamPlayer(string _playerName, string _teamName) public notRegistered returns (bool success) {
+        require(
+            teamsInfo[_teamName].wasCreated == true,
+            "The given team does not exist."
+        );
+
+        address player = msg.sender;
+
+        // Register a new player
+        players[players.length] = player;
+        playersInfo[player] = TeamPlayerInfo({
+            wasRegistered: true,
+            name: _playerName,
+            tokensBalance: voterInitialTokens,
+            teamJoined: _teamName,
+            teamsVoted: new string[](0)
+            /*
+                Omit 'votesWeight'
+            */
+        });
+
+        // Add a player to a team he/she associates with
+        teamsInfo[_teamName].players.push(player);
 
         return true;
     }
