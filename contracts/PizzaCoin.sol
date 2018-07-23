@@ -235,6 +235,42 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
+    // Remove the first find player in a particular team 
+    // (start searching the player at _basedSearchingIndex)
+    // ------------------------------------------------------------------------
+    function kickFirstFindTeamPlayer(string _teamName, uint256 _startSearchingIndex) 
+        public isStaff returns (uint256 _nextStartSearchingIndex, uint256 _totalPlayersRemaining) {
+
+        require(
+            teamsInfo[_teamName].wasCreated == true,
+            "Cannot find the specified team."
+        );
+
+        require(
+            _startSearchingIndex < players.length,
+            "'_startSearchingIndex' is out of bound."
+        );
+
+        _nextStartSearchingIndex = players.length;
+        _totalPlayersRemaining = 0;
+
+        for (uint256 i = _startSearchingIndex; i < players.length; i++) {
+            if (
+                playersInfo[players[i]].wasRegistered == true && 
+                keccak256(playersInfo[players[i]].teamJoined) == keccak256(_teamName)
+            ) {
+                // Remove a specific player
+                kickTeamPlayer(players[i], _teamName);
+
+                // Start next searching at the next array element
+                _nextStartSearchingIndex = i + 1;
+                _totalPlayersRemaining = getTotalTeamPlayers(_teamName);
+                break;     
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
     // Remove a specific player from a particular team
     // ------------------------------------------------------------------------
     function kickTeamPlayer(address _player, string _teamName) public isStaff returns (bool success) {
@@ -297,6 +333,74 @@ contract PizzaCoin is ERC20Interface, Owned {
             if (teamsInfo[_teamName].players[i] == _player) {
                 _found = true;
                 _playerIndex = i;
+                break;
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Remove a specific team
+    // ------------------------------------------------------------------------
+    function kickTeam(string _teamName) public isStaff returns (bool success) {
+        require(
+            teamsInfo[_teamName].wasCreated == true,
+            "Cannot find the specified team."
+        );
+
+        uint256 totalPlayers = getTotalTeamPlayers(_teamName);
+
+        // The team can be removed if and only if it has 0 player left
+        if (totalPlayers != 0) {
+            revert("Team is not empty.");
+        }
+
+        bool found;
+        uint teamIndex;
+
+        (found, teamIndex) = getTeamIndex(_teamName);
+        if (!found) {
+            revert("Cannot find a certain team.");
+        }
+
+        // Reset an element to 0 but the array length never decrease (beware!!)
+        delete teams[teamIndex];
+
+        // Remove a certain team from a mapping
+        delete teamsInfo[_teamName];
+
+        return true;
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a total number of the specific team's players
+    // ------------------------------------------------------------------------
+    function getTotalTeamPlayers(string _teamName) public view returns (uint256 _total) {
+        require(
+            teamsInfo[_teamName].wasCreated == true,
+            "Cannot find the specified team."
+        );
+
+        _total = 0;
+
+        for (uint256 i = 0; i < teamsInfo[_teamName].players.length; i++) {
+            // teamsInfo[_teamName].players[i] == address(0) 
+            // if the player was removed by kickTeamPlayer()
+            if (teamsInfo[_teamName].players[i] != address(0))
+                _total++;
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Get the index of a specific team found in the array 'teams'
+    // ------------------------------------------------------------------------
+    function getTeamIndex(string _teamName) internal view returns (bool _found, uint256 _teamIndex) {
+        _found = false;
+        _teamIndex = 0;
+
+        for (uint256 i = 0; i < teams.length; i++) {
+            if (keccak256(teams[i]) == keccak256(_teamName)) {
+                _found = true;
+                _teamIndex = i;
                 break;
             }
         }
