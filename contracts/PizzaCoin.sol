@@ -121,6 +121,9 @@ contract PizzaCoin is ERC20Interface, Owned {
         revert();
     }
 
+    // ------------------------------------------------------------------------
+    // Guarantee if msg.sender might not has been registered before
+    // ------------------------------------------------------------------------
     modifier notRegistered {
         require(
             staffInfo[msg.sender].wasRegistered == false && 
@@ -130,6 +133,9 @@ contract PizzaCoin is ERC20Interface, Owned {
         _;
     }
 
+    // ------------------------------------------------------------------------
+    // Guarantee if msg.sender must be a staff
+    // ------------------------------------------------------------------------
     modifier isStaff {
         require(
             staffInfo[msg.sender].wasRegistered == true,
@@ -263,6 +269,9 @@ contract PizzaCoin is ERC20Interface, Owned {
         return true;
     }
 
+    // ------------------------------------------------------------------------
+    // Get the index of a specific player found in the array 'players'
+    // ------------------------------------------------------------------------
     function getPlayerIndex(address _player) internal view returns (bool _found, uint256 _playerIndex) {
         _found = false;
         _playerIndex = 0;
@@ -276,6 +285,10 @@ contract PizzaCoin is ERC20Interface, Owned {
         }
     }
 
+    // ------------------------------------------------------------------------
+    // Get the index of a specific player in a certain team 
+    // found in the the array 'players' in the mapping 'teamsInfo'
+    // ------------------------------------------------------------------------
     function getTeamPlayerIndex(address _player, string _teamName) internal view returns (bool _found, uint256 _playerIndex) {
         _found = false;
         _playerIndex = 0;
