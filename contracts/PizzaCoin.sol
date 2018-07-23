@@ -124,16 +124,25 @@ contract PizzaCoin is ERC20Interface, Owned {
     modifier notRegistered {
         require(
             staffInfo[msg.sender].wasRegistered == false && 
-            playersInfo[msg.sender].wasRegistered == false
+            playersInfo[msg.sender].wasRegistered == false,
+            "This address was registered already."
+        );
+        _;
+    }
+
+    modifier isStaff {
+        require(
+            staffInfo[msg.sender].wasRegistered == true,
+            "This address is not a staff."
         );
         _;
     }
 
     // ------------------------------------------------------------------------
-    // Register staff
+    // Register a new staff
     // ------------------------------------------------------------------------
     function registerStaff(string _staffName) public notRegistered returns (bool success) {
-        // Register new staff
+        // Register a new staff
         staff[staff.length] = msg.sender;
         staffInfo[owner] = StaffInfo({
             wasRegistered: true,
@@ -219,8 +228,77 @@ contract PizzaCoin is ERC20Interface, Owned {
         return true;
     }
 
+    // ------------------------------------------------------------------------
+    // Remove a specific player from a particular team
+    // ------------------------------------------------------------------------
+    function kickTeamPlayer(address _player, string _teamName) public isStaff returns (bool success) {
+        require(
+            playersInfo[_player].wasRegistered == true &&
+            keccak256(playersInfo[_player].teamJoined) == keccak256(_teamName),
+            "Cannot find a certain player in a given team."
+        );
+
+        bool found;
+        uint playerIndex;
+
+        (found, playerIndex) = getPlayerIndex(_player);
+        if (!found) {
+            revert("Cannot find a certain player.");
+        }
+
+        // Reset an element to 0 but the array length never decrease (beware!!)
+        delete players[playerIndex];
+
+        // Remove a certain player from a mapping
+        delete playersInfo[_player];
+
+        (found, playerIndex) = getTeamPlayerIndex(_player, _teamName);
+        if (!found) {
+            revert("Cannot find a certain player in a given team.");
+        }
+
+        // Reset an element to 0 but the array length never decrease (beware!!)
+        delete teamsInfo[_teamName].players[playerIndex];
+
+        return true;
+    }
+
+    function getPlayerIndex(address _player) internal view returns (bool _found, uint256 _playerIndex) {
+        _found = false;
+        _playerIndex = 0;
+
+        for (uint256 i = 0; i < players.length; i++) {
+            if (players[i] == _player) {
+                _found = true;
+                _playerIndex = i;
+                break;
+            }
+        }
+    }
+
+    function getTeamPlayerIndex(address _player, string _teamName) internal view returns (bool _found, uint256 _playerIndex) {
+        _found = false;
+        _playerIndex = 0;
+
+        for (uint256 i = 0; i < teamsInfo[_teamName].players.length; i++) {
+            if (teamsInfo[_teamName].players[i] == _player) {
+                _found = true;
+                _playerIndex = i;
+                break;
+            }
+        }
+    }
 
 
 
 
+
+
+
+
+    // Utility functions
+    /*function isEmptyString(string emptyStringTest) private returns (bool bEmpty) {
+        bytes memory tempEmptyStringTest = bytes(emptyStringTest);
+        return tempEmptyStringTest.length == 0;
+    }*/
 }
