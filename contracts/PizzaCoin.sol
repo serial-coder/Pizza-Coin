@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.23;
 
 import "./SafeMath.sol";
 
@@ -7,7 +7,7 @@ import "./SafeMath.sol";
 // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20-token-standard.md
 // ----------------------------------------------------------------------------
 contract ERC20Interface {
-    function totalSupply() public constant returns (uint256);
+    /*function totalSupply() public constant returns (uint256);
     function balanceOf(address tokenOwner) public constant returns (uint256 balance);
     function allowance(address tokenOwner, address spender) public constant returns (uint256 remaining);
     function transfer(address to, uint256 tokens) public returns (bool success);
@@ -15,7 +15,7 @@ contract ERC20Interface {
     function transferFrom(address from, address to, uint256 tokens) public returns (bool success);
 
     event Transfer(address indexed from, address indexed to, uint256 tokens);
-    event Approval(address indexed tokenOwner, address indexed spender, uint256 tokens);
+    event Approval(address indexed tokenOwner, address indexed spender, uint256 tokens);*/
 }
 
 // ----------------------------------------------------------------------------
@@ -40,54 +40,77 @@ contract Owned {
 contract PizzaCoin is ERC20Interface, Owned {
     using SafeMath for uint256;
 
-    // Coin info
+    // Token info
     string public symbol;
     string public name;
     uint8 public decimals;
     //uint256 private _totalSupply;
 
-    // Staff + Players
-    struct VoterInfo {
-        bool wasRegistered;   // Check if a specific voter is being registered
-        bool isStaff;         // Define that this voter is either a staff or a player
+    struct StaffInfo {
+        bool wasRegistered;    // Check if a specific staff is being registered
         string name;
-        uint256 tokenBalance; // Amount of tokens left for voting
-        string teamJoined;    // This var is used only if this voter is a player (i.e., isStaff == false)
-        string[] teamsVoted;  // Record all the teams voted by this voter
+        uint256 tokensBalance; // Amount of tokens left for voting
+        string[] teamsVoted;   // Record all the teams voted by this staff
         
         // mapping(team => votes)
-        mapping(string => uint256) votesWeight;  // A collection of voting weights to each team by this voter
+        mapping(string => uint256) votesWeight;  // A collection of teams with voting weight approved by this staff
     }
 
-    // Team of Players
+    struct TeamPlayerInfo {
+        bool wasRegistered;    // Check if a specific player is being registered
+        string name;
+        uint256 tokensBalance; // Amount of tokens left for voting
+        string teamJoined;     // A team this player associates with
+        string[] teamsVoted;   // Record all the teams voted by this player
+        
+        // mapping(team => votes)
+        mapping(string => uint256) votesWeight;  // A collection of teams with voting weight approved by this player
+    }
+
+    // Team with players
     struct TeamInfo {
         bool wasCreated;    // Check if the team was created for uniqueness
-        address[] players;  // A list of team members (the first list member is the team leader)
-        address[] voters;   // A list of other teams' members who gave votes to this team
+        address[] players;  // A list of team members (the first list member is the team leader who creates the team)
+        address[] voters;   // A list of staff and other teams' members who gave votes to this team
 
         // mapping(voter => votes)
-        mapping(address => uint256) votesWeight;  // A collection of team voting weights from each voter
+        mapping(address => uint256) votesWeight;  // A collection of team voting weights from each voter (i.e., staff + other teams' members)
         
         uint256 totalVoted;  // Total voting weight got from voters
     }
 
-    address[] private voters;  // Staff + Players
-    mapping(address => VoterInfo) private votersInfo;  // mapping(voter => VoterInfo)
+    address[] private staff;                                 // The first staff is the contract owner
+    mapping(address => StaffInfo) private staffInfo;         // mapping(staff => StaffInfo)
+
+    address[] private players;
+    mapping(address => TeamPlayerInfo) private playersInfo;  // mapping(player => TeamPlayerInfo)
 
     string[] private teams;
-    mapping(string => TeamInfo) private teamsInfo;     // mapping(team => TeamInfo)
+    mapping(string => TeamInfo) private teamsInfo;           // mapping(team => TeamInfo)
+
+    uint256 private voterInitialTokens;
 
 
     // ------------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------------
-    constructor() public {
+    constructor(string _ownerName, uint256 _voterInitialTokens) public {
         symbol = "PZC";
         name = "Pizza Coin";
         decimals = 0;
-        //_totalSupply = 1000000 * 10**uint256(decimals);
-        //balances[owner] = _totalSupply;
-        emit Transfer(address(0), owner, 0);
+
+        voterInitialTokens = _voterInitialTokens;
+
+        staff[staff.length] = owner;
+        staffInfo[owner] = StaffInfo({
+            wasRegistered: true,
+            name: _ownerName,
+            tokensBalance: _voterInitialTokens,
+            teamsVoted: new string[](0)
+            /*
+                Omit 'votesWeight'
+            */
+        });
     }
 
     // ------------------------------------------------------------------------
@@ -97,6 +120,72 @@ contract PizzaCoin is ERC20Interface, Owned {
         revert();
     }
 
+    modifier notRegistered {
+        require(
+            staffInfo[msg.sender].wasRegistered == false && 
+            playersInfo[msg.sender].wasRegistered == false
+        );
+        _;
+    }
+
+    // ------------------------------------------------------------------------
+    // Register staff
+    // ------------------------------------------------------------------------
+    function registerStaff(string _staffName) public notRegistered returns (bool success) {
+        staff[staff.length] = msg.sender;
+        staffInfo[owner] = StaffInfo({
+            wasRegistered: true,
+            name: _staffName,
+            tokensBalance: voterInitialTokens,
+            teamsVoted: new string[](0)
+            /*
+                Omit 'votesWeight'
+            */
+        });
+
+        return true;
+    }
+
+    // ------------------------------------------------------------------------
+    // Team leader creates a team
+    // ------------------------------------------------------------------------
+    function createTeam(string _teamName, string _creatorName) public notRegistered returns (bool success) {
+        require(
+            teamsInfo[_teamName].wasCreated == false,
+            "The given team was created already."
+        );
+
+        address creator = msg.sender;
+
+        // Team
+        teams[teams.length] = _teamName;
+        teamsInfo[_teamName] = TeamInfo({
+            wasCreated: true,
+            players: new address[](0),
+            voters: new address[](0),
+            totalVoted: 0
+            /*
+                Omit 'votesWeight'
+            */
+        });
+
+        teamsInfo[_teamName].players.push(creator);
+
+        // Team player
+        players[players.length] = creator;
+        playersInfo[creator] = TeamPlayerInfo({
+            wasRegistered: true,
+            name: _creatorName,
+            tokensBalance: voterInitialTokens,
+            teamJoined: _teamName,
+            teamsVoted: new string[](0)
+            /*
+                Omit 'votesWeight'
+            */
+        });
+
+        return true;
+    }
 
 
 
