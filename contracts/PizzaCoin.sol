@@ -91,7 +91,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     uint256 private voterInitialTokens;
 
     enum State { Registration, RegistrationLocked, Voting, VotingFinished }
-    State state = State.Registration;
+    State private state = State.Registration;
 
 
     // ------------------------------------------------------------------------
@@ -121,7 +121,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // Don't accept ETH
     // ------------------------------------------------------------------------
     function () public payable {
-        revert();
+        revert("We don't accept ETH.");
     }
 
     // ------------------------------------------------------------------------
@@ -216,7 +216,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     function kickStaff(address _staff) public onlyRegistrationState onlyOwner returns (bool success) {
         require(
             staffInfo[_staff].wasRegistered == true,
-            "Cannot find a certain staff."
+            "Cannot find the specified staff."
         );
 
         bool found;
@@ -224,13 +224,13 @@ contract PizzaCoin is ERC20Interface, Owned {
 
         (found, staffIndex) = getStaffIndex(_staff);
         if (!found) {
-            revert("Cannot find a certain staff.");
+            revert("Cannot find the specified staff.");
         }
 
         // Reset an element to 0 but the array length never decrease (beware!!)
         delete staff[staffIndex];
 
-        // Remove a certain staff from a mapping
+        // Remove a specified staff from a mapping
         delete staffInfo[_staff];
 
         return true;
@@ -325,7 +325,7 @@ contract PizzaCoin is ERC20Interface, Owned {
 
     // ------------------------------------------------------------------------
     // Remove the first found player in a particular team 
-    // (start searching the player at _basedSearchingIndex)
+    // (start searching at _startSearchingIndex)
     // ------------------------------------------------------------------------
     function kickFirstFoundTeamPlayer(string _teamName, uint256 _startSearchingIndex) 
         public onlyRegistrationState onlyStaff returns (uint256 _nextStartSearchingIndex, uint256 _totalPlayersRemaining) {
@@ -366,7 +366,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         require(
             playersInfo[_player].wasRegistered == true &&
             keccak256(playersInfo[_player].teamJoined) == keccak256(_teamName),
-            "Cannot find a certain player in a given team."
+            "Cannot find the specified player in a given team."
         );
 
         bool found;
@@ -374,18 +374,18 @@ contract PizzaCoin is ERC20Interface, Owned {
 
         (found, playerIndex) = getPlayerIndex(_player);
         if (!found) {
-            revert("Cannot find a certain player.");
+            revert("Cannot find the specified player.");
         }
 
         // Reset an element to 0 but the array length never decrease (beware!!)
         delete players[playerIndex];
 
-        // Remove a certain player from a mapping
+        // Remove a specified player from a mapping
         delete playersInfo[_player];
 
         (found, playerIndex) = getTeamPlayerIndex(_player, _teamName);
         if (!found) {
-            revert("Cannot find a certain player in a given team.");
+            revert("Cannot find the specified player in a given team.");
         }
 
         // Reset an element to 0 but the array length never decrease (beware!!)
@@ -411,7 +411,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get the index of a specific player in a certain team 
+    // Get the index of a specific player in a given team 
     // found in the the array 'players' in the mapping 'teamsInfo'
     // ------------------------------------------------------------------------
     function getTeamPlayerIndex(address _player, string _teamName) internal view returns (bool _found, uint256 _playerIndex) {
@@ -448,13 +448,13 @@ contract PizzaCoin is ERC20Interface, Owned {
 
         (found, teamIndex) = getTeamIndex(_teamName);
         if (!found) {
-            revert("Cannot find a certain team.");
+            revert("Cannot find the specified team.");
         }
 
         // Reset an element to 0 but the array length never decrease (beware!!)
         delete teams[teamIndex];
 
-        // Remove a certain team from a mapping
+        // Remove a specified team from a mapping
         delete teamsInfo[_teamName];
 
         return true;
@@ -517,6 +517,85 @@ contract PizzaCoin is ERC20Interface, Owned {
     function stopVoting() public onlyVotingState onlyStaff returns (bool success) {
         state = State.VotingFinished;
         return true;
+    }
+
+    // ------------------------------------------------------------------------
+    // Get an info of the first found staff 
+    // (start searching at _startSearchingIndex)
+    // ------------------------------------------------------------------------
+    function getFirstFoundStaffInfo(uint256 _startSearchingIndex) 
+        public view 
+        returns (
+            bool _endOfList, 
+            uint256 _nextStartSearchingIndex,
+            address _staff,
+            string _name,
+            uint256 _tokensBalance
+        ) 
+    {
+        _endOfList = true;
+        _nextStartSearchingIndex = staff.length;
+        _staff = address(0);
+        _name = "";
+        _tokensBalance = 0;
+
+        if (_startSearchingIndex >= staff.length) {
+            return;
+        }  
+
+        for (uint256 i = _startSearchingIndex; i < staff.length; i++) {
+            address staff_ = staff[i];
+
+            // Was not removed
+            if (staff_ != address(0)) {
+                _endOfList = (i + 1 >= staff.length);
+                _nextStartSearchingIndex = i + 1;
+                _staff = staff_;
+                _name = staffInfo[staff_].name;
+                _tokensBalance = staffInfo[staff_].tokensBalance;
+                return;
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a length of 'teamsVoted' array made by the specified staff
+    // ------------------------------------------------------------------------
+    function getStaffVotesLength(address _staff) public view returns (uint256 _length) {
+        require(
+            staffInfo[_staff].wasRegistered == true,
+            "Cannot find the specified staff."
+        );
+
+        return staffInfo[_staff].teamsVoted.length;
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a team voting result (by index of 'teamsVoted' array) made by the specified staff
+    // ------------------------------------------------------------------------
+    function getStaffVoteResultByIndex(address _staff, uint256 _votingIndex) 
+        public view 
+        returns (
+            bool _endOfList,
+            string _team,
+            uint256 _voteWeight
+        ) 
+    {
+        require(
+            staffInfo[_staff].wasRegistered == true,
+            "Cannot find the specified staff."
+        );
+
+        if (_votingIndex >= staffInfo[_staff].teamsVoted.length) {
+            _endOfList = true;
+            _team = "";
+            _voteWeight = 0;
+            return;
+        }
+
+        _endOfList = false;
+        _team = staffInfo[_staff].teamsVoted[_votingIndex];
+        _voteWeight = staffInfo[_staff].votesWeight[_team];
     }
 
 
