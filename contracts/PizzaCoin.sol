@@ -122,7 +122,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Guarantee if msg.sender might not has been registered before
+    // Guarantee that msg.sender might not has been registered before
     // ------------------------------------------------------------------------
     modifier notRegistered {
         require(
@@ -134,7 +134,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Guarantee if msg.sender must be a staff
+    // Guarantee that msg.sender must be a staff
     // ------------------------------------------------------------------------
     modifier isStaff {
         require(
@@ -235,10 +235,10 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Remove the first find player in a particular team 
+    // Remove the first found player in a particular team 
     // (start searching the player at _basedSearchingIndex)
     // ------------------------------------------------------------------------
-    function kickFirstFindTeamPlayer(string _teamName, uint256 _startSearchingIndex) 
+    function kickFirstFoundTeamPlayer(string _teamName, uint256 _startSearchingIndex) 
         public isStaff returns (uint256 _nextStartSearchingIndex, uint256 _totalPlayersRemaining) {
 
         require(
