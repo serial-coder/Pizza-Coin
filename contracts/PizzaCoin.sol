@@ -90,6 +90,9 @@ contract PizzaCoin is ERC20Interface, Owned {
 
     uint256 private voterInitialTokens;
 
+    enum State { Registration, RegistrationLocked, Voting, VotingFinished }
+    State state = State.Registration;
+
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -136,7 +139,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Guarantee that msg.sender must be a staff
     // ------------------------------------------------------------------------
-    modifier isStaff {
+    modifier onlyStaff {
         require(
             staffInfo[msg.sender].wasRegistered == true,
             "This address is not a staff."
@@ -145,9 +148,53 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
+    // Guarantee that the present state is Registration
+    // ------------------------------------------------------------------------
+    modifier onlyRegistrationState {
+        require(
+            state == State.Registration,
+            "The present state is not Registration."
+        );
+        _;
+    }
+
+    // ------------------------------------------------------------------------
+    // Guarantee that the present state is RegistrationLocked
+    // ------------------------------------------------------------------------
+    modifier onlyRegistrationLockedState {
+        require(
+            state == State.RegistrationLocked,
+            "The present state is not RegistrationLocked."
+        );
+        _;
+    }
+
+    // ------------------------------------------------------------------------
+    // Guarantee that the present state is Voting
+    // ------------------------------------------------------------------------
+    modifier onlyVotingState {
+        require(
+            state == State.Voting,
+            "The present state is not Voting."
+        );
+        _;
+    }
+
+    // ------------------------------------------------------------------------
+    // Guarantee that the present state is VotingFinished
+    // ------------------------------------------------------------------------
+    modifier onlyVotingFinishedState {
+        require(
+            state == State.VotingFinished,
+            "The present state is not VotingFinished."
+        );
+        _;
+    }
+
+    // ------------------------------------------------------------------------
     // Register a new staff
     // ------------------------------------------------------------------------
-    function registerStaff(string _staffName) public notRegistered returns (bool success) {
+    function registerStaff(string _staffName) public onlyRegistrationState notRegistered returns (bool success) {
         // Register a new staff
         staff[staff.length] = msg.sender;
         staffInfo[owner] = StaffInfo({
@@ -166,7 +213,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Remove a specific staff
     // ------------------------------------------------------------------------
-    function kickStaff(address _staff) public onlyOwner returns (bool success) {
+    function kickStaff(address _staff) public onlyRegistrationState onlyOwner returns (bool success) {
         require(
             staffInfo[_staff].wasRegistered == true,
             "Cannot find a certain staff."
@@ -208,7 +255,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Team leader creates a team
     // ------------------------------------------------------------------------
-    function createTeam(string _teamName, string _creatorName) public notRegistered returns (bool success) {
+    function createTeam(string _teamName, string _creatorName) public onlyRegistrationState notRegistered returns (bool success) {
         require(
             teamsInfo[_teamName].wasCreated == false,
             "The given team was created already."
@@ -249,7 +296,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Register a team player
     // ------------------------------------------------------------------------
-    function registerTeamPlayer(string _playerName, string _teamName) public notRegistered returns (bool success) {
+    function registerTeamPlayer(string _playerName, string _teamName) public onlyRegistrationState notRegistered returns (bool success) {
         require(
             teamsInfo[_teamName].wasCreated == true,
             "The given team does not exist."
@@ -281,7 +328,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // (start searching the player at _basedSearchingIndex)
     // ------------------------------------------------------------------------
     function kickFirstFoundTeamPlayer(string _teamName, uint256 _startSearchingIndex) 
-        public isStaff returns (uint256 _nextStartSearchingIndex, uint256 _totalPlayersRemaining) {
+        public onlyRegistrationState onlyStaff returns (uint256 _nextStartSearchingIndex, uint256 _totalPlayersRemaining) {
 
         require(
             teamsInfo[_teamName].wasCreated == true,
@@ -315,7 +362,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Remove a specific player from a particular team
     // ------------------------------------------------------------------------
-    function kickTeamPlayer(address _player, string _teamName) public isStaff returns (bool success) {
+    function kickTeamPlayer(address _player, string _teamName) public onlyRegistrationState onlyStaff returns (bool success) {
         require(
             playersInfo[_player].wasRegistered == true &&
             keccak256(playersInfo[_player].teamJoined) == keccak256(_teamName),
@@ -383,7 +430,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Remove a specific team
     // ------------------------------------------------------------------------
-    function kickTeam(string _teamName) public isStaff returns (bool success) {
+    function kickTeam(string _teamName) public onlyRegistrationState onlyStaff returns (bool success) {
         require(
             teamsInfo[_teamName].wasCreated == true,
             "Cannot find the specified team."
@@ -446,6 +493,30 @@ contract PizzaCoin is ERC20Interface, Owned {
                 break;
             }
         }
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a staff freeze Registration state and transfer the state to RegistrationLocked
+    // ------------------------------------------------------------------------
+    function lockRegistration() public onlyRegistrationState onlyStaff returns (bool success) {
+        state = State.RegistrationLocked;
+        return true;
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a staff transfer a state from RegistrationLocked to Voting
+    // ------------------------------------------------------------------------
+    function startVoting() public onlyRegistrationLockedState onlyStaff returns (bool success) {
+        state = State.Voting;
+        return true;
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a staff transfer a state from Voting to VotingFinished
+    // ------------------------------------------------------------------------
+    function stopVoting() public onlyVotingState onlyStaff returns (bool success) {
+        state = State.VotingFinished;
+        return true;
     }
 
 
