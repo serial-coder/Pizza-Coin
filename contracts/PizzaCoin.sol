@@ -561,7 +561,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Get a length of 'teamsVoted' array made by the specified staff
     // ------------------------------------------------------------------------
-    function getTeamVotesLengthByStaff(address _staff) public view returns (uint256 _length) {
+    function getVotesLengthByStaff(address _staff) public view returns (uint256 _length) {
         require(
             staffInfo[_staff].wasRegistered == true,
             "Cannot find the specified staff."
@@ -573,7 +573,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Get a team voting result (at the index of 'teamsVoted' array) made by the specified staff
     // ------------------------------------------------------------------------
-    function getTeamVoteResultByStaffAtIndex(address _staff, uint256 _votingIndex) 
+    function getVoteResultByStaffAtIndex(address _staff, uint256 _votingIndex) 
         public view 
         returns (
             bool _endOfList,
@@ -602,7 +602,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // Get an info of the first found player 
     // (start searching at _startSearchingIndex)
     // ------------------------------------------------------------------------
-    function getFirstFoundTeamPlayerInfo(uint256 _startSearchingIndex) 
+    function getFirstFoundPlayerInfo(uint256 _startSearchingIndex) 
         public view 
         returns (
             bool _endOfList, 
@@ -643,7 +643,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Get a length of 'teamsVoted' array made by the specified player
     // ------------------------------------------------------------------------
-    function getTeamVotesLengthByTeamPlayer(address _player) public view returns (uint256 _length) {
+    function getVotesLengthByPlayer(address _player) public view returns (uint256 _length) {
         require(
             playersInfo[_player].wasRegistered == true,
             "Cannot find the specified player."
@@ -655,7 +655,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Get a team voting result (at the index of 'teamsVoted' array) made by the specified player
     // ------------------------------------------------------------------------
-    function getTeamVoteResultByTeamPlayerAtIndex(address _player, uint256 _votingIndex) 
+    function getVoteResultByPlayerAtIndex(address _player, uint256 _votingIndex) 
         public view 
         returns (
             bool _endOfList,
