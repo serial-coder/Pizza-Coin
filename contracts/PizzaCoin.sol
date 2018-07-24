@@ -507,7 +507,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         _total = 0;
         for (uint256 i = 0; i < staff.length; i++) {
             // Was not removed
-            if (staff[i] != address(0)) {
+            if (staff[i] != address(0) && staffInfo[staff[i]].wasRegistered == true) {
                 _total++;
             }
         }
@@ -541,7 +541,7 @@ contract PizzaCoin is ERC20Interface, Owned {
             address staff_ = staff[i];
 
             // Was not removed
-            if (staff_ != address(0)) {
+            if (staff_ != address(0) && staffInfo[staff_].wasRegistered == true) {
                 _endOfList = false;
                 _nextStartSearchingIndex = i + 1;
                 _staff = staff_;
@@ -599,7 +599,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         _total = 0;
         for (uint256 i = 0; i < players.length; i++) {
             // Was not removed
-            if (players[i] != address(0)) {
+            if (players[i] != address(0) && playersInfo[players[i]].wasRegistered == true) {
                 _total++;
             }
         }
@@ -635,7 +635,7 @@ contract PizzaCoin is ERC20Interface, Owned {
             address player_ = players[i];
 
             // Was not removed
-            if (player_ != address(0)) {
+            if (player_ != address(0) && playersInfo[player_].wasRegistered == true) {
                 _endOfList = false;
                 _nextStartSearchingIndex = i + 1;
                 _player = player_;
@@ -694,7 +694,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         _total = 0;
         for (uint256 i = 0; i < teams.length; i++) {
             // Was not removed
-            if (keccak256(teams[i]) != keccak256("")) {    /* empty string */
+            if (keccak256(teams[i]) != keccak256("") && teamsInfo[teams[i]].wasCreated == true) {
                 _total++;
             }
         }
@@ -726,7 +726,7 @@ contract PizzaCoin is ERC20Interface, Owned {
             string storage teamName_ = teams[i];
 
             // Was not removed
-            if (keccak256(teamName_) != keccak256("")) {       /* empty string */
+            if (keccak256(teamName_) != keccak256("") && teamsInfo[teamName_].wasCreated == true) {
                 _endOfList = false;
                 _nextStartSearchingIndex = i + 1;
                 _teamName = teamName_;
@@ -748,9 +748,10 @@ contract PizzaCoin is ERC20Interface, Owned {
 
         _total = 0;
         for (uint256 i = 0; i < teamsInfo[_teamName].players.length; i++) {
-            // teamsInfo[_teamName].players[i] == address(0) 
-            // if the player was removed by kickTeamPlayer()
-            if (teamsInfo[_teamName].players[i] != address(0)) {
+            address player = teamsInfo[_teamName].players[i];
+
+            // player == address(0) if the player was removed by kickTeamPlayer()
+            if (player != address(0) && playersInfo[player].wasRegistered == true) {
                 _total++;
             }
         }
@@ -785,7 +786,7 @@ contract PizzaCoin is ERC20Interface, Owned {
             address player_ = teamsInfo[_teamName].players[i];
 
             // Was not removed
-            if (player_ != address(0)) {
+            if (player_ != address(0) && playersInfo[player_].wasRegistered == true) {
                 _endOfList = false;
                 _nextStartSearchingIndex = i + 1;
                 _player = player_;
