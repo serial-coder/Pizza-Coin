@@ -88,7 +88,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     string[] private teams;
     mapping(string => TeamInfo) private teamsInfo;           // mapping(team => TeamInfo)
 
-    uint256 private voterInitialTokens;
+    uint256 public voterInitialTokens;
 
     enum State { Registration, RegistrationLocked, Voting, VotingFinished }
     State private state = State.Registration;
@@ -98,6 +98,12 @@ contract PizzaCoin is ERC20Interface, Owned {
     // Constructor
     // ------------------------------------------------------------------------
     constructor(string _ownerName, uint256 _voterInitialTokens) public {
+        /*** Check empty input string in every function such as '_ownerName' ***/
+        require(
+            _voterInitialTokens > 0,
+            "'_voterInitialTokens' must be larger than 0."
+        );
+
         symbol = "PZC";
         name = "Pizza Coin";
         decimals = 0;
@@ -833,6 +839,26 @@ contract PizzaCoin is ERC20Interface, Owned {
         _endOfList = false;
         _voter = teamsInfo[_teamName].voters[_voterIndex];
         _voteWeight = teamsInfo[_teamName].votesWeight[_voter];
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a contract state in String format (Lazy hard-coded)
+    // ------------------------------------------------------------------------
+    function getContractState() public view returns (string _state) {
+
+        // Solidity does not implement the switch statement
+        if (state == State.Registration) {
+            return "Registration";
+        }
+        else if (state == State.RegistrationLocked) {
+            return "RegistrationLocked";
+        }
+        else if (state == State.Voting) {
+            return "Voting";
+        }
+        else {  // state == State.VotingFinished
+            return "VotingFinished";
+        }
     }
 
 
