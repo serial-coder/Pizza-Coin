@@ -461,25 +461,6 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get a total number of the specific team's players
-    // ------------------------------------------------------------------------
-    function getTotalTeamPlayers(string _teamName) public view returns (uint256 _total) {
-        require(
-            teamsInfo[_teamName].wasCreated == true,
-            "Cannot find the specified team."
-        );
-
-        _total = 0;
-
-        for (uint256 i = 0; i < teamsInfo[_teamName].players.length; i++) {
-            // teamsInfo[_teamName].players[i] == address(0) 
-            // if the player was removed by kickTeamPlayer()
-            if (teamsInfo[_teamName].players[i] != address(0))
-                _total++;
-        }
-    }
-
-    // ------------------------------------------------------------------------
     // Get the index of a specific team found in the array 'teams'
     // ------------------------------------------------------------------------
     function getTeamIndex(string _teamName) internal view returns (bool _found, uint256 _teamIndex) {
@@ -561,7 +542,7 @@ contract PizzaCoin is ERC20Interface, Owned {
 
             // Was not removed
             if (staff_ != address(0)) {
-                _endOfList = (i + 1 >= staff.length);
+                _endOfList = false;
                 _nextStartSearchingIndex = i + 1;
                 _staff = staff_;
                 _name = staffInfo[staff_].name;
@@ -655,7 +636,7 @@ contract PizzaCoin is ERC20Interface, Owned {
 
             // Was not removed
             if (player_ != address(0)) {
-                _endOfList = (i + 1 >= players.length);
+                _endOfList = false;
                 _nextStartSearchingIndex = i + 1;
                 _player = player_;
                 _name = playersInfo[player_].name;
@@ -705,6 +686,156 @@ contract PizzaCoin is ERC20Interface, Owned {
         _team = playersInfo[_player].teamsVoted[_votingIndex];
         _voteWeight = playersInfo[_player].votesWeight[_team];
     }
+
+    // ------------------------------------------------------------------------
+    // Get a total number of teams
+    // ------------------------------------------------------------------------
+    function getTotalTeams() public view returns (uint256 _total) {
+        _total = 0;
+        for (uint256 i = 0; i < teams.length; i++) {
+            // Was not removed
+            if (keccak256(teams[i]) != keccak256("")) {    /* empty string */
+                _total++;
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Get an info of the first found team 
+    // (start searching at _startSearchingIndex)
+    // ------------------------------------------------------------------------
+    function getFirstFoundTeamInfo(uint256 _startSearchingIndex) 
+        public view 
+        returns (
+            bool _endOfList, 
+            uint256 _nextStartSearchingIndex,
+            string _teamName,
+            uint256 _totalVoted
+        ) 
+    {
+        _endOfList = true;
+        _nextStartSearchingIndex = teams.length;
+        _teamName = "";
+        _totalVoted = 0;
+
+        if (_startSearchingIndex >= teams.length) {
+            return;
+        }  
+
+        for (uint256 i = _startSearchingIndex; i < teams.length; i++) {
+            string storage teamName_ = teams[i];
+
+            // Was not removed
+            if (keccak256(teamName_) != keccak256("")) {       /* empty string */
+                _endOfList = false;
+                _nextStartSearchingIndex = i + 1;
+                _teamName = teamName_;
+                _totalVoted = teamsInfo[teamName_].totalVoted;
+                return;
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a total number of players in a specified team
+    // ------------------------------------------------------------------------
+    function getTotalTeamPlayers(string _teamName) public view returns (uint256 _total) {
+
+        require(
+            teamsInfo[_teamName].wasCreated == true,
+            "Cannot find the specified team."
+        );
+
+        _total = 0;
+        for (uint256 i = 0; i < teamsInfo[_teamName].players.length; i++) {
+            // teamsInfo[_teamName].players[i] == address(0) 
+            // if the player was removed by kickTeamPlayer()
+            if (teamsInfo[_teamName].players[i] != address(0)) {
+                _total++;
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Get the first found player of a specified team
+    // (start searching at _startSearchingIndex)
+    // ------------------------------------------------------------------------
+    function getFirstFoundTeamPlayer(string _teamName, uint256 _startSearchingIndex) 
+        public view 
+        returns (
+            bool _endOfList, 
+            uint256 _nextStartSearchingIndex,
+            address _player
+        ) 
+    {
+        require(
+            teamsInfo[_teamName].wasCreated == true,
+            "Cannot find the specified team."
+        );
+        
+        _endOfList = true;
+        _nextStartSearchingIndex = teamsInfo[_teamName].players.length;
+        _player = address(0);
+
+        if (_startSearchingIndex >= teamsInfo[_teamName].players.length) {
+            return;
+        }  
+
+        for (uint256 i = _startSearchingIndex; i < teamsInfo[_teamName].players.length; i++) {
+            address player_ = teamsInfo[_teamName].players[i];
+
+            // Was not removed
+            if (player_ != address(0)) {
+                _endOfList = false;
+                _nextStartSearchingIndex = i + 1;
+                _player = player_;
+                return;
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a total number of voters to a specified team
+    // ------------------------------------------------------------------------
+    function getTotalVotersToTeam(string _teamName) public view returns (uint256 _total) {
+        require(
+            teamsInfo[_teamName].wasCreated == true,
+            "Cannot find the specified team."
+        );
+
+        return teamsInfo[_teamName].voters.length;
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a voting result (by the index of voters) to a specified team
+    // ------------------------------------------------------------------------
+    function getVoteResultAtIndexToTeam(string _teamName, uint256 _voterIndex) 
+        public view 
+        returns (
+            bool _endOfList,
+            address _voter,
+            uint256 _voteWeight
+        ) 
+    {
+        require(
+            teamsInfo[_teamName].wasCreated == true,
+            "Cannot find the specified team."
+        );
+
+        if (_voterIndex >= teamsInfo[_teamName].voters.length) {
+            _endOfList = true;
+            _voter = address(0);
+            _voteWeight = 0;
+            return;
+        }
+
+        _endOfList = false;
+        _voter = teamsInfo[_teamName].voters[_voterIndex];
+        _voteWeight = teamsInfo[_teamName].votesWeight[_voter];
+    }
+
+
+    
 
 
 
