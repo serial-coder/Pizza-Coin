@@ -561,7 +561,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Get a length of 'teamsVoted' array made by the specified staff
     // ------------------------------------------------------------------------
-    function getStaffVotesLength(address _staff) public view returns (uint256 _length) {
+    function getTeamVotesLengthByStaff(address _staff) public view returns (uint256 _length) {
         require(
             staffInfo[_staff].wasRegistered == true,
             "Cannot find the specified staff."
@@ -571,9 +571,9 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get a team voting result (by index of 'teamsVoted' array) made by the specified staff
+    // Get a team voting result (at the index of 'teamsVoted' array) made by the specified staff
     // ------------------------------------------------------------------------
-    function getStaffVoteResultByIndex(address _staff, uint256 _votingIndex) 
+    function getTeamVoteResultByStaffAtIndex(address _staff, uint256 _votingIndex) 
         public view 
         returns (
             bool _endOfList,
