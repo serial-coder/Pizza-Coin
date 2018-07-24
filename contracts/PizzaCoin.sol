@@ -598,6 +598,88 @@ contract PizzaCoin is ERC20Interface, Owned {
         _voteWeight = staffInfo[_staff].votesWeight[_team];
     }
 
+    // ------------------------------------------------------------------------
+    // Get an info of the first found player 
+    // (start searching at _startSearchingIndex)
+    // ------------------------------------------------------------------------
+    function getFirstFoundTeamPlayerInfo(uint256 _startSearchingIndex) 
+        public view 
+        returns (
+            bool _endOfList, 
+            uint256 _nextStartSearchingIndex,
+            address _player,
+            string _name,
+            uint256 _tokensBalance,
+            string _teamJoined
+        ) 
+    {
+        _endOfList = true;
+        _nextStartSearchingIndex = players.length;
+        _player = address(0);
+        _name = "";
+        _tokensBalance = 0;
+        _teamJoined = "";
+
+        if (_startSearchingIndex >= players.length) {
+            return;
+        }  
+
+        for (uint256 i = _startSearchingIndex; i < players.length; i++) {
+            address player_ = players[i];
+
+            // Was not removed
+            if (player_ != address(0)) {
+                _endOfList = (i + 1 >= players.length);
+                _nextStartSearchingIndex = i + 1;
+                _player = player_;
+                _name = playersInfo[player_].name;
+                _tokensBalance = playersInfo[player_].tokensBalance;
+                _teamJoined = playersInfo[player_].teamJoined;
+                return;
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a length of 'teamsVoted' array made by the specified player
+    // ------------------------------------------------------------------------
+    function getTeamVotesLengthByTeamPlayer(address _player) public view returns (uint256 _length) {
+        require(
+            playersInfo[_player].wasRegistered == true,
+            "Cannot find the specified player."
+        );
+
+        return playersInfo[_player].teamsVoted.length;
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a team voting result (at the index of 'teamsVoted' array) made by the specified player
+    // ------------------------------------------------------------------------
+    function getTeamVoteResultByTeamPlayerAtIndex(address _player, uint256 _votingIndex) 
+        public view 
+        returns (
+            bool _endOfList,
+            string _team,
+            uint256 _voteWeight
+        ) 
+    {
+        require(
+            playersInfo[_player].wasRegistered == true,
+            "Cannot find the specified player."
+        );
+
+        if (_votingIndex >= playersInfo[_player].teamsVoted.length) {
+            _endOfList = true;
+            _team = "";
+            _voteWeight = 0;
+            return;
+        }
+
+        _endOfList = false;
+        _team = playersInfo[_player].teamsVoted[_votingIndex];
+        _voteWeight = playersInfo[_player].votesWeight[_team];
+    }
+
 
 
 
