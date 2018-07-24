@@ -164,6 +164,48 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
+    // Remove a specific staff
+    // ------------------------------------------------------------------------
+    function kickStaff(address _staff) public onlyOwner returns (bool success) {
+        require(
+            staffInfo[_staff].wasRegistered == true,
+            "Cannot find a certain staff."
+        );
+
+        bool found;
+        uint staffIndex;
+
+        (found, staffIndex) = getStaffIndex(_staff);
+        if (!found) {
+            revert("Cannot find a certain staff.");
+        }
+
+        // Reset an element to 0 but the array length never decrease (beware!!)
+        delete staff[staffIndex];
+
+        // Remove a certain staff from a mapping
+        delete staffInfo[_staff];
+
+        return true;
+    }
+
+    // ------------------------------------------------------------------------
+    // Get the index of a specific staff found in the array 'staff'
+    // ------------------------------------------------------------------------
+    function getStaffIndex(address _staff) internal view returns (bool _found, uint256 _staffIndex) {
+        _found = false;
+        _staffIndex = 0;
+
+        for (uint256 i = 0; i < staff.length; i++) {
+            if (staff[i] == _staff) {
+                _found = true;
+                _staffIndex = i;
+                break;
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
     // Team leader creates a team
     // ------------------------------------------------------------------------
     function createTeam(string _teamName, string _creatorName) public notRegistered returns (bool success) {
