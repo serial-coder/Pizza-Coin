@@ -520,6 +520,19 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
+    // Get a total number of staff
+    // ------------------------------------------------------------------------
+    function getTotalStaff() public view returns (uint256 _total) {
+        _total = 0;
+        for (uint256 i = 0; i < staff.length; i++) {
+            // Was not removed
+            if (staff[i] != address(0)) {
+                _total++;
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
     // Get an info of the first found staff 
     // (start searching at _startSearchingIndex)
     // ------------------------------------------------------------------------
@@ -559,9 +572,9 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get a length of 'teamsVoted' array made by the specified staff
+    // Get a total number of the votes ('teamsVoted' array) made by the specified staff
     // ------------------------------------------------------------------------
-    function getVotesLengthByStaff(address _staff) public view returns (uint256 _length) {
+    function getTotalVotesByStaff(address _staff) public view returns (uint256 _total) {
         require(
             staffInfo[_staff].wasRegistered == true,
             "Cannot find the specified staff."
@@ -573,7 +586,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Get a team voting result (at the index of 'teamsVoted' array) made by the specified staff
     // ------------------------------------------------------------------------
-    function getVoteResultByStaffAtIndex(address _staff, uint256 _votingIndex) 
+    function getVoteResultAtIndexByStaff(address _staff, uint256 _votingIndex) 
         public view 
         returns (
             bool _endOfList,
@@ -596,6 +609,19 @@ contract PizzaCoin is ERC20Interface, Owned {
         _endOfList = false;
         _team = staffInfo[_staff].teamsVoted[_votingIndex];
         _voteWeight = staffInfo[_staff].votesWeight[_team];
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a total number of players
+    // ------------------------------------------------------------------------
+    function getTotalPlayers() public view returns (uint256 _total) {
+        _total = 0;
+        for (uint256 i = 0; i < players.length; i++) {
+            // Was not removed
+            if (players[i] != address(0)) {
+                _total++;
+            }
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -641,9 +667,9 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get a length of 'teamsVoted' array made by the specified player
+    // Get a total number of the votes ('teamsVoted' array) made by the specified player
     // ------------------------------------------------------------------------
-    function getVotesLengthByPlayer(address _player) public view returns (uint256 _length) {
+    function getTotalVotesByPlayer(address _player) public view returns (uint256 _total) {
         require(
             playersInfo[_player].wasRegistered == true,
             "Cannot find the specified player."
@@ -655,7 +681,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Get a team voting result (at the index of 'teamsVoted' array) made by the specified player
     // ------------------------------------------------------------------------
-    function getVoteResultByPlayerAtIndex(address _player, uint256 _votingIndex) 
+    function getVoteResultAtIndexByPlayer(address _player, uint256 _votingIndex) 
         public view 
         returns (
             bool _endOfList,
