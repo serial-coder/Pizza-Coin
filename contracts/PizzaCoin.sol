@@ -1,3 +1,9 @@
+/*
+* Copyright (c) 2018, Phuwanai Thummavet (serial-coder). All rights reserved.
+* Github: https://github.com/serial-coder
+* Contact us: mr[dot]thummavet[at]gmail[dot]com
+*/
+
 pragma solidity ^0.4.23;
 
 import "./SafeMath.sol";
@@ -19,15 +25,42 @@ contract ERC20Interface {
 }
 
 // ----------------------------------------------------------------------------
+// Basic String Utils Library - just a lazy and expensive comparison
+// ----------------------------------------------------------------------------
+library BasicStringUtils {
+
+    // ------------------------------------------------------------------------
+    // Determine if two strings are equal or not
+    // ------------------------------------------------------------------------
+    function isEqual(string self, string other) internal pure returns (bool bEqual) {
+        return keccak256(self) == keccak256(other);
+    }
+
+    // ------------------------------------------------------------------------
+    // Determine if the string is empty or not
+    // ------------------------------------------------------------------------
+    function isEmpty(string self) internal pure returns (bool bEmpty) {
+        bytes memory selfInBytes = bytes(self);
+        return selfInBytes.length == 0;
+    }
+}
+
+// ----------------------------------------------------------------------------
 // Owned Contract
 // ----------------------------------------------------------------------------
 contract Owned {
     address public owner;
 
+    // ------------------------------------------------------------------------
+    // Constructor
+    // ------------------------------------------------------------------------
     constructor() public {
         owner = msg.sender;
     }
 
+    // ------------------------------------------------------------------------
+    // Guarantee that msg.sender must be a contract owner
+    // ------------------------------------------------------------------------
     modifier onlyOwner {
         require(msg.sender == owner);
         _;
@@ -39,6 +72,7 @@ contract Owned {
 // ----------------------------------------------------------------------------
 contract PizzaCoin is ERC20Interface, Owned {
     using SafeMath for uint256;
+    using BasicStringUtils for string;
 
     // Token info
     string public symbol;
