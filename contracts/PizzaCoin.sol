@@ -132,7 +132,11 @@ contract PizzaCoin is ERC20Interface, Owned {
     // Constructor
     // ------------------------------------------------------------------------
     constructor(string _ownerName, uint256 _voterInitialTokens) public {
-        /*** Check empty input string in every function such as '_ownerName' ***/
+        require(
+            _ownerName.isEmpty() == false,
+            "'_ownerName' might not be empty."
+        );
+
         require(
             _voterInitialTokens > 0,
             "'_voterInitialTokens' must be larger than 0."
@@ -235,6 +239,11 @@ contract PizzaCoin is ERC20Interface, Owned {
     // Register a new staff
     // ------------------------------------------------------------------------
     function registerStaff(string _staffName) public onlyRegistrationState notRegistered returns (bool success) {
+        require(
+            _staffName.isEmpty() == false,
+            "'_staffName' might not be empty."
+        );
+
         // Register a new staff
         staff[staff.length] = msg.sender;
         staffInfo[owner] = StaffInfo({
@@ -254,6 +263,11 @@ contract PizzaCoin is ERC20Interface, Owned {
     // Remove a specific staff
     // ------------------------------------------------------------------------
     function kickStaff(address _staff) public onlyRegistrationState onlyOwner returns (bool success) {
+        require(
+            address(_staff) != address(0),
+            "'_staff' contains an invalid address."
+        );
+
         require(
             staffInfo[_staff].wasRegistered == true,
             "Cannot find the specified staff."
@@ -297,6 +311,16 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     function createTeam(string _teamName, string _creatorName) public onlyRegistrationState notRegistered returns (bool success) {
         require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+
+        require(
+            _creatorName.isEmpty() == false,
+            "'_creatorName' might not be empty."
+        );
+        
+        require(
             teamsInfo[_teamName].wasCreated == false,
             "The given team was created already."
         );
@@ -338,6 +362,16 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     function registerTeamPlayer(string _playerName, string _teamName) public onlyRegistrationState notRegistered returns (bool success) {
         require(
+            _playerName.isEmpty() == false,
+            "'_playerName' might not be empty."
+        );
+
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+        
+        require(
             teamsInfo[_teamName].wasCreated == true,
             "The given team does not exist."
         );
@@ -369,6 +403,11 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     function kickFirstFoundTeamPlayer(string _teamName, uint256 _startSearchingIndex) 
         public onlyRegistrationState onlyStaff returns (uint256 _nextStartSearchingIndex, uint256 _totalPlayersRemaining) {
+        
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
 
         require(
             teamsInfo[_teamName].wasCreated == true,
@@ -403,6 +442,16 @@ contract PizzaCoin is ERC20Interface, Owned {
     // Remove a specific player from a particular team
     // ------------------------------------------------------------------------
     function kickTeamPlayer(address _player, string _teamName) public onlyRegistrationState onlyStaff returns (bool success) {
+        require(
+            address(_player) != address(0),
+            "'_player' contains an invalid address."
+        );
+
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+        
         require(
             playersInfo[_player].wasRegistered == true &&
             keccak256(playersInfo[_player].teamJoined) == keccak256(_teamName),
@@ -471,6 +520,11 @@ contract PizzaCoin is ERC20Interface, Owned {
     // Remove a specific team
     // ------------------------------------------------------------------------
     function kickTeam(string _teamName) public onlyRegistrationState onlyStaff returns (bool success) {
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+        
         require(
             teamsInfo[_teamName].wasCreated == true,
             "Cannot find the specified team."
@@ -597,6 +651,11 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     function getTotalVotesByStaff(address _staff) public view returns (uint256 _total) {
         require(
+            address(_staff) != address(0),
+            "'_staff' contains an invalid address."
+        );
+
+        require(
             staffInfo[_staff].wasRegistered == true,
             "Cannot find the specified staff."
         );
@@ -615,6 +674,11 @@ contract PizzaCoin is ERC20Interface, Owned {
             uint256 _voteWeight
         ) 
     {
+        require(
+            address(_staff) != address(0),
+            "'_staff' contains an invalid address."
+        );
+
         require(
             staffInfo[_staff].wasRegistered == true,
             "Cannot find the specified staff."
@@ -692,6 +756,11 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     function getTotalVotesByPlayer(address _player) public view returns (uint256 _total) {
         require(
+            address(_player) != address(0),
+            "'_player' contains an invalid address."
+        );
+        
+        require(
             playersInfo[_player].wasRegistered == true,
             "Cannot find the specified player."
         );
@@ -710,6 +779,11 @@ contract PizzaCoin is ERC20Interface, Owned {
             uint256 _voteWeight
         ) 
     {
+        require(
+            address(_player) != address(0),
+            "'_player' contains an invalid address."
+        );
+
         require(
             playersInfo[_player].wasRegistered == true,
             "Cannot find the specified player."
@@ -780,6 +854,10 @@ contract PizzaCoin is ERC20Interface, Owned {
     // Get a total number of players in a specified team
     // ------------------------------------------------------------------------
     function getTotalTeamPlayers(string _teamName) public view returns (uint256 _total) {
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
 
         require(
             teamsInfo[_teamName].wasCreated == true,
@@ -809,6 +887,11 @@ contract PizzaCoin is ERC20Interface, Owned {
             address _player
         ) 
     {
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+
         require(
             teamsInfo[_teamName].wasCreated == true,
             "Cannot find the specified team."
@@ -840,6 +923,11 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     function getTotalVotersToTeam(string _teamName) public view returns (uint256 _total) {
         require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+        
+        require(
             teamsInfo[_teamName].wasCreated == true,
             "Cannot find the specified team."
         );
@@ -858,6 +946,11 @@ contract PizzaCoin is ERC20Interface, Owned {
             uint256 _voteWeight
         ) 
     {
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+        
         require(
             teamsInfo[_teamName].wasCreated == true,
             "Cannot find the specified team."
@@ -894,20 +987,4 @@ contract PizzaCoin is ERC20Interface, Owned {
             return "VotingFinished";
         }
     }
-
-
-    
-
-
-
-
-
-
-
-
-    // Utility functions
-    /*function isEmptyString(string emptyStringTest) private returns (bool bEmpty) {
-        bytes memory tempEmptyStringTest = bytes(emptyStringTest);
-        return tempEmptyStringTest.length == 0;
-    }*/
 }
