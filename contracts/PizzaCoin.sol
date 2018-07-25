@@ -13,15 +13,15 @@ import "./SafeMath.sol";
 // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20-token-standard.md
 // ----------------------------------------------------------------------------
 contract ERC20Interface {
-    /*function totalSupply() public constant returns (uint256);
-    function balanceOf(address tokenOwner) public constant returns (uint256 balance);
-    function allowance(address tokenOwner, address spender) public constant returns (uint256 remaining);
+    function totalSupply() public view returns (uint256 _totalSupply);
+    function balanceOf(address tokenOwner) public view returns (uint256 balance);
+    function allowance(address tokenOwner, address spender) public view returns (uint256 remaining);
     function transfer(address to, uint256 tokens) public returns (bool success);
     function approve(address spender, uint256 tokens) public returns (bool success);
     function transferFrom(address from, address to, uint256 tokens) public returns (bool success);
 
     event Transfer(address indexed from, address indexed to, uint256 tokens);
-    event Approval(address indexed tokenOwner, address indexed spender, uint256 tokens);*/
+    event Approval(address indexed tokenOwner, address indexed spender, uint256 tokens);
 }
 
 // ----------------------------------------------------------------------------
@@ -78,7 +78,6 @@ contract PizzaCoin is ERC20Interface, Owned {
     string public symbol;
     string public name;
     uint8 public decimals;
-    //uint256 private _totalSupply;
 
     struct StaffInfo {
         bool wasRegistered;    // Check if a specific staff is being registered
@@ -1030,7 +1029,7 @@ contract PizzaCoin is ERC20Interface, Owned {
             "Cannot find the specified team."
         );
 
-        if (isStaff()) {
+        if (isStaff(msg.sender)) {
             return voteTeamByStaff(_teamName, _votingWeight);  // a staff
         }
         else {
@@ -1039,29 +1038,29 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Determine if msg.sender is a staff or not
+    // Determine if _user is a staff or not
     // ------------------------------------------------------------------------
-    function isStaff() internal view returns (bool bStaff) {
-        return staffInfo[msg.sender].wasRegistered;
+    function isStaff(address _user) internal view returns (bool bStaff) {
+        return staffInfo[_user].wasRegistered;
     }
 
     // ------------------------------------------------------------------------
-    // Determine if msg.sender is a team player or not
+    // Determine if _user is a team player or not
     // ------------------------------------------------------------------------
-    function isTeamPlayer() internal view returns (bool bPlayer) {
-        return playersInfo[msg.sender].wasRegistered;
+    function isTeamPlayer(address _user) internal view returns (bool bPlayer) {
+        return playersInfo[_user].wasRegistered;
     }
 
     // ------------------------------------------------------------------------
     // Vote a team by a staff
     // ------------------------------------------------------------------------
     function voteTeamByStaff(string _teamName, uint256 _votingWeight) internal onlyVotingState returns (bool success) {
+        address voter = msg.sender;
         assert(_teamName.isEmpty() == false);
         assert(_votingWeight > 0);
         assert(teamsInfo[_teamName].wasCreated == true);
-        assert(isStaff());
+        assert(isStaff(voter));
 
-        address voter = msg.sender;
         require(
             _votingWeight <= staffInfo[voter].tokensBalance,
             "Insufficient voting balance."
@@ -1091,12 +1090,12 @@ contract PizzaCoin is ERC20Interface, Owned {
     // Vote a team by a different team player
     // ------------------------------------------------------------------------
     function voteTeamByDifferentTeamPlayer(string _teamName, uint256 _votingWeight) internal onlyVotingState returns (bool success) {
+        address voter = msg.sender;
         assert(_teamName.isEmpty() == false);
         assert(_votingWeight > 0);
         assert(teamsInfo[_teamName].wasCreated == true);
-        assert(isTeamPlayer());
+        assert(isTeamPlayer(voter));
 
-        address voter = msg.sender;
         require(
             playersInfo[voter].teamJoined.isEqual(_teamName) == false,
             "A player does not allow to vote to his/her own team."
@@ -1205,5 +1204,85 @@ contract PizzaCoin is ERC20Interface, Owned {
                 }
             }
         }
+    }
+
+
+    /*
+    *
+    * This contract partially complies with ERC token standard #20 interface.
+    * That is, the only balanceOf() will be used.
+    *
+    */
+
+    // ------------------------------------------------------------------------
+    // Standard function of ERC token standard #20
+    // ------------------------------------------------------------------------
+    function balanceOf(address tokenOwner) public view returns (uint256 balance) {
+        if (isStaff(tokenOwner)) {
+            return staffInfo[tokenOwner].tokensBalance;
+        }
+        else if (isTeamPlayer(tokenOwner)) {
+            return playersInfo[tokenOwner].tokensBalance;
+        }
+        else {
+            revert("The specified address was not being registered.");
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Standard function of ERC token standard #20
+    // ------------------------------------------------------------------------
+    function totalSupply() public view returns (uint256) {
+        // This function is never used
+        revert("We don't implement this function.");
+    }
+
+    // ------------------------------------------------------------------------
+    // Standard function of ERC token standard #20
+    // ------------------------------------------------------------------------
+    function allowance(address tokenOwner, address spender) public view returns (uint256) {
+        // This function is never used
+        revert("We don't implement this function.");
+
+        // These statements are nothing, just use to stop compilation warning
+        tokenOwner == tokenOwner;
+        spender == spender;
+    }
+
+    // ------------------------------------------------------------------------
+    // Standard function of ERC token standard #20
+    // ------------------------------------------------------------------------
+    function transfer(address to, uint256 tokens) public returns (bool) {
+        // This function is never used
+        revert("We don't implement this function.");
+
+        // These statements are nothing, just use to stop compilation warning
+        to == to;
+        tokens == tokens;
+    }
+
+    // ------------------------------------------------------------------------
+    // Standard function of ERC token standard #20
+    // ------------------------------------------------------------------------
+    function approve(address spender, uint256 tokens) public returns (bool) {
+        // This function is never used
+        revert("We don't implement this function.");
+
+        // These statements are nothing, just use to stop compilation warning
+        spender == spender;
+        tokens == tokens;
+    }
+
+    // ------------------------------------------------------------------------
+    // Standard function of ERC token standard #20
+    // ------------------------------------------------------------------------
+    function transferFrom(address from, address to, uint256 tokens) public returns (bool) {
+        // This function is never used
+        revert("We don't implement this function.");
+
+        // These statements are nothing, just use to stop compilation warning
+        from == from;
+        to == to;
+        tokens == tokens;
     }
 }
