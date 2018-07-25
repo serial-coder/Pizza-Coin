@@ -294,6 +294,8 @@ contract PizzaCoin is ERC20Interface, Owned {
     // Get the index of a specific staff found in the array 'staff'
     // ------------------------------------------------------------------------
     function getStaffIndex(address _staff) internal view returns (bool _found, uint256 _staffIndex) {
+        assert(_staff != address(0));
+
         _found = false;
         _staffIndex = 0;
 
@@ -487,6 +489,8 @@ contract PizzaCoin is ERC20Interface, Owned {
     // Get the index of a specific player found in the array 'players'
     // ------------------------------------------------------------------------
     function getPlayerIndex(address _player) internal view returns (bool _found, uint256 _playerIndex) {
+        assert(_player != address(0));
+
         _found = false;
         _playerIndex = 0;
 
@@ -504,6 +508,9 @@ contract PizzaCoin is ERC20Interface, Owned {
     // found in the the array 'players' in the mapping 'teamsInfo'
     // ------------------------------------------------------------------------
     function getTeamPlayerIndex(address _player, string _teamName) internal view returns (bool _found, uint256 _playerIndex) {
+        assert(_player != address(0));
+        assert(_teamName.isEmpty() == false);
+
         _found = false;
         _playerIndex = 0;
 
@@ -558,6 +565,8 @@ contract PizzaCoin is ERC20Interface, Owned {
     // Get the index of a specific team found in the array 'teams'
     // ------------------------------------------------------------------------
     function getTeamIndex(string _teamName) internal view returns (bool _found, uint256 _teamIndex) {
+        assert(_teamName.isEmpty() == false);
+
         _found = false;
         _teamIndex = 0;
 
