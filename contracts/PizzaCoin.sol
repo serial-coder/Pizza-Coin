@@ -123,6 +123,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     mapping(string => TeamInfo) private teamsInfo;           // mapping(team => TeamInfo)
 
     uint256 public voterInitialTokens;
+    uint256 private maxTeamVotingPoints;
 
     enum State { Registration, RegistrationLocked, Voting, VotingFinished }
     State private state = State.Registration;
@@ -612,6 +613,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     function stopVoting() public onlyVotingState onlyStaff returns (bool success) {
         state = State.VotingFinished;
+        maxTeamVotingPoints = findMaxTeamVotingPoints();
         return true;
     }
 
@@ -829,7 +831,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         _total = 0;
         for (uint256 i = 0; i < teams.length; i++) {
             // Was not removed
-            if (teams[i].isEqual("") && teamsInfo[teams[i]].wasCreated == true) {
+            if (teams[i].isEqual("") == false && teamsInfo[teams[i]].wasCreated == true) {
                 _total++;
             }
         }
@@ -861,7 +863,7 @@ contract PizzaCoin is ERC20Interface, Owned {
             string storage teamName_ = teams[i];
 
             // Was not removed
-            if (teamName_.isEqual("") && teamsInfo[teamName_].wasCreated == true) {
+            if (teamName_.isEqual("") == false && teamsInfo[teamName_].wasCreated == true) {
                 _endOfList = false;
                 _nextStartSearchingIndex = i + 1;
                 _teamName = teamName_;
@@ -1123,5 +1125,85 @@ contract PizzaCoin is ERC20Interface, Owned {
         teamsInfo[_teamName].votesWeight[voter] = teamsInfo[_teamName].votesWeight[voter].add(_votingWeight);
         teamsInfo[_teamName].totalVoted = teamsInfo[_teamName].totalVoted.add(_votingWeight);
         return true;
+    }
+
+    // ------------------------------------------------------------------------
+    // Find a maximum voting points from each team after voting is finished
+    // ------------------------------------------------------------------------
+    function findMaxTeamVotingPoints() internal view onlyVotingFinishedState returns (uint256 _maxTeamVotingPoints) {
+        _maxTeamVotingPoints = 0;
+        for (uint256 i = 0; i < teams.length; i++) {
+            // Was not removed
+            if (teams[i].isEqual("") == false && teamsInfo[teams[i]].wasCreated == true) {
+                // Find a new mamimum points
+                if (teamsInfo[teams[i]].totalVoted > _maxTeamVotingPoints) {
+                    _maxTeamVotingPoints = teamsInfo[teams[i]].totalVoted;
+                }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a maximum team voting points if voting is finished
+    // ------------------------------------------------------------------------
+    function getMaxTeamVotingPoints() public view onlyVotingFinishedState returns (uint256 _maxTeamVotingPoints) {
+        return maxTeamVotingPoints;
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a total number of team winners after voting is finished
+    // It is possible to have several teams that got the equal maximum voting points 
+    // ------------------------------------------------------------------------
+    function getTotalTeamWinners() public view onlyVotingFinishedState returns (uint256 _total) {
+        _total = 0;
+        for (uint256 i = 0; i < teams.length; i++) {
+            // Was not removed
+            if (teams[i].isEqual("") == false && teamsInfo[teams[i]].wasCreated == true) {
+                // Count the team winners up
+                if (teamsInfo[teams[i]].totalVoted == maxTeamVotingPoints) {
+                    _total++;
+                }
+            }
+        }
+    }
+    
+    // ------------------------------------------------------------------------
+    // Get the first found team winner
+    // (start searching at _startSearchingIndex)
+    // It is possible to have several teams that got the equal maximum voting points 
+    // ------------------------------------------------------------------------
+    function getFirstFoundTeamWinner(uint256 _startSearchingIndex) 
+        public view onlyVotingFinishedState 
+        returns (
+            bool _endOfList,
+            uint256 _nextStartSearchingIndex,
+            string _teamName, 
+            uint256 _totalVoted
+        )
+    {
+        _endOfList = true;
+        _nextStartSearchingIndex = teams.length;
+        _teamName = "";
+        _totalVoted = 0;
+
+        if (_startSearchingIndex >= teams.length) {
+            return;
+        }
+
+        for (uint256 i = _startSearchingIndex; i < teams.length; i++) {
+            string storage teamName_ = teams[i];
+
+            // Was not removed
+            if (teamName_.isEqual("") == false && teamsInfo[teamName_].wasCreated == true) {
+                // Find a team winner
+                if (teamsInfo[teamName_].totalVoted == maxTeamVotingPoints) {
+                    _endOfList = false;
+                    _nextStartSearchingIndex = i + 1;
+                    _teamName = teamName_;
+                    _totalVoted = teamsInfo[teamName_].totalVoted;
+                    return;
+                }
+            }
+        }
     }
 }
