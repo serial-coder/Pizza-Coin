@@ -425,7 +425,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         for (uint256 i = _startSearchingIndex; i < players.length; i++) {
             if (
                 playersInfo[players[i]].wasRegistered == true && 
-                keccak256(playersInfo[players[i]].teamJoined) == keccak256(_teamName)
+                playersInfo[players[i]].teamJoined.isEqual(_teamName)
             ) {
                 // Remove a specific player
                 kickTeamPlayer(players[i], _teamName);
@@ -454,7 +454,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         
         require(
             playersInfo[_player].wasRegistered == true &&
-            keccak256(playersInfo[_player].teamJoined) == keccak256(_teamName),
+            playersInfo[_player].teamJoined.isEqual(_teamName),
             "Cannot find the specified player in a given team."
         );
 
@@ -562,7 +562,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         _teamIndex = 0;
 
         for (uint256 i = 0; i < teams.length; i++) {
-            if (keccak256(teams[i]) == keccak256(_teamName)) {
+            if (teams[i].isEqual(_teamName)) {
                 _found = true;
                 _teamIndex = i;
                 break;
@@ -808,7 +808,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         _total = 0;
         for (uint256 i = 0; i < teams.length; i++) {
             // Was not removed
-            if (keccak256(teams[i]) != keccak256("") && teamsInfo[teams[i]].wasCreated == true) {
+            if (teams[i].isEqual("") && teamsInfo[teams[i]].wasCreated == true) {
                 _total++;
             }
         }
@@ -840,7 +840,7 @@ contract PizzaCoin is ERC20Interface, Owned {
             string storage teamName_ = teams[i];
 
             // Was not removed
-            if (keccak256(teamName_) != keccak256("") && teamsInfo[teamName_].wasCreated == true) {
+            if (teamName_.isEqual("") && teamsInfo[teamName_].wasCreated == true) {
                 _endOfList = false;
                 _nextStartSearchingIndex = i + 1;
                 _teamName = teamName_;
@@ -950,7 +950,7 @@ contract PizzaCoin is ERC20Interface, Owned {
             _teamName.isEmpty() == false,
             "'_teamName' might not be empty."
         );
-        
+
         require(
             teamsInfo[_teamName].wasCreated == true,
             "Cannot find the specified team."
