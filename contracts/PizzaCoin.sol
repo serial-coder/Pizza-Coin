@@ -181,6 +181,18 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
+    // Guarantee that msg.sender has been already registered
+    // ------------------------------------------------------------------------
+    modifier onlyRegistered {
+        require(
+            staffInfo[msg.sender].wasRegistered == true || 
+            playersInfo[msg.sender].wasRegistered == true,
+            "This address was not being registered."
+        );
+        _;
+    }
+
+    // ------------------------------------------------------------------------
     // Guarantee that msg.sender must be a staff
     // ------------------------------------------------------------------------
     modifier onlyStaff {
@@ -995,5 +1007,121 @@ contract PizzaCoin is ERC20Interface, Owned {
         else {  // state == State.VotingFinished
             return "VotingFinished";
         }
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow any staff or any player in other different teams to vote a team
+    // ------------------------------------------------------------------------
+    function voteTeam(string _teamName, uint256 _votingWeight) public onlyVotingState onlyRegistered returns (bool success) {
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+
+        require(
+            _votingWeight > 0,
+            "'_votingWeight' must be larger than 0."
+        );
+        
+        require(
+            teamsInfo[_teamName].wasCreated == true,
+            "Cannot find the specified team."
+        );
+
+        if (isStaff()) {
+            return voteTeamByStaff(_teamName, _votingWeight);  // a staff
+        }
+        else {
+            return voteTeamByDifferentTeamPlayer(_teamName, _votingWeight);  // a team player
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Determine if msg.sender is a staff or not
+    // ------------------------------------------------------------------------
+    function isStaff() internal view returns (bool bStaff) {
+        return staffInfo[msg.sender].wasRegistered;
+    }
+
+    // ------------------------------------------------------------------------
+    // Determine if msg.sender is a team player or not
+    // ------------------------------------------------------------------------
+    function isTeamPlayer() internal view returns (bool bPlayer) {
+        return playersInfo[msg.sender].wasRegistered;
+    }
+
+    // ------------------------------------------------------------------------
+    // Vote a team by a staff
+    // ------------------------------------------------------------------------
+    function voteTeamByStaff(string _teamName, uint256 _votingWeight) internal onlyVotingState returns (bool success) {
+        assert(_teamName.isEmpty() == false);
+        assert(_votingWeight > 0);
+        assert(teamsInfo[_teamName].wasCreated == true);
+        assert(isStaff());
+
+        address voter = msg.sender;
+        require(
+            _votingWeight <= staffInfo[voter].tokensBalance,
+            "Insufficient voting balance."
+        );
+
+        staffInfo[voter].tokensBalance = staffInfo[voter].tokensBalance.sub(_votingWeight);
+
+        // If staffInfo[voter].votesWeight[_teamName] > 0 is true, this implies that 
+        // the voter was used to give a vote to the specified team previously
+        if (staffInfo[voter].votesWeight[_teamName] == 0) {
+            // The voter has never been given a vote to the specified team before
+            // We, therefore, have to add a new team to the 'teamsVoted' array
+            staffInfo[voter].teamsVoted.push(_teamName);
+
+            // We also need to add a new voter to the 'voters' array 
+            // which is in the 'teamsInfo' mapping
+            teamsInfo[_teamName].voters.push(voter);
+        }
+
+        staffInfo[voter].votesWeight[_teamName] = staffInfo[voter].votesWeight[_teamName].add(_votingWeight);
+        teamsInfo[_teamName].votesWeight[voter] = teamsInfo[_teamName].votesWeight[voter].add(_votingWeight);
+        teamsInfo[_teamName].totalVoted = teamsInfo[_teamName].totalVoted.add(_votingWeight);
+        return true;
+    }
+
+    // ------------------------------------------------------------------------
+    // Vote a team by a different team player
+    // ------------------------------------------------------------------------
+    function voteTeamByDifferentTeamPlayer(string _teamName, uint256 _votingWeight) internal onlyVotingState returns (bool success) {
+        assert(_teamName.isEmpty() == false);
+        assert(_votingWeight > 0);
+        assert(teamsInfo[_teamName].wasCreated == true);
+        assert(isTeamPlayer());
+
+        address voter = msg.sender;
+        require(
+            playersInfo[voter].teamJoined.isEqual(_teamName) == false,
+            "A player does not allow to vote to his/her own team."
+        );
+
+        require(
+            _votingWeight <= playersInfo[voter].tokensBalance,
+            "Insufficient voting balance."
+        );
+
+        playersInfo[voter].tokensBalance = playersInfo[voter].tokensBalance.sub(_votingWeight);
+
+        // If playersInfo[voter].votesWeight[_teamName] > 0 is true, this implies that 
+        // the voter was used to give a vote to the specified team previously
+        if (playersInfo[voter].votesWeight[_teamName] == 0) {
+            // The voter has never been given a vote to the specified team before
+            // We, therefore, have to add a new team to the 'teamsVoted' array
+            playersInfo[voter].teamsVoted.push(_teamName);
+
+            // We also need to add a new voter to the 'voters' array 
+            // which is in the 'teamsInfo' mapping
+            teamsInfo[_teamName].voters.push(voter);
+        }
+
+        playersInfo[voter].votesWeight[_teamName] = playersInfo[voter].votesWeight[_teamName].add(_votingWeight);
+        teamsInfo[_teamName].votesWeight[voter] = teamsInfo[_teamName].votesWeight[voter].add(_votingWeight);
+        teamsInfo[_teamName].totalVoted = teamsInfo[_teamName].totalVoted.add(_votingWeight);
+        return true;
     }
 }
