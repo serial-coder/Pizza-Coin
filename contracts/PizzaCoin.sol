@@ -829,8 +829,8 @@ contract PizzaCoin is ERC20Interface, Owned {
     function getTotalTeams() public view returns (uint256 _total) {
         _total = 0;
         for (uint256 i = 0; i < teams.length; i++) {
-            // Was not removed
-            if (teams[i].isEqual("") == false && teamsInfo[teams[i]].wasCreated == true) {
+            // Team was not removed before
+            if (teams[i].isEmpty() == false && teamsInfo[teams[i]].wasCreated == true) {
                 _total++;
             }
         }
@@ -861,8 +861,8 @@ contract PizzaCoin is ERC20Interface, Owned {
         for (uint256 i = _startSearchingIndex; i < teams.length; i++) {
             string storage teamName_ = teams[i];
 
-            // Was not removed
-            if (teamName_.isEqual("") == false && teamsInfo[teamName_].wasCreated == true) {
+            // Team was not removed before
+            if (teamName_.isEmpty() == false && teamsInfo[teamName_].wasCreated == true) {
                 _endOfList = false;
                 _nextStartSearchingIndex = i + 1;
                 _teamName = teamName_;
@@ -1132,8 +1132,8 @@ contract PizzaCoin is ERC20Interface, Owned {
     function findMaxTeamVotingPoints() internal view onlyVotingFinishedState returns (uint256 _maxTeamVotingPoints) {
         _maxTeamVotingPoints = 0;
         for (uint256 i = 0; i < teams.length; i++) {
-            // Was not removed
-            if (teams[i].isEqual("") == false && teamsInfo[teams[i]].wasCreated == true) {
+            // Team was not removed before
+            if (teams[i].isEmpty() == false && teamsInfo[teams[i]].wasCreated == true) {
                 // Find a new mamimum points
                 if (teamsInfo[teams[i]].totalVoted > _maxTeamVotingPoints) {
                     _maxTeamVotingPoints = teamsInfo[teams[i]].totalVoted;
@@ -1156,8 +1156,8 @@ contract PizzaCoin is ERC20Interface, Owned {
     function getTotalTeamWinners() public view onlyVotingFinishedState returns (uint256 _total) {
         _total = 0;
         for (uint256 i = 0; i < teams.length; i++) {
-            // Was not removed
-            if (teams[i].isEqual("") == false && teamsInfo[teams[i]].wasCreated == true) {
+            // Team was not removed before
+            if (teams[i].isEmpty() == false && teamsInfo[teams[i]].wasCreated == true) {
                 // Count the team winners up
                 if (teamsInfo[teams[i]].totalVoted == maxTeamVotingPoints) {
                     _total++;
@@ -1192,8 +1192,8 @@ contract PizzaCoin is ERC20Interface, Owned {
         for (uint256 i = _startSearchingIndex; i < teams.length; i++) {
             string storage teamName_ = teams[i];
 
-            // Was not removed
-            if (teamName_.isEqual("") == false && teamsInfo[teamName_].wasCreated == true) {
+            // Team was not removed before
+            if (teamName_.isEmpty() == false && teamsInfo[teamName_].wasCreated == true) {
                 // Find a team winner
                 if (teamsInfo[teamName_].totalVoted == maxTeamVotingPoints) {
                     _endOfList = false;
