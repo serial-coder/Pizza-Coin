@@ -89,11 +89,12 @@ contract PizzaCoin is ERC20Interface, Owned {
         string indexed _teamName, address indexed _voter, string _voterName, 
         string indexed _teamVoterAssociatedWith, uint256 _votingWeight
     );
+    event StateChanged(string indexed _state, address indexed _staff, string _staffName);
 
     // Token info
-    string public symbol;
-    string public name;
-    uint8 public decimals;
+    string public constant symbol = "PZC";
+    string public constant name = "Pizza Coin";
+    uint8 public constant decimals = 0;
 
     struct StaffInfo {
         bool wasRegistered;    // Check if a specific staff is being registered
@@ -141,6 +142,9 @@ contract PizzaCoin is ERC20Interface, Owned {
     uint256 private maxTeamVotingPoints;
 
     enum State { Registration, RegistrationLocked, Voting, VotingFinished }
+
+    // mapping(keccak256(state) => stateInString)
+    mapping(bytes32 => string) private stateMap;
     State private state = State.Registration;
 
 
@@ -158,10 +162,7 @@ contract PizzaCoin is ERC20Interface, Owned {
             "'_voterInitialTokens' must be larger than 0."
         );
 
-        symbol = "PZC";
-        name = "Pizza Coin";
-        decimals = 0;
-
+        initStateMap();
         voterInitialTokens = _voterInitialTokens;
 
         // Register an owner as staff
@@ -176,7 +177,25 @@ contract PizzaCoin is ERC20Interface, Owned {
             */
         });
 
+        emit StateChanged(convertStateToString(), owner, _ownerName);
         emit StaffRegistered(owner, _ownerName);
+    }
+
+    // ------------------------------------------------------------------------
+    // Initial a state mapping
+    // ------------------------------------------------------------------------
+    function initStateMap() internal onlyRegistrationState onlyOwner {
+        stateMap[keccak256(State.Registration)] = "Registration";
+        stateMap[keccak256(State.RegistrationLocked)] = "Registration Locked";
+        stateMap[keccak256(State.Voting)] = "Voting";
+        stateMap[keccak256(State.VotingFinished)] = "Voting Finished";
+    }
+
+    // ------------------------------------------------------------------------
+    // Convert a state to a readable string
+    // ------------------------------------------------------------------------
+    function convertStateToString() internal view returns (string _state) {
+        return stateMap[keccak256(state)];
     }
 
     // ------------------------------------------------------------------------
@@ -638,6 +657,10 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     function lockRegistration() public onlyRegistrationState onlyStaff returns (bool success) {
         state = State.RegistrationLocked;
+
+        address _staff = msg.sender;
+        string memory staffName = staffInfo[_staff].name;
+        emit StateChanged(convertStateToString(), _staff, staffName);
         return true;
     }
 
@@ -646,6 +669,10 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     function startVoting() public onlyRegistrationLockedState onlyStaff returns (bool success) {
         state = State.Voting;
+
+        address _staff = msg.sender;
+        string memory staffName = staffInfo[_staff].name;
+        emit StateChanged(convertStateToString(), _staff, staffName);
         return true;
     }
 
@@ -655,6 +682,10 @@ contract PizzaCoin is ERC20Interface, Owned {
     function stopVoting() public onlyVotingState onlyStaff returns (bool success) {
         state = State.VotingFinished;
         maxTeamVotingPoints = findMaxTeamVotingPoints();
+
+        address _staff = msg.sender;
+        string memory staffName = staffInfo[_staff].name;
+        emit StateChanged(convertStateToString(), _staff, staffName);
         return true;
     }
 
@@ -1033,23 +1064,10 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get a contract state in String format (Lazy hard-coded)
+    // Get a contract state in String format
     // ------------------------------------------------------------------------
     function getContractState() public view returns (string _state) {
-
-        // Solidity does not implement the switch statement
-        if (state == State.Registration) {
-            return "Registration";
-        }
-        else if (state == State.RegistrationLocked) {
-            return "RegistrationLocked";
-        }
-        else if (state == State.Voting) {
-            return "Voting";
-        }
-        else {  // state == State.VotingFinished
-            return "VotingFinished";
-        }
+        return convertStateToString();
     }
 
     // ------------------------------------------------------------------------
