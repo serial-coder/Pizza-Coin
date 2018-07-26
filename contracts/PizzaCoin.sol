@@ -74,6 +74,22 @@ contract PizzaCoin is ERC20Interface, Owned {
     using SafeMath for uint256;
     using BasicStringUtils for string;
 
+    // Contract events
+    event StaffRegistered(address indexed _staff, string _staffName);
+    event StaffKicked(address indexed _staffToBeKicked, string _staffName, address indexed _kicker, string _kickerName);
+    event TeamCreated(string indexed _teamName, address indexed _creator, string _creatorName);
+    event TeamPlayerRegistered(string indexed _teamName, address indexed _player, string _playerName);
+    event TeamPlayerKicked(
+        string indexed _teamName, address indexed _playerToBeKicked, 
+        string _playerName, address indexed _kicker, string _kickerName
+    );
+    event TeamKicked(string indexed _teamName, address indexed _kicker, string _kickerName);
+    event TeamVotedByStaff(string indexed _teamName, address indexed _voter, string _voterName, uint256 _votingWeight);
+    event TeamVotedByPlayer(
+        string indexed _teamName, address indexed _voter, string _voterName, 
+        string indexed _teamVoterAssociatedWith, uint256 _votingWeight
+    );
+
     // Token info
     string public symbol;
     string public name;
@@ -159,6 +175,8 @@ contract PizzaCoin is ERC20Interface, Owned {
                 Omit 'votesWeight'
             */
         });
+
+        emit StaffRegistered(owner, _ownerName);
     }
 
     // ------------------------------------------------------------------------
@@ -256,8 +274,10 @@ contract PizzaCoin is ERC20Interface, Owned {
             "'_staffName' might not be empty."
         );
 
+        address _staff = msg.sender;
+
         // Register a new staff
-        staff[staff.length] = msg.sender;
+        staff[staff.length] = _staff;
         staffInfo[owner] = StaffInfo({
             wasRegistered: true,
             name: _staffName,
@@ -268,6 +288,7 @@ contract PizzaCoin is ERC20Interface, Owned {
             */
         });
 
+        emit StaffRegistered(_staff, _staffName);
         return true;
     }
 
@@ -285,6 +306,11 @@ contract PizzaCoin is ERC20Interface, Owned {
             "Cannot find the specified staff."
         );
 
+        require(
+            _staff != owner,
+            "Contract owner is not kickable."
+        );
+
         bool found;
         uint staffIndex;
 
@@ -293,12 +319,17 @@ contract PizzaCoin is ERC20Interface, Owned {
             revert("Cannot find the specified staff.");
         }
 
+        address kicker = msg.sender;
+        string memory staffName = staffInfo[_staff].name;
+        string memory kickerName = staffInfo[kicker].name;
+
         // Reset an element to 0 but the array length never decrease (beware!!)
         delete staff[staffIndex];
 
         // Remove a specified staff from a mapping
         delete staffInfo[_staff];
 
+        emit StaffKicked(_staff, staffName, kicker, kickerName);
         return true;
     }
 
@@ -368,6 +399,8 @@ contract PizzaCoin is ERC20Interface, Owned {
             */
         });
 
+        emit TeamCreated(_teamName, creator, _creatorName);
+        emit TeamPlayerRegistered(_teamName, creator, _creatorName);
         return true;
     }
 
@@ -408,6 +441,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         // Add a player to a team he/she associates with
         teamsInfo[_teamName].players.push(player);
 
+        emit TeamPlayerRegistered(_teamName, player, _playerName);
         return true;
     }
 
@@ -480,6 +514,10 @@ contract PizzaCoin is ERC20Interface, Owned {
             revert("Cannot find the specified player.");
         }
 
+        address kicker = msg.sender;
+        string memory playerName = playersInfo[_player].name;
+        string memory kickerName = staffInfo[kicker].name;
+
         // Reset an element to 0 but the array length never decrease (beware!!)
         delete players[playerIndex];
 
@@ -494,6 +532,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         // Reset an element to 0 but the array length never decrease (beware!!)
         delete teamsInfo[_teamName].players[playerIndex];
 
+        emit TeamPlayerKicked(_teamName, _player, playerName, kicker, kickerName);
         return true;
     }
 
@@ -536,7 +575,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Remove a specific team
+    // Remove a specific team (the team must be empty of players)
     // ------------------------------------------------------------------------
     function kickTeam(string _teamName) public onlyRegistrationState onlyStaff returns (bool success) {
         require(
@@ -570,6 +609,9 @@ contract PizzaCoin is ERC20Interface, Owned {
         // Remove a specified team from a mapping
         delete teamsInfo[_teamName];
 
+        address kicker = msg.sender;
+        string memory kickerName = staffInfo[kicker].name;
+        emit TeamKicked(_teamName, kicker, kickerName);
         return true;
     }
 
@@ -622,7 +664,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     function getTotalStaff() public view returns (uint256 _total) {
         _total = 0;
         for (uint256 i = 0; i < staff.length; i++) {
-            // Was not removed
+            // Staff was not removed before
             if (staff[i] != address(0) && staffInfo[staff[i]].wasRegistered == true) {
                 _total++;
             }
@@ -656,7 +698,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         for (uint256 i = _startSearchingIndex; i < staff.length; i++) {
             address staff_ = staff[i];
 
-            // Was not removed
+            // Staff was not removed before
             if (staff_ != address(0) && staffInfo[staff_].wasRegistered == true) {
                 _endOfList = false;
                 _nextStartSearchingIndex = i + 1;
@@ -724,7 +766,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     function getTotalPlayers() public view returns (uint256 _total) {
         _total = 0;
         for (uint256 i = 0; i < players.length; i++) {
-            // Was not removed
+            // Player was not removed before
             if (players[i] != address(0) && playersInfo[players[i]].wasRegistered == true) {
                 _total++;
             }
@@ -760,7 +802,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         for (uint256 i = _startSearchingIndex; i < players.length; i++) {
             address player_ = players[i];
 
-            // Was not removed
+            // Player was not removed before
             if (player_ != address(0) && playersInfo[player_].wasRegistered == true) {
                 _endOfList = false;
                 _nextStartSearchingIndex = i + 1;
@@ -859,7 +901,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         }  
 
         for (uint256 i = _startSearchingIndex; i < teams.length; i++) {
-            string storage teamName_ = teams[i];
+            string memory teamName_ = teams[i];
 
             // Team was not removed before
             if (teamName_.isEmpty() == false && teamsInfo[teamName_].wasCreated == true) {
@@ -930,7 +972,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         for (uint256 i = _startSearchingIndex; i < teamsInfo[_teamName].players.length; i++) {
             address player_ = teamsInfo[_teamName].players[i];
 
-            // Was not removed
+            // Player was not removed before
             if (player_ != address(0) && playersInfo[player_].wasRegistered == true) {
                 _endOfList = false;
                 _nextStartSearchingIndex = i + 1;
@@ -1083,6 +1125,9 @@ contract PizzaCoin is ERC20Interface, Owned {
         staffInfo[voter].votesWeight[_teamName] = staffInfo[voter].votesWeight[_teamName].add(_votingWeight);
         teamsInfo[_teamName].votesWeight[voter] = teamsInfo[_teamName].votesWeight[voter].add(_votingWeight);
         teamsInfo[_teamName].totalVoted = teamsInfo[_teamName].totalVoted.add(_votingWeight);
+
+        string memory voterName = staffInfo[voter].name;
+        emit TeamVotedByStaff(_teamName, voter, voterName, _votingWeight);
         return true;
     }
 
@@ -1123,6 +1168,10 @@ contract PizzaCoin is ERC20Interface, Owned {
         playersInfo[voter].votesWeight[_teamName] = playersInfo[voter].votesWeight[_teamName].add(_votingWeight);
         teamsInfo[_teamName].votesWeight[voter] = teamsInfo[_teamName].votesWeight[voter].add(_votingWeight);
         teamsInfo[_teamName].totalVoted = teamsInfo[_teamName].totalVoted.add(_votingWeight);
+
+        string memory voterName = playersInfo[voter].name;
+        string memory teamVoterAssociatedWith = playersInfo[voter].teamJoined;
+        emit TeamVotedByPlayer(_teamName, voter, voterName, teamVoterAssociatedWith, _votingWeight);
         return true;
     }
 
@@ -1190,7 +1239,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         }
 
         for (uint256 i = _startSearchingIndex; i < teams.length; i++) {
-            string storage teamName_ = teams[i];
+            string memory teamName_ = teams[i];
 
             // Team was not removed before
             if (teamName_.isEmpty() == false && teamsInfo[teamName_].wasCreated == true) {
@@ -1244,7 +1293,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         // This function is never used
         revert("We don't implement this function.");
 
-        // These statements are nothing, just use to stop compilation warning
+        // These statements are nothing, just use to stop compilation warnings
         tokenOwner == tokenOwner;
         spender == spender;
     }
@@ -1256,7 +1305,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         // This function is never used
         revert("We don't implement this function.");
 
-        // These statements are nothing, just use to stop compilation warning
+        // These statements are nothing, just use to stop compilation warnings
         to == to;
         tokens == tokens;
     }
@@ -1268,7 +1317,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         // This function is never used
         revert("We don't implement this function.");
 
-        // These statements are nothing, just use to stop compilation warning
+        // These statements are nothing, just use to stop compilation warnings
         spender == spender;
         tokens == tokens;
     }
@@ -1280,7 +1329,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         // This function is never used
         revert("We don't implement this function.");
 
-        // These statements are nothing, just use to stop compilation warning
+        // These statements are nothing, just use to stop compilation warnings
         from == from;
         to == to;
         tokens == tokens;
