@@ -182,23 +182,6 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Initial a state mapping
-    // ------------------------------------------------------------------------
-    function initStateMap() internal onlyRegistrationState onlyOwner {
-        stateMap[keccak256(State.Registration)] = "Registration";
-        stateMap[keccak256(State.RegistrationLocked)] = "Registration Locked";
-        stateMap[keccak256(State.Voting)] = "Voting";
-        stateMap[keccak256(State.VotingFinished)] = "Voting Finished";
-    }
-
-    // ------------------------------------------------------------------------
-    // Convert a state to a readable string
-    // ------------------------------------------------------------------------
-    function convertStateToString() internal view returns (string _state) {
-        return stateMap[keccak256(state)];
-    }
-
-    // ------------------------------------------------------------------------
     // Don't accept ETH
     // ------------------------------------------------------------------------
     function () public payable {
@@ -282,6 +265,23 @@ contract PizzaCoin is ERC20Interface, Owned {
             "The present state is not VotingFinished."
         );
         _;
+    }
+
+    // ------------------------------------------------------------------------
+    // Initial a state mapping
+    // ------------------------------------------------------------------------
+    function initStateMap() internal onlyRegistrationState onlyOwner {
+        stateMap[keccak256(State.Registration)] = "Registration";
+        stateMap[keccak256(State.RegistrationLocked)] = "Registration Locked";
+        stateMap[keccak256(State.Voting)] = "Voting";
+        stateMap[keccak256(State.VotingFinished)] = "Voting Finished";
+    }
+
+    // ------------------------------------------------------------------------
+    // Convert a state to a readable string
+    // ------------------------------------------------------------------------
+    function convertStateToString() internal view returns (string _state) {
+        return stateMap[keccak256(state)];
     }
 
     // ------------------------------------------------------------------------
