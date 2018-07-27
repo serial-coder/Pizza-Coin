@@ -140,6 +140,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     mapping(string => TeamInfo) private teamsInfo;           // mapping(team => TeamInfo)
 
     uint256 public voterInitialTokens;
+    uint256 private _totalSupply;
 
     enum State { Registration, RegistrationLocked, Voting, VotingFinished }
 
@@ -297,6 +298,8 @@ contract PizzaCoin is ERC20Interface, Owned {
             */
         });
 
+        _totalSupply = _totalSupply.add(voterInitialTokens);
+
         emit StaffRegistered(staff, _staffName);
         return true;
     }
@@ -337,6 +340,8 @@ contract PizzaCoin is ERC20Interface, Owned {
 
         // Remove a specified staff from a mapping
         delete staffInfo[_staff];
+
+        _totalSupply = _totalSupply.sub(voterInitialTokens);
 
         emit StaffKicked(_staff, staffName, kicker, kickerName);
         return true;
@@ -408,6 +413,8 @@ contract PizzaCoin is ERC20Interface, Owned {
             */
         });
 
+        _totalSupply = _totalSupply.add(voterInitialTokens);
+
         emit TeamCreated(_teamName, creator, _creatorName);
         emit TeamPlayerRegistered(_teamName, creator, _creatorName);
         return true;
@@ -449,6 +456,8 @@ contract PizzaCoin is ERC20Interface, Owned {
 
         // Add a player to a team he/she associates with
         teamsInfo[_teamName].players.push(player);
+
+        _totalSupply = _totalSupply.add(voterInitialTokens);
 
         emit TeamPlayerRegistered(_teamName, player, _playerName);
         return true;
@@ -540,6 +549,8 @@ contract PizzaCoin is ERC20Interface, Owned {
 
         // Reset an element to 0 but the array length never decrease (beware!!)
         delete teamsInfo[_teamName].players[playerIndex];
+
+        _totalSupply = _totalSupply.sub(voterInitialTokens);
 
         emit TeamPlayerKicked(_teamName, _player, playerName, kicker, kickerName);
         return true;
@@ -1061,7 +1072,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Allow any staff or any player in any different teams to vote a team
+    // Allow any staff or any player in other different teams to vote to a team
     // ------------------------------------------------------------------------
     function voteTeam(string _teamName, uint256 _votingWeight) public onlyVotingState onlyRegistered returns (bool success) {
         require(
@@ -1102,7 +1113,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Vote a team by a staff
+    // Vote for a team by a staff
     // ------------------------------------------------------------------------
     function voteTeamByStaff(string _teamName, uint256 _votingWeight) internal onlyVotingState returns (bool success) {
         address voter = msg.sender;
@@ -1140,7 +1151,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Vote a team by a different team player
+    // Vote for a team by a different team player
     // ------------------------------------------------------------------------
     function voteTeamByDifferentTeamPlayer(string _teamName, uint256 _votingWeight) internal onlyVotingState returns (bool success) {
         address voter = msg.sender;
@@ -1263,9 +1274,16 @@ contract PizzaCoin is ERC20Interface, Owned {
     /*
     *
     * This contract partially complies with ERC token standard #20 interface.
-    * That is, the only balanceOf() will be used.
+    * That is, only the balanceOf() and totalSupply() will be used.
     *
     */
+
+    // ------------------------------------------------------------------------
+    // Standard function of ERC token standard #20
+    // ------------------------------------------------------------------------
+    function totalSupply() public view returns (uint256 totalSupply_) {
+        return _totalSupply;
+    }
 
     // ------------------------------------------------------------------------
     // Standard function of ERC token standard #20
@@ -1280,14 +1298,6 @@ contract PizzaCoin is ERC20Interface, Owned {
         else {
             revert("The specified address was not being registered.");
         }
-    }
-
-    // ------------------------------------------------------------------------
-    // Standard function of ERC token standard #20
-    // ------------------------------------------------------------------------
-    function totalSupply() public view returns (uint256) {
-        // This function is never used
-        revert("We don't implement this function.");
     }
 
     // ------------------------------------------------------------------------
