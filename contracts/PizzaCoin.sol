@@ -169,7 +169,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         emit StateChanged(convertStateToString(), owner, _ownerName);
 
         // Register an owner as staff
-        registerStaff(_ownerName);
+        registerStaff(owner, _ownerName);
     }
 
     // ------------------------------------------------------------------------
@@ -208,7 +208,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     modifier onlyStaff {
         require(
-            staffInfo[msg.sender].wasRegistered == true,
+            staffInfo[msg.sender].wasRegistered == true || msg.sender == owner,
             "This address is not a staff."
         );
         _;
@@ -278,16 +278,24 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Register a new staff
     // ------------------------------------------------------------------------
-    function registerStaff(string _staffName) public onlyRegistrationState notRegistered returns (bool success) {
+    function registerStaff(address _staff, string _staffName) public onlyRegistrationState onlyStaff returns (bool success) {
+        require(
+            address(_staff) != address(0),
+            "'_staff' contains an invalid address."
+        );
+
         require(
             _staffName.isEmpty() == false,
             "'_staffName' might not be empty."
         );
 
-        address staff = msg.sender;
+        require(
+            staffInfo[_staff].wasRegistered == false,
+            "The specified staff was registered already."
+        );
 
         // Register a new staff
-        staffs[staffs.length] = staff;
+        staffs[staffs.length] = _staff;
         staffInfo[owner] = StaffInfo({
             wasRegistered: true,
             name: _staffName,
@@ -300,7 +308,7 @@ contract PizzaCoin is ERC20Interface, Owned {
 
         _totalSupply = _totalSupply.add(voterInitialTokens);
 
-        emit StaffRegistered(staff, _staffName);
+        emit StaffRegistered(_staff, _staffName);
         return true;
     }
 
