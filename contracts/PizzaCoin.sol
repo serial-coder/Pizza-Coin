@@ -77,19 +77,20 @@ contract PizzaCoin is ERC20Interface, Owned {
     // Contract events
     event StaffRegistered(address indexed _staff, string _staffName);
     event StaffKicked(address indexed _staffToBeKicked, string _staffName, address indexed _kicker, string _kickerName);
-    event TeamCreated(string indexed _teamName, address indexed _creator, string _creatorName);
-    event TeamPlayerRegistered(string indexed _teamName, address indexed _player, string _playerName);
+    // The 'indexed' keyword cannot be used with any string parameter
+    event TeamCreated(string _teamName, address indexed _creator, string _creatorName);
+    event TeamPlayerRegistered(string _teamName, address indexed _player, string _playerName);
     event TeamPlayerKicked(
-        string indexed _teamName, address indexed _playerToBeKicked, 
+        string _teamName, address indexed _playerToBeKicked, 
         string _playerName, address indexed _kicker, string _kickerName
     );
-    event TeamKicked(string indexed _teamName, address indexed _kicker, string _kickerName);
-    event TeamVotedByStaff(string indexed _teamName, address indexed _voter, string _voterName, uint256 _votingWeight);
+    event TeamKicked(string _teamName, address indexed _kicker, string _kickerName);
+    event TeamVotedByStaff(string _teamName, address indexed _voter, string _voterName, uint256 _votingWeight);
     event TeamVotedByPlayer(
-        string indexed _teamName, address indexed _voter, string _voterName, 
-        string indexed _teamVoterAssociatedWith, uint256 _votingWeight
+        string _teamName, address indexed _voter, string _voterName, 
+        string _teamVoterAssociatedWith, uint256 _votingWeight
     );
-    event StateChanged(string indexed _state, address indexed _staff, string _staffName);
+    event StateChanged(string _state, address indexed _staff, string _staffName);
 
     // Token info
     string public constant symbol = "PZC";
