@@ -111,7 +111,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         bool wasRegistered;    // Check if a specific player is being registered
         string name;
         uint256 tokensBalance; // Amount of tokens left for voting
-        string teamJoined;     // A team this player associates with
+        string teamName;       // A team this player associates with
         string[] teamsVoted;   // Record all the teams voted by this player
         
         // mapping(team => votes)
@@ -401,7 +401,7 @@ contract PizzaCoin is ERC20Interface, Owned {
             wasRegistered: true,
             name: _creatorName,
             tokensBalance: voterInitialTokens,
-            teamJoined: _teamName,
+            teamName: _teamName,
             teamsVoted: new string[](0)
             /*
                 Omit 'votesWeight'
@@ -440,7 +440,7 @@ contract PizzaCoin is ERC20Interface, Owned {
             wasRegistered: true,
             name: _playerName,
             tokensBalance: voterInitialTokens,
-            teamJoined: _teamName,
+            teamName: _teamName,
             teamsVoted: new string[](0)
             /*
                 Omit 'votesWeight'
@@ -482,7 +482,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         for (uint256 i = _startSearchingIndex; i < players.length; i++) {
             if (
                 playersInfo[players[i]].wasRegistered == true && 
-                playersInfo[players[i]].teamJoined.isEqual(_teamName)
+                playersInfo[players[i]].teamName.isEqual(_teamName)
             ) {
                 // Remove a specific player
                 kickTeamPlayer(players[i], _teamName);
@@ -511,7 +511,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         
         require(
             playersInfo[_player].wasRegistered == true &&
-            playersInfo[_player].teamJoined.isEqual(_teamName),
+            playersInfo[_player].teamName.isEqual(_teamName),
             "Cannot find the specified player in a given team."
         );
 
@@ -713,18 +713,18 @@ contract PizzaCoin is ERC20Interface, Owned {
 
         if (_startSearchingIndex >= staffs.length) {
             return;
-        }  
+        }
 
         for (uint256 i = _startSearchingIndex; i < staffs.length; i++) {
-            address staff_ = staffs[i];
+            address staff = staffs[i];
 
             // Staff was not removed before
-            if (staff_ != address(0) && staffInfo[staff_].wasRegistered == true) {
+            if (staff != address(0) && staffInfo[staff].wasRegistered == true) {
                 _endOfList = false;
                 _nextStartSearchingIndex = i + 1;
-                _staff = staff_;
-                _name = staffInfo[staff_].name;
-                _tokensBalance = staffInfo[staff_].tokensBalance;
+                _staff = staff;
+                _name = staffInfo[staff].name;
+                _tokensBalance = staffInfo[staff].tokensBalance;
                 return;
             }
         }
@@ -805,7 +805,7 @@ contract PizzaCoin is ERC20Interface, Owned {
             address _player,
             string _name,
             uint256 _tokensBalance,
-            string _teamJoined
+            string _teamName
         ) 
     {
         _endOfList = true;
@@ -813,7 +813,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         _player = address(0);
         _name = "";
         _tokensBalance = 0;
-        _teamJoined = "";
+        _teamName = "";
 
         if (_startSearchingIndex >= players.length) {
             return;
@@ -829,7 +829,7 @@ contract PizzaCoin is ERC20Interface, Owned {
                 _player = player_;
                 _name = playersInfo[player_].name;
                 _tokensBalance = playersInfo[player_].tokensBalance;
-                _teamJoined = playersInfo[player_].teamJoined;
+                _teamName = playersInfo[player_].teamName;
                 return;
             }
         }
@@ -1149,7 +1149,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         assert(isTeamPlayer(voter));
 
         require(
-            playersInfo[voter].teamJoined.isEqual(_teamName) == false,
+            playersInfo[voter].teamName.isEqual(_teamName) == false,
             "A player does not allow to vote to his/her own team."
         );
 
@@ -1177,7 +1177,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         teamsInfo[_teamName].totalVoted = teamsInfo[_teamName].totalVoted.add(_votingWeight);
 
         string memory voterName = playersInfo[voter].name;
-        string memory teamVoterAssociatedWith = playersInfo[voter].teamJoined;
+        string memory teamVoterAssociatedWith = playersInfo[voter].teamName;
         emit TeamVotedByPlayer(_teamName, voter, voterName, teamVoterAssociatedWith, _votingWeight);
         return true;
     }
