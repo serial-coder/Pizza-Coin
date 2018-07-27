@@ -384,8 +384,6 @@ contract PizzaCoin is ERC20Interface, Owned {
             "The given team was created already."
         );
 
-        address creator = msg.sender;
-
         // Create a new team
         teams[teams.length] = _teamName;
         teamsInfo[_teamName] = TeamInfo({
@@ -398,25 +396,11 @@ contract PizzaCoin is ERC20Interface, Owned {
             */
         });
 
-        teamsInfo[_teamName].players.push(creator);
-
-        // Register a team leader to a team
-        players[players.length] = creator;
-        playersInfo[creator] = TeamPlayerInfo({
-            wasRegistered: true,
-            name: _creatorName,
-            tokensBalance: voterInitialTokens,
-            teamName: _teamName,
-            teamsVoted: new string[](0)
-            /*
-                Omit 'votesWeight'
-            */
-        });
-
-        _totalSupply = _totalSupply.add(voterInitialTokens);
-
+        address creator = msg.sender;
         emit TeamCreated(_teamName, creator, _creatorName);
-        emit TeamPlayerRegistered(_teamName, creator, _creatorName);
+
+        // Register a creator to a team as team leader
+        registerTeamPlayer(_creatorName, _teamName);
         return true;
     }
 
