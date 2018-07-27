@@ -140,7 +140,6 @@ contract PizzaCoin is ERC20Interface, Owned {
     mapping(string => TeamInfo) private teamsInfo;           // mapping(team => TeamInfo)
 
     uint256 public voterInitialTokens;
-    uint256 private maxTeamVotingPoints;
 
     enum State { Registration, RegistrationLocked, Voting, VotingFinished }
 
@@ -649,9 +648,9 @@ contract PizzaCoin is ERC20Interface, Owned {
     function lockRegistration() public onlyRegistrationState onlyStaff returns (bool success) {
         state = State.RegistrationLocked;
 
-        address _staff = msg.sender;
-        string memory staffName = staffInfo[_staff].name;
-        emit StateChanged(convertStateToString(), _staff, staffName);
+        address staff = msg.sender;
+        string memory staffName = staffInfo[staff].name;
+        emit StateChanged(convertStateToString(), staff, staffName);
         return true;
     }
 
@@ -661,9 +660,9 @@ contract PizzaCoin is ERC20Interface, Owned {
     function startVoting() public onlyRegistrationLockedState onlyStaff returns (bool success) {
         state = State.Voting;
 
-        address _staff = msg.sender;
-        string memory staffName = staffInfo[_staff].name;
-        emit StateChanged(convertStateToString(), _staff, staffName);
+        address staff = msg.sender;
+        string memory staffName = staffInfo[staff].name;
+        emit StateChanged(convertStateToString(), staff, staffName);
         return true;
     }
 
@@ -672,11 +671,10 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     function stopVoting() public onlyVotingState onlyStaff returns (bool success) {
         state = State.VotingFinished;
-        maxTeamVotingPoints = findMaxTeamVotingPoints();
 
-        address _staff = msg.sender;
-        string memory staffName = staffInfo[_staff].name;
-        emit StateChanged(convertStateToString(), _staff, staffName);
+        address staff = msg.sender;
+        string memory staffName = staffInfo[staff].name;
+        emit StateChanged(convertStateToString(), staff, staffName);
         return true;
     }
 
@@ -1187,7 +1185,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Find a maximum voting points from each team after voting is finished
     // ------------------------------------------------------------------------
-    function findMaxTeamVotingPoints() internal view onlyVotingFinishedState returns (uint256 _maxTeamVotingPoints) {
+    function getMaxTeamVotingPoints() public view onlyVotingFinishedState returns (uint256 _maxTeamVotingPoints) {
         _maxTeamVotingPoints = 0;
         for (uint256 i = 0; i < teams.length; i++) {
             // Team was not removed before
@@ -1201,13 +1199,6 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get a maximum team voting points if voting is finished
-    // ------------------------------------------------------------------------
-    function getMaxTeamVotingPoints() public view onlyVotingFinishedState returns (uint256 _maxTeamVotingPoints) {
-        return maxTeamVotingPoints;
-    }
-
-    // ------------------------------------------------------------------------
     // Get a total number of team winners after voting is finished
     // It is possible to have several teams that got the equal maximum voting points 
     // ------------------------------------------------------------------------
@@ -1217,7 +1208,7 @@ contract PizzaCoin is ERC20Interface, Owned {
             // Team was not removed before
             if (teams[i].isEmpty() == false && teamsInfo[teams[i]].wasCreated == true) {
                 // Count the team winners up
-                if (teamsInfo[teams[i]].totalVoted == maxTeamVotingPoints) {
+                if (teamsInfo[teams[i]].totalVoted == getMaxTeamVotingPoints()) {
                     _total++;
                 }
             }
@@ -1253,7 +1244,7 @@ contract PizzaCoin is ERC20Interface, Owned {
             // Team was not removed before
             if (teamName_.isEmpty() == false && teamsInfo[teamName_].wasCreated == true) {
                 // Find a team winner
-                if (teamsInfo[teamName_].totalVoted == maxTeamVotingPoints) {
+                if (teamsInfo[teamName_].totalVoted == getMaxTeamVotingPoints()) {
                     _endOfList = false;
                     _nextStartSearchingIndex = i + 1;
                     _teamName = teamName_;
