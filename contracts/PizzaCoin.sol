@@ -295,7 +295,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         );
 
         // Register a new staff
-        staffs[staffs.length] = _staff;
+        staffs.push(_staff);
         staffInfo[owner] = StaffInfo({
             wasRegistered: true,
             name: _staffName,
@@ -393,7 +393,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         );
 
         // Create a new team
-        teams[teams.length] = _teamName;
+        teams.push(_teamName);
         teamsInfo[_teamName] = TeamInfo({
             wasCreated: true,
             players: new address[](0),
@@ -434,7 +434,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         address player = msg.sender;
 
         // Register a new player
-        players[players.length] = player;
+        players.push(player);
         playersInfo[player] = TeamPlayerInfo({
             wasRegistered: true,
             name: _playerName,
