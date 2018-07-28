@@ -11,6 +11,7 @@ import "./ERC20Interface.sol";
 import "./BasicStringUtils.sol";
 import "./Owned.sol";
 import "./PizzaCoinStaff.sol";
+import "./PizzaCoinPlayer.sol";
 
 // ----------------------------------------------------------------------------
 // Pizza Coin Contract
@@ -22,6 +23,7 @@ contract PizzaCoin is /*ERC20Interface,*/ Owned {
     event StateChanged(string _state, address indexed _staff, string _staffName);
     event StaffRegistered(address indexed _staff, string _staffName);
     event StaffKicked(address indexed _staffToBeKicked, string _staffName, address indexed _kicker, string _kickerName);
+    event PlayerRegistered(address indexed _player, string _playerName, string _teamName);
 
     // Token info
     string public constant symbol = "PZC";
@@ -33,6 +35,9 @@ contract PizzaCoin is /*ERC20Interface,*/ Owned {
 
     address private staffContract;
     PizzaCoinStaff private staffContractInstance;
+
+    address private playerContract;
+    PizzaCoinPlayer private playerContractInstance;
 
     enum State { Initial, Registration, RegistrationLocked, Voting, VotingFinished }
     State private state = State.Initial;
@@ -67,6 +72,29 @@ contract PizzaCoin is /*ERC20Interface,*/ Owned {
     // ------------------------------------------------------------------------
     function () public payable {
         revert("We don't accept ETH.");
+    }
+
+    // ------------------------------------------------------------------------
+    // Guarantee that msg.sender has not been registered before
+    // ------------------------------------------------------------------------
+    modifier notRegistered {
+        require(
+            staffContractInstance.isStaff(msg.sender) == false && 
+            playerContractInstance.isPlayer(msg.sender) == false,
+            "This address was registered already."
+        );
+        _;
+    }
+
+    // ------------------------------------------------------------------------
+    // Guarantee that msg.sender must be a staff
+    // ------------------------------------------------------------------------
+    modifier onlyStaff {
+        require(
+            staffContractInstance.isStaff(msg.sender) == true || msg.sender == owner,
+            "This address is not a staff."
+        );
+        _;
     }
 
     // ------------------------------------------------------------------------
@@ -189,29 +217,13 @@ contract PizzaCoin is /*ERC20Interface,*/ Owned {
         
         // Register an owner as a staff
         staffContractInstance.registerStaff(owner, ownerName);
-        
         emit StaffRegistered(owner, ownerName);
     }
 
     // ------------------------------------------------------------------------
     // Register a new staff
     // ------------------------------------------------------------------------
-    function registerStaff(address _staff, string _staffName) public onlyRegistrationState {
-        /*require(
-            address(_staff) != address(0),
-            "'_staff' contains an invalid address."
-        );
-
-        require(
-            _staffName.isEmpty() == false,
-            "'_staffName' might not be empty."
-        );*/
-
-        // Only a staff is allowed to call this function
-        require(
-            staffContractInstance.isStaff(msg.sender) == true,
-            "This address is not a staff."
-        );
+    function registerStaff(address _staff, string _staffName) public onlyRegistrationState onlyStaff {
 
         staffContractInstance.registerStaff(_staff, _staffName);
         emit StaffRegistered(_staff, _staffName);
@@ -277,5 +289,87 @@ contract PizzaCoin is /*ERC20Interface,*/ Owned {
         ) 
     {
         return staffContractInstance.getVoteResultAtIndexByStaff(_staff, _votingIndex);
+    }
+
+    // ------------------------------------------------------------------------
+    // Create a player contract
+    // ------------------------------------------------------------------------
+    function createPlayerContract() public onlyInitialState onlyOwner {
+        require(
+            playerContract == address(0),
+            "The player contract got initialized already."
+        );
+
+        // Create a player contract
+        playerContract = new PizzaCoinPlayer(voterInitialTokens);
+
+        // Get a player contract instance from the deployed address
+        //playerContractInstance = PizzaCoinPlayer(playerContract);
+    }
+
+    // ------------------------------------------------------------------------
+    // Register a player
+    // ------------------------------------------------------------------------
+    function registerPlayer(string _playerName, string _teamName) public onlyRegistrationState notRegistered {
+
+        /*require(
+            teamsInfo[_teamName].wasCreated == true,
+            "The given team does not exist."
+        );*/
+
+        address player = msg.sender;
+
+        playerContractInstance.registerPlayer(player, _playerName, _teamName);
+
+        // Add a player to a team he/she associates with
+        //teamsInfo[_teamName].players.push(player);
+
+        emit PlayerRegistered(player, _playerName, _teamName);
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a total number of players
+    // ------------------------------------------------------------------------
+    function getTotalPlayers() public view returns (uint256 _total) {
+        return playerContractInstance.getTotalPlayers();
+    }
+
+    // ------------------------------------------------------------------------
+    // Get an info of the first found player 
+    // (start searching at _startSearchingIndex)
+    // ------------------------------------------------------------------------
+    function getFirstFoundPlayerInfo(uint256 _startSearchingIndex) 
+        public view
+        returns (
+            bool _endOfList, 
+            uint256 _nextStartSearchingIndex,
+            address _player,
+            string _name,
+            uint256 _tokensBalance,
+            string _teamName
+        ) 
+    {
+        return playerContractInstance.getFirstFoundPlayerInfo(_startSearchingIndex);
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a total number of the votes ('teamsVoted' array) made by the specified player
+    // ------------------------------------------------------------------------
+    function getTotalVotesByPlayer(address _player) public view returns (uint256 _total) {
+        return playerContractInstance.getTotalVotesByPlayer(_player); 
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a team voting result (at the index of 'teamsVoted' array) made by the specified player
+    // ------------------------------------------------------------------------
+    function getVoteResultAtIndexByPlayer(address _player, uint256 _votingIndex) 
+        public view
+        returns (
+            bool _endOfList,
+            string _team,
+            uint256 _voteWeight
+        ) 
+    {
+        return playerContractInstance.getVoteResultAtIndexByPlayer(_player, _votingIndex);
     }
 }
