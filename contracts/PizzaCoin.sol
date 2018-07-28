@@ -6,17 +6,20 @@
 
 pragma solidity ^0.4.23;
 
-import "./ERC20Interface.sol";
+import "./ERC20.sol";
 //import "./SafeMath.sol";
 import "./BasicStringUtils.sol";
 import "./Owned.sol";
 import "./PizzaCoinStaff.sol";
 import "./PizzaCoinPlayer.sol";
+import "./PizzaCoinStaffDeployer.sol";
+import "./PizzaCoinPlayerDeployer.sol";
+
 
 // ----------------------------------------------------------------------------
 // Pizza Coin Contract
 // ----------------------------------------------------------------------------
-contract PizzaCoin is /*ERC20Interface,*/ Owned {
+contract PizzaCoin is /*ERC20,*/ Owned {
     using BasicStringUtils for string;
 
     // Contract events
@@ -34,10 +37,10 @@ contract PizzaCoin is /*ERC20Interface,*/ Owned {
     uint256 public voterInitialTokens;
 
     address private staffContract;
-    PizzaCoinStaff private staffContractInstance;
+    IStaffContract private staffContractInstance;
 
     address private playerContract;
-    PizzaCoinPlayer private playerContractInstance;
+    IPlayerContract private playerContractInstance;
 
     enum State { Initial, Registration, RegistrationLocked, Voting, VotingFinished }
     State private state = State.Initial;
@@ -210,11 +213,12 @@ contract PizzaCoin is /*ERC20Interface,*/ Owned {
         );
 
         // Create a staff contract
-        staffContract = new PizzaCoinStaff(voterInitialTokens);
+        staffContract = PizzaCoinStaffDeployer.deployStaffContract(voterInitialTokens);
+        PizzaCoinStaffDeployer.transferOwnership(staffContract, this);
 
         // Get a staff contract instance from the deployed address
-        staffContractInstance = PizzaCoinStaff(staffContract);
-        
+        staffContractInstance = IStaffContract(staffContract);
+
         // Register an owner as a staff
         staffContractInstance.registerStaff(owner, ownerName);
         emit StaffRegistered(owner, ownerName);
@@ -301,10 +305,11 @@ contract PizzaCoin is /*ERC20Interface,*/ Owned {
         );
 
         // Create a player contract
-        playerContract = new PizzaCoinPlayer(voterInitialTokens);
+        playerContract = PizzaCoinPlayerDeployer.deployPlayerContract(voterInitialTokens);
+        PizzaCoinPlayerDeployer.transferOwnership(playerContract, this);
 
         // Get a player contract instance from the deployed address
-        //playerContractInstance = PizzaCoinPlayer(playerContract);
+        playerContractInstance = IPlayerContract(playerContract);
     }
 
     // ------------------------------------------------------------------------

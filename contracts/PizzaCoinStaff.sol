@@ -10,10 +10,40 @@ import "./SafeMath.sol";
 import "./BasicStringUtils.sol";
 import "./Owned.sol";
 
+
+// ------------------------------------------------------------------------
+// Interface for exporting public and external functions of PizzaCoinStaff contract
+// ------------------------------------------------------------------------
+interface IStaffContract {
+    function isStaff(address _user) public view returns (bool bStaff);
+    function getStaffName(address _staff) public view returns (string _name);
+    function registerStaff(address _staff, string _staffName) public;
+    function kickStaff(address _staff) public;
+    function getTotalStaffs() public view returns (uint256 _total);
+    function getFirstFoundStaffInfo(uint256 _startSearchingIndex) 
+        public view
+        returns (
+            bool _endOfList, 
+            uint256 _nextStartSearchingIndex,
+            address _staff,
+            string _name,
+            uint256 _tokensBalance
+        );
+    function getTotalVotesByStaff(address _staff) public view returns (uint256 _total);
+    function getVoteResultAtIndexByStaff(address _staff, uint256 _votingIndex) 
+        public view
+        returns (
+            bool _endOfList,
+            string _team,
+            uint256 _voteWeight
+        );
+}
+
+
 // ----------------------------------------------------------------------------
 // Pizza Coin Staff Contract
 // ----------------------------------------------------------------------------
-contract PizzaCoinStaff is Owned {
+contract PizzaCoinStaff is IStaffContract, Owned {
     /*
     * Owner of the contract is PizzaCoin contract, 
     * not a project deployer (or PizzaCoin's owner)

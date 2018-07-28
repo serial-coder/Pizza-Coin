@@ -6,32 +6,30 @@
 
 pragma solidity ^0.4.23;
 
+import "./PizzaCoinStaff.sol";
+
 
 // ----------------------------------------------------------------------------
-// Owned Contract
+// PizzaCoinStaffDeployer Library
 // ----------------------------------------------------------------------------
-contract Owned {
-    address public owner;
+library PizzaCoinStaffDeployer {
 
     // ------------------------------------------------------------------------
-    // Constructor
+    // Create a staff contract
     // ------------------------------------------------------------------------
-    constructor() public {
-        owner = msg.sender;
-    }
-
-    // ------------------------------------------------------------------------
-    // Guarantee that msg.sender must be a contract owner
-    // ------------------------------------------------------------------------
-    modifier onlyOwner {
-        require(msg.sender == owner);
-        _;
+    function deployStaffContract(uint256 _voterInitialTokens) 
+        public 
+        returns (
+            PizzaCoinStaff _staffContract
+        ) 
+    {
+        _staffContract = new PizzaCoinStaff(_voterInitialTokens);
     }
 
     // ------------------------------------------------------------------------
     // Transfer a contract owner to a new one
     // ------------------------------------------------------------------------
-    function transferOwnership(address _newOwner) public onlyOwner {
-        owner = _newOwner;
+    function transferOwnership(address _staffContract, address _newOwner) public {
+        PizzaCoinStaff(_staffContract).transferOwnership(_newOwner);
     }
 }

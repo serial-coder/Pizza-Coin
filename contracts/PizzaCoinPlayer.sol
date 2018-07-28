@@ -10,10 +10,39 @@ import "./SafeMath.sol";
 import "./BasicStringUtils.sol";
 import "./Owned.sol";
 
+
+// ------------------------------------------------------------------------
+// Interface for exporting public and external functions of PizzaCoinPlayer contract
+// ------------------------------------------------------------------------
+interface IPlayerContract {
+    function isPlayer(address _user) public view returns (bool bPlayer);
+    function registerPlayer(address _player, string _playerName, string _teamName) public;
+    function getTotalPlayers() public view returns (uint256 _total);
+    function getFirstFoundPlayerInfo(uint256 _startSearchingIndex) 
+        public view
+        returns (
+            bool _endOfList, 
+            uint256 _nextStartSearchingIndex,
+            address _player,
+            string _name,
+            uint256 _tokensBalance,
+            string _teamName
+        );
+    function getTotalVotesByPlayer(address _player) public view returns (uint256 _total);
+    function getVoteResultAtIndexByPlayer(address _player, uint256 _votingIndex) 
+        public view
+        returns (
+            bool _endOfList,
+            string _team,
+            uint256 _voteWeight
+        );
+}
+
+
 // ----------------------------------------------------------------------------
 // Pizza Coin Player Contract
 // ----------------------------------------------------------------------------
-contract PizzaCoinPlayer is Owned {
+contract PizzaCoinPlayer is IPlayerContract, Owned {
     /*
     * Owner of the contract is PizzaCoin contract, 
     * not a project deployer (or PizzaCoin's owner)
