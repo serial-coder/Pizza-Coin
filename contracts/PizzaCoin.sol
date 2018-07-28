@@ -1,0 +1,281 @@
+/*
+* Copyright (c) 2018, Phuwanai Thummavet (serial-coder). All rights reserved.
+* Github: https://github.com/serial-coder
+* Contact us: mr[dot]thummavet[at]gmail[dot]com
+*/
+
+pragma solidity ^0.4.23;
+
+import "./ERC20Interface.sol";
+//import "./SafeMath.sol";
+import "./BasicStringUtils.sol";
+import "./Owned.sol";
+import "./PizzaCoinStaff.sol";
+
+// ----------------------------------------------------------------------------
+// Pizza Coin Contract
+// ----------------------------------------------------------------------------
+contract PizzaCoin is /*ERC20Interface,*/ Owned {
+    using BasicStringUtils for string;
+
+    // Contract events
+    event StateChanged(string _state, address indexed _staff, string _staffName);
+    event StaffRegistered(address indexed _staff, string _staffName);
+    event StaffKicked(address indexed _staffToBeKicked, string _staffName, address indexed _kicker, string _kickerName);
+
+    // Token info
+    string public constant symbol = "PZC";
+    string public constant name = "Pizza Coin";
+    uint8 public constant decimals = 0;
+
+    string private ownerName;
+    uint256 public voterInitialTokens;
+
+    address private staffContract;
+    PizzaCoinStaff private staffContractInstance;
+
+    enum State { Initial, Registration, RegistrationLocked, Voting, VotingFinished }
+    State private state = State.Initial;
+
+    // mapping(keccak256(state) => stateInString)
+    mapping(bytes32 => string) private stateMap;
+
+    // ------------------------------------------------------------------------
+    // Constructor
+    // ------------------------------------------------------------------------
+    constructor(string _ownerName, uint256 _voterInitialTokens) public {
+        require(
+            _ownerName.isEmpty() == false,
+            "'_ownerName' might not be empty."
+        );
+
+        require(
+            _voterInitialTokens > 0,
+            "'_voterInitialTokens' must be larger than 0."
+        );
+
+        initStateMap();
+
+        ownerName = _ownerName;
+        voterInitialTokens = _voterInitialTokens;
+
+        emit StateChanged(convertStateToString(), owner, _ownerName);
+    }
+
+    // ------------------------------------------------------------------------
+    // Don't accept ETH
+    // ------------------------------------------------------------------------
+    function () public payable {
+        revert("We don't accept ETH.");
+    }
+
+    // ------------------------------------------------------------------------
+    // Guarantee that the present state is Initial
+    // ------------------------------------------------------------------------
+    modifier onlyInitialState {
+        require(
+            state == State.Initial,
+            "The present state is not Initial."
+        );
+        _;
+    }
+
+    // ------------------------------------------------------------------------
+    // Guarantee that the present state is Registration
+    // ------------------------------------------------------------------------
+    modifier onlyRegistrationState {
+        require(
+            state == State.Registration,
+            "The present state is not Registration."
+        );
+        _;
+    }
+
+    // ------------------------------------------------------------------------
+    // Guarantee that the present state is RegistrationLocked
+    // ------------------------------------------------------------------------
+    modifier onlyRegistrationLockedState {
+        require(
+            state == State.RegistrationLocked,
+            "The present state is not RegistrationLocked."
+        );
+        _;
+    }
+
+    // ------------------------------------------------------------------------
+    // Guarantee that the present state is Voting
+    // ------------------------------------------------------------------------
+    modifier onlyVotingState {
+        require(
+            state == State.Voting,
+            "The present state is not Voting."
+        );
+        _;
+    }
+
+    // ------------------------------------------------------------------------
+    // Guarantee that the present state is VotingFinished
+    // ------------------------------------------------------------------------
+    modifier onlyVotingFinishedState {
+        require(
+            state == State.VotingFinished,
+            "The present state is not VotingFinished."
+        );
+        _;
+    }
+
+    // ------------------------------------------------------------------------
+    // Initial a state mapping
+    // ------------------------------------------------------------------------
+    function initStateMap() internal onlyInitialState onlyOwner {
+        stateMap[keccak256(State.Initial)] = "Initial";
+        stateMap[keccak256(State.Registration)] = "Registration";
+        stateMap[keccak256(State.RegistrationLocked)] = "Registration Locked";
+        stateMap[keccak256(State.Voting)] = "Voting";
+        stateMap[keccak256(State.VotingFinished)] = "Voting Finished";
+    }
+
+    // ------------------------------------------------------------------------
+    // Convert a state to a readable string
+    // ------------------------------------------------------------------------
+    function convertStateToString() internal view returns (string _state) {
+        return stateMap[keccak256(state)];
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a contract state in String format
+    // ------------------------------------------------------------------------
+    function getContractState() public view returns (string _state) {
+        return convertStateToString();
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a staff transfer the state from Initial to Registration
+    // ------------------------------------------------------------------------
+    function startRegistration() public onlyInitialState {
+        address staff = msg.sender;
+
+        require(
+            staffContract != address(0),
+            "The staff contract did not get initialized"
+        );
+
+        // Only a staff is allowed to call this function
+        require(
+            staffContractInstance.isStaff(staff) == true,
+            "This address is not a staff."
+        );
+
+        state = State.Registration;
+
+        string memory staffName = staffContractInstance.getStaffName(staff);
+        emit StateChanged(convertStateToString(), staff, staffName);
+    }
+
+    // ------------------------------------------------------------------------
+    // Create a staff contract
+    // ------------------------------------------------------------------------
+    function createStaffContract() public onlyInitialState onlyOwner {
+        require(
+            staffContract == address(0),
+            "The staff contract got initialized already."
+        );
+
+        // Create a staff contract
+        staffContract = new PizzaCoinStaff(voterInitialTokens);
+
+        // Get a staff contract instance from the deployed address
+        staffContractInstance = PizzaCoinStaff(staffContract);
+        
+        // Register an owner as a staff
+        staffContractInstance.registerStaff(owner, ownerName);
+        
+        emit StaffRegistered(owner, ownerName);
+    }
+
+    // ------------------------------------------------------------------------
+    // Register a new staff
+    // ------------------------------------------------------------------------
+    function registerStaff(address _staff, string _staffName) public onlyRegistrationState {
+        /*require(
+            address(_staff) != address(0),
+            "'_staff' contains an invalid address."
+        );
+
+        require(
+            _staffName.isEmpty() == false,
+            "'_staffName' might not be empty."
+        );*/
+
+        // Only a staff is allowed to call this function
+        require(
+            staffContractInstance.isStaff(msg.sender) == true,
+            "This address is not a staff."
+        );
+
+        staffContractInstance.registerStaff(_staff, _staffName);
+        emit StaffRegistered(_staff, _staffName);
+    }
+
+    // ------------------------------------------------------------------------
+    // Remove a specific staff
+    // ------------------------------------------------------------------------
+    function kickStaff(address _staff) public onlyRegistrationState onlyOwner {
+        require(
+            address(_staff) != address(0),
+            "'_staff' contains an invalid address."
+        );
+
+        staffContractInstance.kickStaff(_staff);
+
+        address kicker = msg.sender;
+        string memory staffName = staffContractInstance.getStaffName(_staff);
+        string memory kickerName = staffContractInstance.getStaffName(kicker);
+        emit StaffKicked(_staff, staffName, kicker, kickerName);
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a total number of staffs
+    // ------------------------------------------------------------------------
+    function getTotalStaffs() public view returns (uint256 _total) {
+        return staffContractInstance.getTotalStaffs();
+    }
+
+    // ------------------------------------------------------------------------
+    // Get an info of the first found staff 
+    // (start searching at _startSearchingIndex)
+    // ------------------------------------------------------------------------
+    function getFirstFoundStaffInfo(uint256 _startSearchingIndex) 
+        public view
+        returns (
+            bool _endOfList, 
+            uint256 _nextStartSearchingIndex,
+            address _staff,
+            string _name,
+            uint256 _tokensBalance
+        ) 
+    {
+        return staffContractInstance.getFirstFoundStaffInfo(_startSearchingIndex);
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a total number of the votes ('teamsVoted' array) made by the specified staff
+    // ------------------------------------------------------------------------
+    function getTotalVotesByStaff(address _staff) public view returns (uint256 _total) {
+        return staffContractInstance.getTotalVotesByStaff(_staff);
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a team voting result (at the index of 'teamsVoted' array) made by the specified staff
+    // ------------------------------------------------------------------------
+    function getVoteResultAtIndexByStaff(address _staff, uint256 _votingIndex) 
+        public view
+        returns (
+            bool _endOfList,
+            string _team,
+            uint256 _voteWeight
+        ) 
+    {
+        return staffContractInstance.getVoteResultAtIndexByStaff(_staff, _votingIndex);
+    }
+}
