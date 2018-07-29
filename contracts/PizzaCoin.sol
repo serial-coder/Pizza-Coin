@@ -25,17 +25,6 @@ import "./TestLib.sol";
 contract PizzaCoin is /*ERC20,*/ Owned {
     using BasicStringUtils for string;
 
-    // Contract events (the 'indexed' keyword cannot be used with any string parameter)
-    event StateChanged(string _state, address indexed _staff, string _staffName);
-    event StaffRegistered(address indexed _staff, string _staffName);
-    event StaffKicked(address indexed _staffToBeKicked, string _staffName, address indexed _kicker, string _kickerName);
-    event PlayerRegistered(address indexed _player, string _playerName, string _teamName);
-    event TeamCreated(string _teamName, address indexed _creator, string _creatorName);
-    event PlayerKicked(address indexed _playerToBeKicked, string _playerName, 
-        string _teamName, address indexed _kicker, string _kickerName
-    );
-    event TeamKicked(string _teamName, address indexed _kicker, string _kickerName);
-
     // Token info
     string public constant symbol = "PZC";
     string public constant name = "Pizza Coin";
@@ -63,6 +52,14 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     // Constructor
     // ------------------------------------------------------------------------
     constructor(string _ownerName, uint256 _voterInitialTokens) public {
+
+        /*TestLib.executeConstructorCode(_ownerName, _voterInitialTokens);
+
+        initStateMap();
+
+        ownerName = _ownerName;
+        voterInitialTokens = _voterInitialTokens;*/
+
         require(
             _ownerName.isEmpty() == false,
             "'_ownerName' might not be empty."
@@ -78,7 +75,7 @@ contract PizzaCoin is /*ERC20,*/ Owned {
         ownerName = _ownerName;
         voterInitialTokens = _voterInitialTokens;
 
-        emit StateChanged(convertStateToString(), owner, _ownerName);
+        TestLib.emitStateChanged(convertStateToString(), _ownerName);
     }
 
     // ------------------------------------------------------------------------
@@ -205,8 +202,7 @@ contract PizzaCoin is /*ERC20,*/ Owned {
 
         state = State.Registration;
 
-        string memory staffName = staffContractInstance.getStaffName(staff);
-        emit StateChanged(convertStateToString(), staff, staffName);
+        TestLib.emitStateChanged(convertStateToString(), staffContractInstance);
     }
 
     // ------------------------------------------------------------------------
@@ -215,9 +211,7 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     function lockRegistration() public onlyRegistrationState onlyStaff {
         state = State.RegistrationLocked;
 
-        address staff = msg.sender;
-        string memory staffName = staffContractInstance.getStaffName(staff);
-        emit StateChanged(convertStateToString(), staff, staffName);
+        TestLib.emitStateChanged(convertStateToString(), staffContractInstance);
     }
 
     // ------------------------------------------------------------------------
@@ -226,9 +220,7 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     function startVoting() public onlyRegistrationLockedState onlyStaff {
         state = State.Voting;
 
-        address staff = msg.sender;
-        string memory staffName = staffContractInstance.getStaffName(staff);
-        emit StateChanged(convertStateToString(), staff, staffName);
+        TestLib.emitStateChanged(convertStateToString(), staffContractInstance);
     }
 
     // ------------------------------------------------------------------------
@@ -237,9 +229,7 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     function stopVoting() public onlyVotingState onlyStaff {
         state = State.VotingFinished;
 
-        address staff = msg.sender;
-        string memory staffName = staffContractInstance.getStaffName(staff);
-        emit StateChanged(convertStateToString(), staff, staffName);
+        TestLib.emitStateChanged(convertStateToString(), staffContractInstance);
     }
 
     // ------------------------------------------------------------------------
@@ -258,31 +248,23 @@ contract PizzaCoin is /*ERC20,*/ Owned {
         // Get a staff contract instance from the deployed address
         staffContractInstance = IStaffContract(staffContract);
 
-        // Register an owner as a staff
-        staffContractInstance.registerStaff(owner, ownerName);
-        emit StaffRegistered(owner, ownerName);
+        // Register an owner as a staff. We cannot use calling to registerStaff() 
+        // because the contract state is Initial.
+        TestLib.registerStaff(owner, ownerName, staffContract);
     }
 
     // ------------------------------------------------------------------------
     // Register a new staff
     // ------------------------------------------------------------------------
     function registerStaff(address _staff, string _staffName) public onlyRegistrationState onlyStaff {
-
-        staffContractInstance.registerStaff(_staff, _staffName);
-        emit StaffRegistered(_staff, _staffName);
+        TestLib.registerStaff(_staff, _staffName, staffContract);
     }
 
     // ------------------------------------------------------------------------
     // Remove a specific staff
     // ------------------------------------------------------------------------
     function kickStaff(address _staff) public onlyRegistrationState onlyOwner {
-
-        staffContractInstance.kickStaff(_staff);
-
-        address kicker = msg.sender;
-        string memory staffName = staffContractInstance.getStaffName(_staff);
-        string memory kickerName = staffContractInstance.getStaffName(kicker);
-        emit StaffKicked(_staff, staffName, kicker, kickerName);
+        TestLib.kickStaff(_staff, staffContract);
     }
 
     // ------------------------------------------------------------------------
@@ -351,14 +333,7 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     // Register a player
     // ------------------------------------------------------------------------
     function registerPlayer(string _playerName, string _teamName) public onlyRegistrationState notRegistered {
-        address player = msg.sender;
-
-        playerContractInstance.registerPlayer(player, _playerName, _teamName);
-
-        // Add a player to a team he/she associates with
-        teamContractInstance.registerPlayerToTeam(player, _teamName);
-
-        emit PlayerRegistered(player, _playerName, _teamName);
+        TestLib.registerPlayer(_playerName, _teamName, playerContract, teamContract);
     }
 
     // ------------------------------------------------------------------------
@@ -428,15 +403,7 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     // Team leader creates a team
     // ------------------------------------------------------------------------
     function createTeam(string _teamName, string _creatorName) public onlyRegistrationState notRegistered {
-        address creator = msg.sender;
-        
-        // Create a new team
-        teamContractInstance.createTeam(_teamName, creator, _creatorName);
-
-        // Register a creator to a team as team leader
-        registerPlayer(_creatorName, _teamName);
-
-        emit TeamCreated(_teamName, creator, _creatorName);
+        TestLib.createTeam(_teamName, _creatorName, playerContract, teamContract);
     }
 
     // ------------------------------------------------------------------------
@@ -491,40 +458,31 @@ contract PizzaCoin is /*ERC20,*/ Owned {
         public onlyRegistrationState onlyStaff returns (uint256 _nextStartSearchingIndex, uint256 _totalPlayersRemaining) {
 
         (_nextStartSearchingIndex, _totalPlayersRemaining) = TestLib.kickFirstFoundTeamPlayer(
-            _teamName, _startSearchingIndex, playerContract, teamContract);
+            _teamName, _startSearchingIndex, staffContract, playerContract, teamContract);
     }
 
     // ------------------------------------------------------------------------
     // Remove a specific player from a particular team
     // ------------------------------------------------------------------------
     function kickPlayer(address _player, string _teamName) public onlyRegistrationState onlyStaff {
-        TestLib.kickPlayer(_player, _teamName, playerContract, teamContract);
-
-        address kicker = msg.sender;
-        string memory playerName = playerContractInstance.getPlayerName(_player);
-        string memory kickerName = staffContractInstance.getStaffName(kicker);
-        emit PlayerKicked(_player, playerName, _teamName, kicker, kickerName);
+        TestLib.kickPlayer(_player, _teamName, staffContract, playerContract, teamContract);
     }
 
-    /*// ------------------------------------------------------------------------
-    // Get a total number of players in a specified team
-    // ------------------------------------------------------------------------
-    function getTotalPlayersInTeam(string _teamName) public view returns (uint256 _total) {
-        return TestLib.getTotalPlayersInTeam(_teamName, playerContract, teamContract);
-    }*/
+                /*// ------------------------------------------------------------------------
+                // Get a total number of players in a specified team
+                // ------------------------------------------------------------------------
+                function getTotalPlayersInTeam(string _teamName) public view returns (uint256 _total) {
+                    return TestLib.getTotalPlayersInTeam(_teamName, playerContract, teamContract);
+                }*/
 
     // ------------------------------------------------------------------------
     // Remove a specific team (the team must be empty of players)
     // ------------------------------------------------------------------------
     function kickTeam(string _teamName) public onlyRegistrationState onlyStaff {
-        teamContractInstance.kickTeam(_teamName);
-
-        address kicker = msg.sender;
-        string memory kickerName = staffContractInstance.getStaffName(kicker);
-        emit TeamKicked(_teamName, kicker, kickerName);
+        TestLib.kickTeam(_teamName, staffContract, teamContract);
     }
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get a total number of players in a specified team
     // ------------------------------------------------------------------------
     function getTotalPlayersInTeam(string _teamName) public view returns (uint256 _total) {
@@ -544,5 +502,5 @@ contract PizzaCoin is /*ERC20,*/ Owned {
         ) 
     {
         return teamContractInstance.getFirstFoundPlayerInTeam(_teamName, _startSearchingIndex);
-    }
+    }*/
 }

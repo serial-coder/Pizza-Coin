@@ -18,7 +18,7 @@ library PizzaCoinStaffDeployer {
     // Create a staff contract
     // ------------------------------------------------------------------------
     function deployContract(uint256 _voterInitialTokens) 
-        public 
+        public view
         returns (
             PizzaCoinStaff _staffContract
         ) 
@@ -34,7 +34,7 @@ library PizzaCoinStaffDeployer {
     // ------------------------------------------------------------------------
     // Transfer a contract owner to a new one
     // ------------------------------------------------------------------------
-    function transferOwnership(address _staffContract, address _newOwner) public {
+    function transferOwnership(address _staffContract, address _newOwner) public view {
         require(
             _staffContract != address(0),
             "'_staffContract' contains an invalid address."

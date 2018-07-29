@@ -18,7 +18,7 @@ library PizzaCoinPlayerDeployer {
     // Create a player contract
     // ------------------------------------------------------------------------
     function deployContract(uint256 _voterInitialTokens) 
-        public 
+        public view
         returns (
             PizzaCoinPlayer _playerContract
         ) 
@@ -34,7 +34,7 @@ library PizzaCoinPlayerDeployer {
     // ------------------------------------------------------------------------
     // Transfer a contract owner to a new one
     // ------------------------------------------------------------------------
-    function transferOwnership(address _playerContract, address _newOwner) public {
+    function transferOwnership(address _playerContract, address _newOwner) public view {
         require(
             _playerContract != address(0),
             "'_playerContract' contains an invalid address."

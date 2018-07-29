@@ -18,7 +18,7 @@ library PizzaCoinTeamDeployer {
     // Create a team contract
     // ------------------------------------------------------------------------
     function deployContract() 
-        public 
+        public view 
         returns (
             PizzaCoinTeam _teamContract
         ) 
@@ -29,7 +29,7 @@ library PizzaCoinTeamDeployer {
     // ------------------------------------------------------------------------
     // Transfer a contract owner to a new one
     // ------------------------------------------------------------------------
-    function transferOwnership(address _teamContract, address _newOwner) public {
+    function transferOwnership(address _teamContract, address _newOwner) public view {
         require(
             _teamContract != address(0),
             "'_teamContract' contains an invalid address."
