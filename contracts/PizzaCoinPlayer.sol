@@ -16,7 +16,10 @@ import "./Owned.sol";
 // ------------------------------------------------------------------------
 interface IPlayerContract {
     function isPlayer(address _user) public view returns (bool bPlayer);
+    function isPlayerInTeam(address _user, string _teamName) public view returns (bool bTeamPlayer);
+    function getPlayerName(address _player) public view returns (string _name);
     function registerPlayer(address _player, string _playerName, string _teamName) public;
+    function kickPlayer(address _player, string _teamName) public;
     function getTotalPlayers() public view returns (uint256 _total);
     function getFirstFoundPlayerInfo(uint256 _startSearchingIndex) 
         public view
@@ -150,8 +153,45 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
             _user != address(0),
             "'_user' contains an invalid address."
         );
-        
+
         return playersInfo[_user].wasRegistered;
+    }
+
+    // ------------------------------------------------------------------------
+    // Determine if _user is a player in the specified _teamName or not
+    // ------------------------------------------------------------------------
+    function isPlayerInTeam(address _user, string _teamName) public view onlyPizzaCoin returns (bool bTeamPlayer) {
+        require(
+            _user != address(0),
+            "'_user' contains an invalid address."
+        );
+
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+
+        return (
+            playersInfo[_user].wasRegistered == true && 
+            playersInfo[_user].teamName.isEqual(_teamName)
+        );
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a player name
+    // ------------------------------------------------------------------------
+    function getPlayerName(address _player) public view onlyPizzaCoin returns (string _name) {
+        require(
+            _player != address(0),
+            "'_player' contains an invalid address."
+        );
+
+        require(
+            isPlayer(_player) == true,
+            "Cannot find the specified player."
+        );
+
+        return playersInfo[_player].name;
     }
 
     // ------------------------------------------------------------------------
@@ -192,6 +232,60 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
         });
 
         _totalSupply = _totalSupply.add(voterInitialTokens);
+    }
+
+    // ------------------------------------------------------------------------
+    // Remove a specific player from a particular team
+    // ------------------------------------------------------------------------
+    function kickPlayer(address _player, string _teamName) public onlyRegistrationState onlyPizzaCoin {
+        require(
+            _player != address(0),
+            "'_player' contains an invalid address."
+        );
+
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+        
+        require(
+            isPlayerInTeam(_player, _teamName) == true,
+            "Cannot find the specified player in a given team."
+        );
+
+        bool found;
+        uint playerIndex;
+
+        (found, playerIndex) = getPlayerIndex(_player);
+        if (!found) {
+            revert("Cannot find the specified player.");
+        }
+
+        // Reset an element to 0 but the array length never decrease (beware!!)
+        delete players[playerIndex];
+
+        // Remove a specified player from a mapping
+        delete playersInfo[_player];
+
+        _totalSupply = _totalSupply.sub(voterInitialTokens);
+    }
+
+    // ------------------------------------------------------------------------
+    // Get the index of a specific player found in the array 'players'
+    // ------------------------------------------------------------------------
+    function getPlayerIndex(address _player) internal view onlyPizzaCoin returns (bool _found, uint256 _playerIndex) {
+        assert(_player != address(0));
+
+        _found = false;
+        _playerIndex = 0;
+
+        for (uint256 i = 0; i < players.length; i++) {
+            if (players[i] == _player) {
+                _found = true;
+                _playerIndex = i;
+                return;
+            }
+        }
     }
 
     // ------------------------------------------------------------------------

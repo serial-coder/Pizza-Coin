@@ -17,7 +17,15 @@ import "./Owned.sol";
 interface ITeamContract {
     function createTeam(string _teamName, address _creator, string _creatorName) public;
     function registerPlayerToTeam(address _player, string _teamName) public;
+    function kickPlayerOutOffTeam(address _player, string _teamName) public;
     function doesTeamExist(string _teamName) public view returns (bool bTeamExist);
+    function getArrayLengthOfPlayersInTeam(string _teamName) public view returns (uint256 _length);
+    function getPlayerInTeamAtIndex(string _teamName, uint256 _playerIndex) 
+        public view 
+        returns (
+            bool _endOfList, 
+            address _player
+        );
     function getTotalTeams() public view returns (uint256 _total);
     function getFirstFoundTeamInfo(uint256 _startSearchingIndex) 
         public view
@@ -203,6 +211,105 @@ contract PizzaCoinTeam is ITeamContract, Owned {
 
         // Add a player to a team he/she associates with
         teamsInfo[_teamName].players.push(_player);
+    }
+
+    // ------------------------------------------------------------------------
+    // Remove a specific player from a particular team
+    // ------------------------------------------------------------------------
+    function kickPlayerOutOffTeam(address _player, string _teamName) public onlyRegistrationState onlyPizzaCoin {
+        require(
+            _player != address(0),
+            "'_player' contains an invalid address."
+        );
+
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+
+        require(
+            doesTeamExist(_teamName) == true,
+            "The given team does not exist."
+        );
+
+        bool found;
+        uint playerIndex;
+
+        (found, playerIndex) = getTeamPlayerIndex(_player, _teamName);
+        if (!found) {
+            revert("Cannot find the specified player in a given team.");
+        }
+
+        // Reset an element to 0 but the array length never decrease (beware!!)
+        delete teamsInfo[_teamName].players[playerIndex];
+    }
+
+    // ------------------------------------------------------------------------
+    // Get the index of a specific player in a given team 
+    // found in the the array 'players' in the mapping 'teamsInfo'
+    // ------------------------------------------------------------------------
+    function getTeamPlayerIndex(address _player, string _teamName) internal view onlyPizzaCoin returns (bool _found, uint256 _playerIndex) {
+        assert(_player != address(0));
+        assert(_teamName.isEmpty() == false);
+        assert(doesTeamExist(_teamName) == true);
+
+        _found = false;
+        _playerIndex = 0;
+
+        for (uint256 i = 0; i < teamsInfo[_teamName].players.length; i++) {
+            if (teamsInfo[_teamName].players[i] == _player) {
+                _found = true;
+                _playerIndex = i;
+                return;
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Get the array length of players in the specific team (including all ever removal players)
+    // ------------------------------------------------------------------------
+    function getArrayLengthOfPlayersInTeam(string _teamName) public view onlyPizzaCoin returns (uint256 _length) {
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+
+        require(
+            doesTeamExist(_teamName) == true,
+            "Cannot find the specified team."
+        );
+
+        return teamsInfo[_teamName].players.length;
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a player in the specified team at the specified index (including all ever removal players)
+    // ------------------------------------------------------------------------
+    function getPlayerInTeamAtIndex(string _teamName, uint256 _playerIndex) 
+        public view onlyPizzaCoin 
+        returns (
+            bool _endOfList, 
+            address _player
+        ) 
+    {
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+
+        require(
+            doesTeamExist(_teamName) == true,
+            "Cannot find the specified team."
+        );
+
+        if (_playerIndex >= getArrayLengthOfPlayersInTeam(_teamName)) {
+            _endOfList = true;
+            _player = address(0);
+            return;
+        }
+
+        _endOfList = false;
+        _player = teamsInfo[_teamName].players[_playerIndex];
     }
 
     // ------------------------------------------------------------------------

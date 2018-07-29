@@ -30,6 +30,9 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     event StaffKicked(address indexed _staffToBeKicked, string _staffName, address indexed _kicker, string _kickerName);
     event PlayerRegistered(address indexed _player, string _playerName, string _teamName);
     event TeamCreated(string _teamName, address indexed _creator, string _creatorName);
+    event PlayerKicked(address indexed _playerToBeKicked, string _playerName, 
+        string _teamName, address indexed _kicker, string _kickerName
+    );
 
     // Token info
     string public constant symbol = "PZC";
@@ -253,10 +256,6 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     // Remove a specific staff
     // ------------------------------------------------------------------------
     function kickStaff(address _staff) public onlyRegistrationState onlyOwner {
-        require(
-            _staff != address(0),
-            "'_staff' contains an invalid address."
-        );
 
         staffContractInstance.kickStaff(_staff);
 
@@ -462,5 +461,81 @@ contract PizzaCoin is /*ERC20,*/ Owned {
         ) 
     {
         return teamContractInstance.getVoteResultAtIndexToTeam(_teamName, _voterIndex);
+    }
+
+    // ------------------------------------------------------------------------
+    // Remove the first found player in a particular team 
+    // (start searching at _startSearchingIndex)
+    // ------------------------------------------------------------------------
+    function kickFirstFoundTeamPlayer(string _teamName, uint256 _startSearchingIndex) 
+        public onlyRegistrationState onlyStaff returns (uint256 _nextStartSearchingIndex, uint256 _totalPlayersRemaining) {
+
+        // Get the array length of players in the specific team,
+        // including all ever removal players
+        uint256 noOfAllEverTeamPlayers = teamContractInstance.getArrayLengthOfPlayersInTeam(_teamName);
+
+        require(
+            _startSearchingIndex < noOfAllEverTeamPlayers,
+            "'_startSearchingIndex' is out of bound."
+        );
+
+        _nextStartSearchingIndex = noOfAllEverTeamPlayers;
+        _totalPlayersRemaining = 0;
+
+        for (uint256 i = _startSearchingIndex; i < noOfAllEverTeamPlayers; i++) {
+            bool endOfList;  // used as a temporary variable
+            address player;
+
+            (endOfList, player) = teamContractInstance.getPlayerInTeamAtIndex(_teamName, i);
+            if (playerContractInstance.isPlayerInTeam(player, _teamName) == true) {
+                // Remove a specific player
+                kickPlayer(player, _teamName);
+
+                // Start next searching at the next array element
+                _nextStartSearchingIndex = i + 1;
+                _totalPlayersRemaining = getTotalPlayersInTeam(_teamName);
+                return;     
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Remove a specific player from a particular team
+    // ------------------------------------------------------------------------
+    function kickPlayer(address _player, string _teamName) public onlyRegistrationState onlyStaff {
+
+        // Remove a player from the player list
+        playerContractInstance.kickPlayer(_player, _teamName);
+
+        // Remove a player from the player list of the specified team
+        teamContractInstance.kickPlayerOutOffTeam(_player, _teamName);
+
+        address kicker = msg.sender;
+        string memory playerName = playerContractInstance.getPlayerName(_player);
+        string memory kickerName = staffContractInstance.getStaffName(kicker);
+        emit PlayerKicked(_player, playerName, _teamName, kicker, kickerName);
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a total number of players in a specified team
+    // ------------------------------------------------------------------------
+    function getTotalPlayersInTeam(string _teamName) public view returns (uint256 _total) {
+
+        // Get the array length of players in the specific team,
+        // including all ever removal players
+        uint256 noOfAllEverTeamPlayers = teamContractInstance.getArrayLengthOfPlayersInTeam(_teamName);
+
+        _total = 0;
+        for (uint256 i = 0; i < noOfAllEverTeamPlayers; i++) {
+            bool endOfList;  // used as a temporary variable
+            address player;
+
+            (endOfList, player) = teamContractInstance.getPlayerInTeamAtIndex(_teamName, i);
+
+            // player == address(0) if the player was removed by kickPlayer()
+            if (player != address(0) && playerContractInstance.isPlayerInTeam(player, _teamName) == true) {
+                _total++;
+            }
+        }
     }
 }
