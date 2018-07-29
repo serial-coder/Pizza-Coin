@@ -24,7 +24,10 @@ contract Owned {
     // Guarantee that msg.sender must be a contract owner
     // ------------------------------------------------------------------------
     modifier onlyOwner {
-        require(msg.sender == owner);
+        require(
+            msg.sender == owner,
+            "This address is not a contract owner."
+        );
         _;
     }
 

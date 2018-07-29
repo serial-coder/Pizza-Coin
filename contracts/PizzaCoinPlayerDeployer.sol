@@ -20,16 +20,31 @@ library PizzaCoinPlayerDeployer {
     function deployPlayerContract(uint256 _voterInitialTokens) 
         public 
         returns (
-            PizzaCoinPlayer _staffContract
+            PizzaCoinPlayer _playerContract
         ) 
     {
-        _staffContract = new PizzaCoinPlayer(_voterInitialTokens);
+        require(
+            _voterInitialTokens > 0,
+            "'_voterInitialTokens' must be larger than 0."
+        );
+
+        _playerContract = new PizzaCoinPlayer(_voterInitialTokens);
     }
 
     // ------------------------------------------------------------------------
     // Transfer a contract owner to a new one
     // ------------------------------------------------------------------------
-    function transferOwnership(address _staffContract, address _newOwner) public {
-        PizzaCoinPlayer(_staffContract).transferOwnership(_newOwner);
+    function transferOwnership(address _playerContract, address _newOwner) public {
+        require(
+            address(_playerContract) != address(0),
+            "'_playerContract' contains an invalid address."
+        );
+
+        require(
+            address(_newOwner) != address(0),
+            "'_newOwner' contains an invalid address."
+        );
+
+        PizzaCoinPlayer(_playerContract).transferOwnership(_newOwner);
     }
 }

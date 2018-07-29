@@ -23,6 +23,11 @@ library PizzaCoinStaffDeployer {
             PizzaCoinStaff _staffContract
         ) 
     {
+        require(
+            _voterInitialTokens > 0,
+            "'_voterInitialTokens' must be larger than 0."
+        );
+
         _staffContract = new PizzaCoinStaff(_voterInitialTokens);
     }
 
@@ -30,6 +35,16 @@ library PizzaCoinStaffDeployer {
     // Transfer a contract owner to a new one
     // ------------------------------------------------------------------------
     function transferOwnership(address _staffContract, address _newOwner) public {
+        require(
+            address(_staffContract) != address(0),
+            "'_staffContract' contains an invalid address."
+        );
+
+        require(
+            address(_newOwner) != address(0),
+            "'_newOwner' contains an invalid address."
+        );
+
         PizzaCoinStaff(_staffContract).transferOwnership(_newOwner);
     }
 }
