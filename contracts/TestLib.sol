@@ -105,7 +105,8 @@ library TestLib {
 
                 // Start next searching at the next array element
                 _nextStartSearchingIndex = i + 1;
-                _totalPlayersRemaining = getTotalPlayersInTeam(_teamName, _playerContract, _teamContract);
+                _totalPlayersRemaining = teamContractInstance.getTotalPlayersInTeam(_teamName);
+                //_totalPlayersRemaining = getTotalPlayersInTeam(_teamName, _playerContract, _teamContract);
                 return;     
             }
         }
@@ -143,7 +144,7 @@ library TestLib {
         teamContractInstance.kickPlayerOutOffTeam(_player, _teamName);
     }
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get a total number of players in a specified team
     // ------------------------------------------------------------------------
     function getTotalPlayersInTeam(
@@ -185,5 +186,5 @@ library TestLib {
                 _total++;
             }
         }
-    }
+    }*/
 }

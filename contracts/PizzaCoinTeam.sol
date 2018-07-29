@@ -17,9 +17,18 @@ import "./Owned.sol";
 interface ITeamContract {
     function createTeam(string _teamName, address _creator, string _creatorName) public;
     function registerPlayerToTeam(address _player, string _teamName) public;
+    function kickTeam(string _teamName) public;
     function kickPlayerOutOffTeam(address _player, string _teamName) public;
     function doesTeamExist(string _teamName) public view returns (bool bTeamExist);
     function getArrayLengthOfPlayersInTeam(string _teamName) public view returns (uint256 _length);
+    function getTotalPlayersInTeam(string _teamName) public view returns (uint256 _total);
+    function getFirstFoundPlayerInTeam(string _teamName, uint256 _startSearchingIndex) 
+        public view
+        returns (
+            bool _endOfList, 
+            uint256 _nextStartSearchingIndex,
+            address _player
+        );
     function getPlayerInTeamAtIndex(string _teamName, uint256 _playerIndex) 
         public view 
         returns (
@@ -214,6 +223,42 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     }
 
     // ------------------------------------------------------------------------
+    // Remove a specific team (the team must be empty of players)
+    // ------------------------------------------------------------------------
+    function kickTeam(string _teamName) public onlyRegistrationState onlyPizzaCoin {
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+
+        require(
+            doesTeamExist(_teamName) == true,
+            "Cannot find the specified team."
+        );
+
+        uint256 totalPlayers = getTotalPlayersInTeam(_teamName);
+
+        // The team can be removed if and only if it has 0 player left
+        if (totalPlayers != 0) {
+            revert("Team is not empty.");
+        }
+
+        bool found;
+        uint teamIndex;
+
+        (found, teamIndex) = getTeamIndex(_teamName);
+        if (!found) {
+            revert("Cannot find the specified team.");
+        }
+
+        // Reset an element to 0 but the array length never decrease (beware!!)
+        delete teams[teamIndex];
+
+        // Remove a specified team from a mapping
+        delete teamsInfo[_teamName];
+    }
+
+    // ------------------------------------------------------------------------
     // Remove a specific player from a particular team
     // ------------------------------------------------------------------------
     function kickPlayerOutOffTeam(address _player, string _teamName) public onlyRegistrationState onlyPizzaCoin {
@@ -229,7 +274,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
 
         require(
             doesTeamExist(_teamName) == true,
-            "The given team does not exist."
+            "Cannot find the specified team."
         );
 
         bool found;
@@ -283,6 +328,74 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     }
 
     // ------------------------------------------------------------------------
+    // Get a total number of players in a specified team
+    // ------------------------------------------------------------------------
+    function getTotalPlayersInTeam(string _teamName) public view onlyPizzaCoin returns (uint256 _total) {
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+
+        require(
+            doesTeamExist(_teamName) == true,
+            "Cannot find the specified team."
+        );
+
+        _total = 0;
+        for (uint256 i = 0; i < teamsInfo[_teamName].players.length; i++) {
+            address player = teamsInfo[_teamName].players[i];
+
+            // player == address(0) if the player was removed
+            if (player != address(0)) {
+                _total++;
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Get the first found player of a specified team
+    // (start searching at _startSearchingIndex)
+    // ------------------------------------------------------------------------
+    function getFirstFoundPlayerInTeam(string _teamName, uint256 _startSearchingIndex) 
+        public view onlyPizzaCoin
+        returns (
+            bool _endOfList, 
+            uint256 _nextStartSearchingIndex,
+            address _player
+        ) 
+    {
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+
+        require(
+            doesTeamExist(_teamName) == true,
+            "Cannot find the specified team."
+        );
+        
+        _endOfList = true;
+        _nextStartSearchingIndex = teamsInfo[_teamName].players.length;
+        _player = address(0);
+
+        if (_startSearchingIndex >= teamsInfo[_teamName].players.length) {
+            return;
+        }  
+
+        for (uint256 i = _startSearchingIndex; i < teamsInfo[_teamName].players.length; i++) {
+            address player = teamsInfo[_teamName].players[i];
+
+            // Player was not removed before
+            if (player != address(0)) {
+                _endOfList = false;
+                _nextStartSearchingIndex = i + 1;
+                _player = player;
+                return;
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
     // Get a player in the specified team at the specified index (including all ever removal players)
     // ------------------------------------------------------------------------
     function getPlayerInTeamAtIndex(string _teamName, uint256 _playerIndex) 
@@ -302,7 +415,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
             "Cannot find the specified team."
         );
 
-        if (_playerIndex >= getArrayLengthOfPlayersInTeam(_teamName)) {
+        if (_playerIndex >= teamsInfo[_teamName].players.length) {
             _endOfList = true;
             _player = address(0);
             return;
@@ -310,6 +423,24 @@ contract PizzaCoinTeam is ITeamContract, Owned {
 
         _endOfList = false;
         _player = teamsInfo[_teamName].players[_playerIndex];
+    }
+
+    // ------------------------------------------------------------------------
+    // Get the index of a specific team found in the array 'teams'
+    // ------------------------------------------------------------------------
+    function getTeamIndex(string _teamName) internal view onlyPizzaCoin returns (bool _found, uint256 _teamIndex) {
+        assert(_teamName.isEmpty() == false);
+
+        _found = false;
+        _teamIndex = 0;
+
+        for (uint256 i = 0; i < teams.length; i++) {
+            if (teams[i].isEqual(_teamName)) {
+                _found = true;
+                _teamIndex = i;
+                return;
+            }
+        }
     }
 
     // ------------------------------------------------------------------------

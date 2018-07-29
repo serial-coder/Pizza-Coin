@@ -34,6 +34,7 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     event PlayerKicked(address indexed _playerToBeKicked, string _playerName, 
         string _teamName, address indexed _kicker, string _kickerName
     );
+    event TeamKicked(string _teamName, address indexed _kicker, string _kickerName);
 
     // Token info
     string public constant symbol = "PZC";
@@ -196,12 +197,47 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     function startRegistration() public onlyInitialState {
         address staff = msg.sender;
 
+        // Allow only a staff transfer the state from Initial to Registration
+        // Revert a transaction if the contract does not get initialized completely
         TestLib.doesContractGotCompletelyInitialized(
             staff, staffContract, playerContract, teamContract
         );
 
         state = State.Registration;
 
+        string memory staffName = staffContractInstance.getStaffName(staff);
+        emit StateChanged(convertStateToString(), staff, staffName);
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a staff freeze Registration state and transfer the state to RegistrationLocked
+    // ------------------------------------------------------------------------
+    function lockRegistration() public onlyRegistrationState onlyStaff {
+        state = State.RegistrationLocked;
+
+        address staff = msg.sender;
+        string memory staffName = staffContractInstance.getStaffName(staff);
+        emit StateChanged(convertStateToString(), staff, staffName);
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a staff transfer a state from RegistrationLocked to Voting
+    // ------------------------------------------------------------------------
+    function startVoting() public onlyRegistrationLockedState onlyStaff {
+        state = State.Voting;
+
+        address staff = msg.sender;
+        string memory staffName = staffContractInstance.getStaffName(staff);
+        emit StateChanged(convertStateToString(), staff, staffName);
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a staff transfer a state from Voting to VotingFinished
+    // ------------------------------------------------------------------------
+    function stopVoting() public onlyVotingState onlyStaff {
+        state = State.VotingFinished;
+
+        address staff = msg.sender;
         string memory staffName = staffContractInstance.getStaffName(staff);
         emit StateChanged(convertStateToString(), staff, staffName);
     }
@@ -470,10 +506,43 @@ contract PizzaCoin is /*ERC20,*/ Owned {
         emit PlayerKicked(_player, playerName, _teamName, kicker, kickerName);
     }
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get a total number of players in a specified team
     // ------------------------------------------------------------------------
     function getTotalPlayersInTeam(string _teamName) public view returns (uint256 _total) {
         return TestLib.getTotalPlayersInTeam(_teamName, playerContract, teamContract);
+    }*/
+
+    // ------------------------------------------------------------------------
+    // Remove a specific team (the team must be empty of players)
+    // ------------------------------------------------------------------------
+    function kickTeam(string _teamName) public onlyRegistrationState onlyStaff {
+        teamContractInstance.kickTeam(_teamName);
+
+        address kicker = msg.sender;
+        string memory kickerName = staffContractInstance.getStaffName(kicker);
+        emit TeamKicked(_teamName, kicker, kickerName);
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a total number of players in a specified team
+    // ------------------------------------------------------------------------
+    function getTotalPlayersInTeam(string _teamName) public view returns (uint256 _total) {
+        return teamContractInstance.getTotalPlayersInTeam(_teamName);
+    }
+
+    // ------------------------------------------------------------------------
+    // Get the first found player of a specified team
+    // (start searching at _startSearchingIndex)
+    // ------------------------------------------------------------------------
+    function getFirstFoundPlayerInTeam(string _teamName, uint256 _startSearchingIndex) 
+        public view
+        returns (
+            bool _endOfList, 
+            uint256 _nextStartSearchingIndex,
+            address _player
+        ) 
+    {
+        return teamContractInstance.getFirstFoundPlayerInTeam(_teamName, _startSearchingIndex);
     }
 }
