@@ -12,37 +12,36 @@ import "./Owned.sol";
 
 
 // ------------------------------------------------------------------------
-// Interface for exporting public and external functions of PizzaCoinPlayer contract
+// Interface for exporting public and external functions of PizzaCoinTeam contract
 // ------------------------------------------------------------------------
-interface IPlayerContract {
-    function isPlayer(address _user) public view returns (bool bPlayer);
-    function registerPlayer(address _player, string _playerName, string _teamName) public;
-    function getTotalPlayers() public view returns (uint256 _total);
-    function getFirstFoundPlayerInfo(uint256 _startSearchingIndex) 
+interface ITeamContract {
+    function createTeam(string _teamName, address _creator, string _creatorName) public;
+    function registerPlayerToTeam(address _player, string _teamName) public;
+    function doesTeamExist(string _teamName) public view returns (bool bTeamExist);
+    function getTotalTeams() public view returns (uint256 _total);
+    function getFirstFoundTeamInfo(uint256 _startSearchingIndex) 
         public view
         returns (
             bool _endOfList, 
             uint256 _nextStartSearchingIndex,
-            address _player,
-            string _name,
-            uint256 _tokensBalance,
-            string _teamName
+            string _teamName,
+            uint256 _totalVoted
         );
-    function getTotalVotesByPlayer(address _player) public view returns (uint256 _total);
-    function getVoteResultAtIndexByPlayer(address _player, uint256 _votingIndex) 
+    function getTotalVotersToTeam(string _teamName) public view returns (uint256 _total);
+    function getVoteResultAtIndexToTeam(string _teamName, uint256 _voterIndex) 
         public view
         returns (
             bool _endOfList,
-            string _team,
+            address _voter,
             uint256 _voteWeight
         );
 }
 
 
 // ----------------------------------------------------------------------------
-// Pizza Coin Player Contract
+// Pizza Coin Team Contract
 // ----------------------------------------------------------------------------
-contract PizzaCoinPlayer is IPlayerContract, Owned {
+contract PizzaCoinTeam is ITeamContract, Owned {
     /*
     * Owner of the contract is PizzaCoin contract, 
     * not a project deployer (or PizzaCoin's owner)
@@ -51,22 +50,20 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     using SafeMath for uint256;
     using BasicStringUtils for string;
 
-    struct PlayerInfo {
-        bool wasRegistered;    // Check if a specific player is being registered
-        string name;
-        uint256 tokensBalance; // Amount of tokens left for voting
-        string teamName;       // A team this player associates with
-        string[] teamsVoted;   // Record all the teams voted by this player
+    // Team with players
+    struct TeamInfo {
+        bool wasCreated;    // Check if the team was created for uniqueness
+        address[] players;  // A list of team members (the first list member is the team leader who creates the team)
+        address[] voters;   // A list of staffs and other teams' members who gave votes to this team
+
+        // mapping(voter => votes)
+        mapping(address => uint256) votesWeight;  // A collection of team voting weights from each voter (i.e., staffs + other teams' members)
         
-        // mapping(team => votes)
-        mapping(string => uint256) votesWeight;  // A collection of teams with voting weight approved by this player
+        uint256 totalVoted;  // Total voting weight got from voters
     }
 
-    address[] private players;
-    mapping(address => PlayerInfo) private playersInfo;  // mapping(player => PlayerInfo)
-
-    uint256 private voterInitialTokens;
-    uint256 private _totalSupply;
+    string[] private teams;
+    mapping(string => TeamInfo) private teamsInfo;  // mapping(team => TeamInfo)
 
     enum State { Registration, RegistrationLocked, Voting, VotingFinished }
     State private state = State.Registration;
@@ -74,13 +71,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     // ------------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------------
-    constructor(uint256 _voterInitialTokens) public {
-        require(
-            _voterInitialTokens > 0,
-            "'_voterInitialTokens' must be larger than 0."
-        );
-
-        voterInitialTokens = _voterInitialTokens;
+    constructor() public {
     }
 
     // ------------------------------------------------------------------------
@@ -143,29 +134,61 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Determine if _user is a player or not
+    // Determine if the specified team exists
     // ------------------------------------------------------------------------
-    function isPlayer(address _user) public view onlyPizzaCoin returns (bool bPlayer) {
+    function doesTeamExist(string _teamName) public view onlyPizzaCoin returns (bool bTeamExist) {
         require(
-            _user != address(0),
-            "'_user' contains an invalid address."
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
         );
-        
-        return playersInfo[_user].wasRegistered;
+
+        return teamsInfo[_teamName].wasCreated;
     }
 
     // ------------------------------------------------------------------------
-    // Register a player
+    // Team leader creates a team
     // ------------------------------------------------------------------------
-    function registerPlayer(address _player, string _playerName, string _teamName) public onlyRegistrationState onlyPizzaCoin {
+    function createTeam(string _teamName, address _creator, string _creatorName) public onlyRegistrationState onlyPizzaCoin {
         require(
-            _player != address(0),
-            "'_player' contains an invalid address."
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
         );
 
         require(
-            _playerName.isEmpty() == false,
-            "'_playerName' might not be empty."
+            _creator != address(0),
+            "'_creator' contains an invalid address."
+        );
+
+        require(
+            _creatorName.isEmpty() == false,
+            "'_creatorName' might not be empty."
+        );
+        
+        require(
+            doesTeamExist(_teamName) == false,
+            "The given team was created already."
+        );
+
+        // Create a new team
+        teams.push(_teamName);
+        teamsInfo[_teamName] = TeamInfo({
+            wasCreated: true,
+            players: new address[](0),
+            voters: new address[](0),
+            totalVoted: 0
+            /*
+                Omit 'votesWeight'
+            */
+        });
+    }
+
+    // ------------------------------------------------------------------------
+    // Register a player to a specific team
+    // ------------------------------------------------------------------------
+    function registerPlayerToTeam(address _player, string _teamName) public onlyRegistrationState onlyPizzaCoin {
+        require(
+            _player != address(0),
+            "'_player' contains an invalid address."
         );
 
         require(
@@ -174,128 +197,110 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
         );
 
         require(
-            playersInfo[_player].wasRegistered == false,
-            "The specified player was registered already."
+            doesTeamExist(_teamName) == true,
+            "The given team does not exist."
         );
 
-        // Register a new player
-        players.push(_player);
-        playersInfo[_player] = PlayerInfo({
-            wasRegistered: true,
-            name: _playerName,
-            tokensBalance: voterInitialTokens,
-            teamName: _teamName,
-            teamsVoted: new string[](0)
-            /*
-                Omit 'votesWeight'
-            */
-        });
-
-        _totalSupply = _totalSupply.add(voterInitialTokens);
+        // Add a player to a team he/she associates with
+        teamsInfo[_teamName].players.push(_player);
     }
 
     // ------------------------------------------------------------------------
-    // Get a total number of players
+    // Get a total number of teams
     // ------------------------------------------------------------------------
-    function getTotalPlayers() public view onlyPizzaCoin returns (uint256 _total) {
+    function getTotalTeams() public view onlyPizzaCoin returns (uint256 _total) {
         _total = 0;
-        for (uint256 i = 0; i < players.length; i++) {
-            // Player was not removed before
-            if (players[i] != address(0) && playersInfo[players[i]].wasRegistered == true) {
+        for (uint256 i = 0; i < teams.length; i++) {
+            // Team was not removed before
+            if (teams[i].isEmpty() == false && doesTeamExist(teams[i]) == true) {
                 _total++;
             }
         }
     }
 
     // ------------------------------------------------------------------------
-    // Get an info of the first found player 
+    // Get an info of the first found team 
     // (start searching at _startSearchingIndex)
     // ------------------------------------------------------------------------
-    function getFirstFoundPlayerInfo(uint256 _startSearchingIndex) 
+    function getFirstFoundTeamInfo(uint256 _startSearchingIndex) 
         public view onlyPizzaCoin
         returns (
             bool _endOfList, 
             uint256 _nextStartSearchingIndex,
-            address _player,
-            string _name,
-            uint256 _tokensBalance,
-            string _teamName
+            string _teamName,
+            uint256 _totalVoted
         ) 
     {
         _endOfList = true;
-        _nextStartSearchingIndex = players.length;
-        _player = address(0);
-        _name = "";
-        _tokensBalance = 0;
+        _nextStartSearchingIndex = teams.length;
         _teamName = "";
+        _totalVoted = 0;
 
-        if (_startSearchingIndex >= players.length) {
+        if (_startSearchingIndex >= teams.length) {
             return;
         }  
 
-        for (uint256 i = _startSearchingIndex; i < players.length; i++) {
-            address player = players[i];
+        for (uint256 i = _startSearchingIndex; i < teams.length; i++) {
+            string memory teamName = teams[i];
 
-            // Player was not removed before
-            if (player != address(0) && playersInfo[player].wasRegistered == true) {
+            // Team was not removed before
+            if (teamName.isEmpty() == false && doesTeamExist(teamName) == true) {
                 _endOfList = false;
                 _nextStartSearchingIndex = i + 1;
-                _player = player;
-                _name = playersInfo[player].name;
-                _tokensBalance = playersInfo[player].tokensBalance;
-                _teamName = playersInfo[player].teamName;
+                _teamName = teamName;
+                _totalVoted = teamsInfo[teamName].totalVoted;
                 return;
             }
         }
     }
 
     // ------------------------------------------------------------------------
-    // Get a total number of the votes ('teamsVoted' array) made by the specified player
+    // Get a total number of voters to a specified team
     // ------------------------------------------------------------------------
-    function getTotalVotesByPlayer(address _player) public view onlyPizzaCoin returns (uint256 _total) {
+    function getTotalVotersToTeam(string _teamName) public view onlyPizzaCoin returns (uint256 _total) {
         require(
-            _player != address(0),
-            "'_player' contains an invalid address."
-        );
-        
-        require(
-            playersInfo[_player].wasRegistered == true,
-            "Cannot find the specified player."
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
         );
 
-        return playersInfo[_player].teamsVoted.length;
+        require(
+            doesTeamExist(_teamName) == true,
+            "Cannot find the specified team."
+        );
+
+        return teamsInfo[_teamName].voters.length;
     }
 
     // ------------------------------------------------------------------------
-    // Get a team voting result (at the index of 'teamsVoted' array) made by the specified player
+    // Get a voting result (by the index of voters) to a specified team
     // ------------------------------------------------------------------------
-    function getVoteResultAtIndexByPlayer(address _player, uint256 _votingIndex) 
+    function getVoteResultAtIndexToTeam(string _teamName, uint256 _voterIndex) 
         public view onlyPizzaCoin
         returns (
             bool _endOfList,
-            string _team,
+            address _voter,
             uint256 _voteWeight
         ) 
     {
         require(
-            _player != address(0),
-            "'_player' contains an invalid address."
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
         );
 
         require(
-            playersInfo[_player].wasRegistered == true,
-            "Cannot find the specified player."
+            doesTeamExist(_teamName) == true,
+            "Cannot find the specified team."
         );
 
-        if (_votingIndex >= playersInfo[_player].teamsVoted.length) {
+        if (_voterIndex >= teamsInfo[_teamName].voters.length) {
             _endOfList = true;
-            _team = "";
+            _voter = address(0);
             _voteWeight = 0;
             return;
         }
 
         _endOfList = false;
-        _team = playersInfo[_player].teamsVoted[_votingIndex];
-        _voteWeight = playersInfo[_player].votesWeight[_team];
+        _voter = teamsInfo[_teamName].voters[_voterIndex];
+        _voteWeight = teamsInfo[_teamName].votesWeight[_voter];
     }
 }

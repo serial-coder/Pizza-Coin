@@ -12,8 +12,10 @@ import "./BasicStringUtils.sol";
 import "./Owned.sol";
 import "./PizzaCoinStaff.sol";
 import "./PizzaCoinPlayer.sol";
+import "./PizzaCoinTeam.sol";
 import "./PizzaCoinStaffDeployer.sol";
 import "./PizzaCoinPlayerDeployer.sol";
+import "./PizzaCoinTeamDeployer.sol";
 
 
 // ----------------------------------------------------------------------------
@@ -22,11 +24,12 @@ import "./PizzaCoinPlayerDeployer.sol";
 contract PizzaCoin is /*ERC20,*/ Owned {
     using BasicStringUtils for string;
 
-    // Contract events
+    // Contract events (the 'indexed' keyword cannot be used with any string parameter)
     event StateChanged(string _state, address indexed _staff, string _staffName);
     event StaffRegistered(address indexed _staff, string _staffName);
     event StaffKicked(address indexed _staffToBeKicked, string _staffName, address indexed _kicker, string _kickerName);
     event PlayerRegistered(address indexed _player, string _playerName, string _teamName);
+    event TeamCreated(string _teamName, address indexed _creator, string _creatorName);
 
     // Token info
     string public constant symbol = "PZC";
@@ -41,6 +44,9 @@ contract PizzaCoin is /*ERC20,*/ Owned {
 
     address private playerContract;
     IPlayerContract private playerContractInstance;
+
+    address private teamContract;
+    ITeamContract private teamContractInstance;
 
     enum State { Initial, Registration, RegistrationLocked, Voting, VotingFinished }
     State private state = State.Initial;
@@ -191,6 +197,16 @@ contract PizzaCoin is /*ERC20,*/ Owned {
             "The staff contract did not get initialized"
         );
 
+        require(
+            playerContract != address(0),
+            "The player contract did not get initialized"
+        );
+
+        require(
+            teamContract != address(0),
+            "The team contract did not get initialized"
+        );
+
         // Only a staff is allowed to call this function
         require(
             staffContractInstance.isStaff(staff) == true,
@@ -213,7 +229,7 @@ contract PizzaCoin is /*ERC20,*/ Owned {
         );
 
         // Create a staff contract
-        staffContract = PizzaCoinStaffDeployer.deployStaffContract(voterInitialTokens);
+        staffContract = PizzaCoinStaffDeployer.deployContract(voterInitialTokens);
         PizzaCoinStaffDeployer.transferOwnership(staffContract, this);
 
         // Get a staff contract instance from the deployed address
@@ -238,7 +254,7 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     // ------------------------------------------------------------------------
     function kickStaff(address _staff) public onlyRegistrationState onlyOwner {
         require(
-            address(_staff) != address(0),
+            _staff != address(0),
             "'_staff' contains an invalid address."
         );
 
@@ -305,7 +321,7 @@ contract PizzaCoin is /*ERC20,*/ Owned {
         );
 
         // Create a player contract
-        playerContract = PizzaCoinPlayerDeployer.deployPlayerContract(voterInitialTokens);
+        playerContract = PizzaCoinPlayerDeployer.deployContract(voterInitialTokens);
         PizzaCoinPlayerDeployer.transferOwnership(playerContract, this);
 
         // Get a player contract instance from the deployed address
@@ -316,18 +332,12 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     // Register a player
     // ------------------------------------------------------------------------
     function registerPlayer(string _playerName, string _teamName) public onlyRegistrationState notRegistered {
-
-        /*require(
-            teamsInfo[_teamName].wasCreated == true,
-            "The given team does not exist."
-        );*/
-
         address player = msg.sender;
 
         playerContractInstance.registerPlayer(player, _playerName, _teamName);
 
         // Add a player to a team he/she associates with
-        //teamsInfo[_teamName].players.push(player);
+        teamContractInstance.registerPlayerToTeam(player, _teamName);
 
         emit PlayerRegistered(player, _playerName, _teamName);
     }
@@ -376,5 +386,81 @@ contract PizzaCoin is /*ERC20,*/ Owned {
         ) 
     {
         return playerContractInstance.getVoteResultAtIndexByPlayer(_player, _votingIndex);
+    }
+
+    // ------------------------------------------------------------------------
+    // Create a team contract
+    // ------------------------------------------------------------------------
+    function createTeamContract() public onlyInitialState onlyOwner {
+        require(
+            teamContract == address(0),
+            "The team contract got initialized already."
+        );
+
+        // Create a team contract
+        teamContract = PizzaCoinTeamDeployer.deployContract();
+        PizzaCoinTeamDeployer.transferOwnership(teamContract, this);
+
+        // Get a team contract instance from the deployed address
+        teamContractInstance = ITeamContract(teamContract);
+    }
+
+    // ------------------------------------------------------------------------
+    // Team leader creates a team
+    // ------------------------------------------------------------------------
+    function createTeam(string _teamName, string _creatorName) public onlyRegistrationState notRegistered {
+        address creator = msg.sender;
+        
+        // Create a new team
+        teamContractInstance.createTeam(_teamName, creator, _creatorName);
+
+        // Register a creator to a team as team leader
+        registerPlayer(_creatorName, _teamName);
+
+        emit TeamCreated(_teamName, creator, _creatorName);
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a total number of teams
+    // ------------------------------------------------------------------------
+    function getTotalTeams() public view returns (uint256 _total) {
+        return teamContractInstance.getTotalTeams();
+    }
+
+    // ------------------------------------------------------------------------
+    // Get an info of the first found team 
+    // (start searching at _startSearchingIndex)
+    // ------------------------------------------------------------------------
+    function getFirstFoundTeamInfo(uint256 _startSearchingIndex) 
+        public view
+        returns (
+            bool _endOfList, 
+            uint256 _nextStartSearchingIndex,
+            string _teamName,
+            uint256 _totalVoted
+        ) 
+    {
+        return teamContractInstance.getFirstFoundTeamInfo(_startSearchingIndex);
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a total number of voters to a specified team
+    // ------------------------------------------------------------------------
+    function getTotalVotersToTeam(string _teamName) public view returns (uint256 _total) {
+        return teamContractInstance.getTotalVotersToTeam(_teamName);
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a voting result (by the index of voters) to a specified team
+    // ------------------------------------------------------------------------
+    function getVoteResultAtIndexToTeam(string _teamName, uint256 _voterIndex) 
+        public view
+        returns (
+            bool _endOfList,
+            address _voter,
+            uint256 _voteWeight
+        ) 
+    {
+        return teamContractInstance.getVoteResultAtIndexToTeam(_teamName, _voterIndex);
     }
 }

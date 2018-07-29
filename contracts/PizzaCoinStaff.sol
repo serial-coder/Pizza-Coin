@@ -166,6 +166,8 @@ contract PizzaCoinStaff is IStaffContract, Owned {
         * Let staffs[0] denote a project deployer (i.e., PizzaCoin's owner)
         */
 
+        assert(_user != address(0));
+
         address deployer = staffs[0];
         return deployer == _user && staffsInfo[deployer].wasRegistered == true;
     }
@@ -174,6 +176,11 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     // Determine if _user is a staff or not
     // ------------------------------------------------------------------------
     function isStaff(address _user) public view onlyPizzaCoin returns (bool bStaff) {
+        require(
+            _user != address(0),
+            "'_user' contains an invalid address."
+        );
+
         return staffsInfo[_user].wasRegistered;
     }
 
@@ -182,7 +189,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     // ------------------------------------------------------------------------
     function getStaffName(address _staff) public view onlyPizzaCoin returns (string _name) {
         require(
-            address(_staff) != address(0),
+            _staff != address(0),
             "'_staff' contains an invalid address."
         );
 
@@ -199,7 +206,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     // ------------------------------------------------------------------------
     function registerStaff(address _staff, string _staffName) public onlyRegistrationState onlyPizzaCoin {
         require(
-            address(_staff) != address(0),
+            _staff != address(0),
             "'_staff' contains an invalid address."
         );
 
@@ -233,7 +240,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     // ------------------------------------------------------------------------
     function kickStaff(address _staff) public onlyRegistrationState onlyPizzaCoin {
         require(
-            address(_staff) != address(0),
+            _staff != address(0),
             "'_staff' contains an invalid address."
         );
 
@@ -339,7 +346,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     // ------------------------------------------------------------------------
     function getTotalVotesByStaff(address _staff) public view onlyPizzaCoin returns (uint256 _total) {
         require(
-            address(_staff) != address(0),
+            _staff != address(0),
             "'_staff' contains an invalid address."
         );
 
@@ -363,7 +370,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
         ) 
     {
         require(
-            address(_staff) != address(0),
+            _staff != address(0),
             "'_staff' contains an invalid address."
         );
 

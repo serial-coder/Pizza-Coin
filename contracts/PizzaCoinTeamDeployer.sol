@@ -6,38 +6,33 @@
 
 pragma solidity ^0.4.23;
 
-import "./PizzaCoinPlayer.sol";
+import "./PizzaCoinTeam.sol";
 
 
 // ----------------------------------------------------------------------------
-// PizzaCoinPlayerDeployer Library
+// PizzaCoinTeamDeployer Library
 // ----------------------------------------------------------------------------
-library PizzaCoinPlayerDeployer {
+library PizzaCoinTeamDeployer {
 
     // ------------------------------------------------------------------------
-    // Create a player contract
+    // Create a team contract
     // ------------------------------------------------------------------------
-    function deployContract(uint256 _voterInitialTokens) 
+    function deployContract() 
         public 
         returns (
-            PizzaCoinPlayer _playerContract
+            PizzaCoinTeam _teamContract
         ) 
     {
-        require(
-            _voterInitialTokens > 0,
-            "'_voterInitialTokens' must be larger than 0."
-        );
-
-        _playerContract = new PizzaCoinPlayer(_voterInitialTokens);
+        _teamContract = new PizzaCoinTeam();
     }
 
     // ------------------------------------------------------------------------
     // Transfer a contract owner to a new one
     // ------------------------------------------------------------------------
-    function transferOwnership(address _playerContract, address _newOwner) public {
+    function transferOwnership(address _teamContract, address _newOwner) public {
         require(
-            _playerContract != address(0),
-            "'_playerContract' contains an invalid address."
+            _teamContract != address(0),
+            "'_teamContract' contains an invalid address."
         );
 
         require(
@@ -45,6 +40,6 @@ library PizzaCoinPlayerDeployer {
             "'_newOwner' contains an invalid address."
         );
 
-        PizzaCoinPlayer(_playerContract).transferOwnership(_newOwner);
+        PizzaCoinTeam(_teamContract).transferOwnership(_newOwner);
     }
 }
