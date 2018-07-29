@@ -16,6 +16,7 @@ import "./PizzaCoinTeam.sol";
 import "./PizzaCoinStaffDeployer.sol";
 import "./PizzaCoinPlayerDeployer.sol";
 import "./PizzaCoinTeamDeployer.sol";
+import "./TestLib.sol";
 
 
 // ----------------------------------------------------------------------------
@@ -195,25 +196,8 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     function startRegistration() public onlyInitialState {
         address staff = msg.sender;
 
-        require(
-            staffContract != address(0),
-            "The staff contract did not get initialized"
-        );
-
-        require(
-            playerContract != address(0),
-            "The player contract did not get initialized"
-        );
-
-        require(
-            teamContract != address(0),
-            "The team contract did not get initialized"
-        );
-
-        // Only a staff is allowed to call this function
-        require(
-            staffContractInstance.isStaff(staff) == true,
-            "This address is not a staff."
+        TestLib.doesContractGotCompletelyInitialized(
+            staff, staffContract, playerContract, teamContract
         );
 
         state = State.Registration;
@@ -470,45 +454,15 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     function kickFirstFoundTeamPlayer(string _teamName, uint256 _startSearchingIndex) 
         public onlyRegistrationState onlyStaff returns (uint256 _nextStartSearchingIndex, uint256 _totalPlayersRemaining) {
 
-        // Get the array length of players in the specific team,
-        // including all ever removal players
-        uint256 noOfAllEverTeamPlayers = teamContractInstance.getArrayLengthOfPlayersInTeam(_teamName);
-
-        require(
-            _startSearchingIndex < noOfAllEverTeamPlayers,
-            "'_startSearchingIndex' is out of bound."
-        );
-
-        _nextStartSearchingIndex = noOfAllEverTeamPlayers;
-        _totalPlayersRemaining = 0;
-
-        for (uint256 i = _startSearchingIndex; i < noOfAllEverTeamPlayers; i++) {
-            bool endOfList;  // used as a temporary variable
-            address player;
-
-            (endOfList, player) = teamContractInstance.getPlayerInTeamAtIndex(_teamName, i);
-            if (playerContractInstance.isPlayerInTeam(player, _teamName) == true) {
-                // Remove a specific player
-                kickPlayer(player, _teamName);
-
-                // Start next searching at the next array element
-                _nextStartSearchingIndex = i + 1;
-                _totalPlayersRemaining = getTotalPlayersInTeam(_teamName);
-                return;     
-            }
-        }
+        (_nextStartSearchingIndex, _totalPlayersRemaining) = TestLib.kickFirstFoundTeamPlayer(
+            _teamName, _startSearchingIndex, playerContract, teamContract);
     }
 
     // ------------------------------------------------------------------------
     // Remove a specific player from a particular team
     // ------------------------------------------------------------------------
     function kickPlayer(address _player, string _teamName) public onlyRegistrationState onlyStaff {
-
-        // Remove a player from the player list
-        playerContractInstance.kickPlayer(_player, _teamName);
-
-        // Remove a player from the player list of the specified team
-        teamContractInstance.kickPlayerOutOffTeam(_player, _teamName);
+        TestLib.kickPlayer(_player, _teamName, playerContract, teamContract);
 
         address kicker = msg.sender;
         string memory playerName = playerContractInstance.getPlayerName(_player);
@@ -520,22 +474,6 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     // Get a total number of players in a specified team
     // ------------------------------------------------------------------------
     function getTotalPlayersInTeam(string _teamName) public view returns (uint256 _total) {
-
-        // Get the array length of players in the specific team,
-        // including all ever removal players
-        uint256 noOfAllEverTeamPlayers = teamContractInstance.getArrayLengthOfPlayersInTeam(_teamName);
-
-        _total = 0;
-        for (uint256 i = 0; i < noOfAllEverTeamPlayers; i++) {
-            bool endOfList;  // used as a temporary variable
-            address player;
-
-            (endOfList, player) = teamContractInstance.getPlayerInTeamAtIndex(_teamName, i);
-
-            // player == address(0) if the player was removed by kickPlayer()
-            if (player != address(0) && playerContractInstance.isPlayerInTeam(player, _teamName) == true) {
-                _total++;
-            }
-        }
+        return TestLib.getTotalPlayersInTeam(_teamName, playerContract, teamContract);
     }
 }
