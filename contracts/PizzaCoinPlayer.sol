@@ -18,6 +18,7 @@ interface IPlayerContract {
     function isPlayer(address _user) public view returns (bool bPlayer);
     function isPlayerInTeam(address _user, string _teamName) public view returns (bool bTeamPlayer);
     function getPlayerName(address _player) public view returns (string _name);
+    function getTeamNamePlayerJoined(address _player) public view returns (string _name);
     function registerPlayer(address _player, string _playerName, string _teamName) public;
     function kickPlayer(address _player, string _teamName) public;
     function getTotalPlayers() public view returns (uint256 _total);
@@ -39,6 +40,8 @@ interface IPlayerContract {
             string _team,
             uint256 _voteWeight
         );
+    function getTokenBalance(address _player) public view returns (uint256 _tokenBalance);
+    function commitToVote(address _player, uint256 _votingWeight, string _teamName) public;
 }
 
 
@@ -192,6 +195,23 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
         );
 
         return playersInfo[_player].name;
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a team name the player associated with
+    // ------------------------------------------------------------------------
+    function getTeamNamePlayerJoined(address _player) public view onlyPizzaCoin returns (string _name) {
+        require(
+            _player != address(0),
+            "'_player' contains an invalid address."
+        );
+
+        require(
+            isPlayer(_player) == true,
+            "Cannot find the specified player."
+        );
+
+        return playersInfo[_player].teamName;
     }
 
     // ------------------------------------------------------------------------
@@ -391,5 +411,69 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
         _endOfList = false;
         _team = playersInfo[_player].teamsVoted[_votingIndex];
         _voteWeight = playersInfo[_player].votesWeight[_team];
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a token balance of the specified player
+    // ------------------------------------------------------------------------
+    function getTokenBalance(address _player) public view onlyPizzaCoin returns (uint256 _tokenBalance) {
+        require(
+            _player != address(0),
+            "'_player' contains an invalid address."
+        );
+
+        require(
+            playersInfo[_player].wasRegistered == true,
+            "Cannot find the specified player."
+        );
+
+        return playersInfo[_player].tokensBalance;
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a player in other different teams to vote to the specified team
+    // ------------------------------------------------------------------------
+    function commitToVote(address _player, uint256 _votingWeight, string _teamName) public onlyVotingState onlyPizzaCoin {
+        require(
+            _player != address(0),
+            "'_player' contains an invalid address."
+        );
+
+        require(
+            _votingWeight > 0,
+            "'_votingWeight' must be larger than 0."
+        );
+
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+
+        require(
+            playersInfo[_player].wasRegistered == true,
+            "Cannot find the specified player."
+        );
+
+        require(
+            playersInfo[_player].teamName.isEqual(_teamName) == false,
+            "A player does not allow to vote to his/her own team."
+        );
+
+        require(
+            _votingWeight <= playersInfo[_player].tokensBalance,
+            "Insufficient voting balance."
+        );
+
+        playersInfo[_player].tokensBalance = playersInfo[_player].tokensBalance.sub(_votingWeight);
+
+        // If playersInfo[_player].votesWeight[_teamName] > 0 is true, this implies that 
+        // the player was used to give a vote to the specified team previously
+        if (playersInfo[_player].votesWeight[_teamName] == 0) {
+            // The player has never been given a vote to the specified team before
+            // We, therefore, have to add a new team to the 'teamsVoted' array
+            playersInfo[_player].teamsVoted.push(_teamName);
+        }
+
+        playersInfo[_player].votesWeight[_teamName] = playersInfo[_player].votesWeight[_teamName].add(_votingWeight);
     }
 }

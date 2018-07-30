@@ -37,6 +37,8 @@ interface IStaffContract {
             string _team,
             uint256 _voteWeight
         );
+    function getTokenBalance(address _staff) public view returns (uint256 _tokenBalance);
+    function commitToVote(address _staff, uint256 _votingWeight, string _teamName) public;
 }
 
 
@@ -389,5 +391,64 @@ contract PizzaCoinStaff is IStaffContract, Owned {
         _endOfList = false;
         _team = staffsInfo[_staff].teamsVoted[_votingIndex];
         _voteWeight = staffsInfo[_staff].votesWeight[_team];
+    }
+    
+    // ------------------------------------------------------------------------
+    // Get a token balance of the specified staff
+    // ------------------------------------------------------------------------
+    function getTokenBalance(address _staff) public view onlyPizzaCoin returns (uint256 _tokenBalance) {
+        require(
+            _staff != address(0),
+            "'_staff' contains an invalid address."
+        );
+
+        require(
+            staffsInfo[_staff].wasRegistered == true,
+            "Cannot find the specified staff."
+        );
+
+        return staffsInfo[_staff].tokensBalance;
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a staff to give a vote to the specified team
+    // ------------------------------------------------------------------------
+    function commitToVote(address _staff, uint256 _votingWeight, string _teamName) public onlyVotingState onlyPizzaCoin {
+        require(
+            _staff != address(0),
+            "'_staff' contains an invalid address."
+        );
+
+        require(
+            _votingWeight > 0,
+            "'_votingWeight' must be larger than 0."
+        );
+
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+
+        require(
+            staffsInfo[_staff].wasRegistered == true,
+            "Cannot find the specified staff."
+        );
+
+        require(
+            _votingWeight <= staffsInfo[_staff].tokensBalance,
+            "Insufficient voting balance."
+        );
+
+        staffsInfo[_staff].tokensBalance = staffsInfo[_staff].tokensBalance.sub(_votingWeight);
+
+        // If staffsInfo[_staff].votesWeight[_teamName] > 0 is true, this implies that 
+        // the staff was used to give a vote to the specified team previously
+        if (staffsInfo[_staff].votesWeight[_teamName] == 0) {
+            // The staff has never been given a vote to the specified team before
+            // We, therefore, have to add a new team to the 'teamsVoted' array
+            staffsInfo[_staff].teamsVoted.push(_teamName);
+        }
+
+        staffsInfo[_staff].votesWeight[_teamName] = staffsInfo[_staff].votesWeight[_teamName].add(_votingWeight);
     }
 }

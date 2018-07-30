@@ -52,6 +52,7 @@ interface ITeamContract {
             address _voter,
             uint256 _voteWeight
         );
+    function voteToTeam(string _teamName, address _voter, uint256 _votingWeight) public;
 }
 
 
@@ -540,5 +541,42 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         _endOfList = false;
         _voter = teamsInfo[_teamName].voters[_voterIndex];
         _voteWeight = teamsInfo[_teamName].votesWeight[_voter];
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a staff or a player to give a vote to the specified team
+    // ------------------------------------------------------------------------
+    function voteToTeam(string _teamName, address _voter, uint256 _votingWeight) public onlyVotingState onlyPizzaCoin {
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+
+        require(
+            _voter != address(0),
+            "'_voter' contains an invalid address."
+        );
+
+        require(
+            _votingWeight > 0,
+            "'_votingWeight' must be larger than 0."
+        );
+
+        require(
+            doesTeamExist(_teamName) == true,
+            "Cannot find the specified team."
+        );
+
+        // If teamsInfo[_teamName].votesWeight[_voter] > 0 is true, this implies that 
+        // the voter was used to give a vote to the specified team previously
+        if (teamsInfo[_teamName].votesWeight[_voter] == 0) {
+            // The voter has never been given a vote to the specified team before
+            // We, therefore, have to add a new voter to the 'voters' array
+            // which is in the 'teamsInfo' mapping
+            teamsInfo[_teamName].voters.push(_voter);
+        }
+
+        teamsInfo[_teamName].votesWeight[_voter] = teamsInfo[_teamName].votesWeight[_voter].add(_votingWeight);
+        teamsInfo[_teamName].totalVoted = teamsInfo[_teamName].totalVoted.add(_votingWeight);
     }
 }

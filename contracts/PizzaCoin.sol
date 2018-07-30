@@ -25,6 +25,17 @@ import "./TestLib.sol";
 contract PizzaCoin is /*ERC20,*/ Owned {
     using BasicStringUtils for string;
 
+
+    event TeamVotedByStaff(string _teamName, address indexed _voter, string _voterName, uint256 _votingWeight);
+    event TeamVotedByPlayer(
+        string _teamName, address indexed _voter, string _voterName, 
+        string _teamVoterAssociatedWith, uint256 _votingWeight
+    );
+
+
+
+
+
     // Token info
     string public constant symbol = "PZC";
     string public constant name = "Pizza Coin";
@@ -93,6 +104,18 @@ contract PizzaCoin is /*ERC20,*/ Owned {
             staffContractInstance.isStaff(msg.sender) == false && 
             playerContractInstance.isPlayer(msg.sender) == false,
             "This address was registered already."
+        );
+        _;
+    }
+
+    // ------------------------------------------------------------------------
+    // Guarantee that msg.sender has been already registered
+    // ------------------------------------------------------------------------
+    modifier onlyRegistered {
+        require(
+            staffContractInstance.isStaff(msg.sender) == true ||
+            playerContractInstance.isPlayer(msg.sender) == true,
+            "This address was not being registered."
         );
         _;
     }
@@ -503,4 +526,83 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     {
         return teamContractInstance.getFirstFoundPlayerInTeam(_teamName, _startSearchingIndex);
     }*/
+
+    // ------------------------------------------------------------------------
+    // Allow any staff or any player in other different teams to vote to a team
+    // ------------------------------------------------------------------------
+    function voteTeam(string _teamName, uint256 _votingWeight) public onlyVotingState onlyRegistered {
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+
+        require(
+            _votingWeight > 0,
+            "'_votingWeight' must be larger than 0."
+        );
+
+        require(
+            teamContractInstance.doesTeamExist(_teamName) == true,
+            "Cannot find the specified team."
+        );
+
+        if (staffContractInstance.isStaff(msg.sender)) {
+            voteTeamByStaff(_teamName, _votingWeight);  // a staff
+        }
+        else {
+            voteTeamByDifferentTeamPlayer(_teamName, _votingWeight);  // a team player
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Vote for a team by a staff
+    // ------------------------------------------------------------------------
+    function voteTeamByStaff(string _teamName, uint256 _votingWeight) internal onlyVotingState {
+        address voter = msg.sender;
+        assert(_teamName.isEmpty() == false);
+        assert(_votingWeight > 0);
+        assert(teamContractInstance.doesTeamExist(_teamName) == true);
+        assert(staffContractInstance.isStaff(voter));
+
+        require(
+            _votingWeight <= staffContractInstance.getTokenBalance(voter),
+            "Insufficient voting balance."
+        );
+
+        // Staff commits to vote to a team
+        staffContractInstance.commitToVote(voter, _votingWeight, _teamName);
+        teamContractInstance.voteToTeam(_teamName, voter, _votingWeight);
+
+        string memory voterName = staffContractInstance.getStaffName(voter);
+        emit TeamVotedByStaff(_teamName, voter, voterName, _votingWeight);
+    }
+
+    // ------------------------------------------------------------------------
+    // Vote for a team by a different team player
+    // ------------------------------------------------------------------------
+    function voteTeamByDifferentTeamPlayer(string _teamName, uint256 _votingWeight) internal onlyVotingState {
+        address voter = msg.sender;
+        assert(_teamName.isEmpty() == false);
+        assert(_votingWeight > 0);
+        assert(teamContractInstance.doesTeamExist(_teamName) == true);
+        assert(playerContractInstance.isPlayer(voter));
+
+        require(
+            playerContractInstance.isPlayerInTeam(voter, _teamName) == false,
+            "A player does not allow to vote to his/her own team."
+        );
+
+        require(
+            _votingWeight <= playerContractInstance.getTokenBalance(voter),
+            "Insufficient voting balance."
+        );
+
+        // Player commits to vote to a team
+        playerContractInstance.commitToVote(voter, _votingWeight, _teamName);
+        teamContractInstance.voteToTeam(_teamName, voter, _votingWeight);
+
+        string memory voterName = playerContractInstance.getPlayerName(voter);
+        string memory teamVoterAssociatedWith = playerContractInstance.getTeamNamePlayerJoined(voter);
+        emit TeamVotedByPlayer(_teamName, voter, voterName, teamVoterAssociatedWith, _votingWeight);
+    }
 }
