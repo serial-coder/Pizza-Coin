@@ -16,7 +16,7 @@ import "./PizzaCoinTeam.sol";
 // TestLib Library
 // ----------------------------------------------------------------------------
 library TestLib {
-    //using BasicStringUtils for string;
+    using BasicStringUtils for string;
 
     /*// Contract events (the 'indexed' keyword cannot be used with any string parameter)
     event StateChanged(string _state, address indexed _staff, string _staffName);
@@ -53,16 +53,45 @@ library TestLib {
         string _teamName, address indexed _kicker, string _kickerName
     );
     event TeamKicked(string _teamName, address indexed _kicker, string _kickerName);
+    event TeamVotedByStaff(string _teamName, address indexed _voter, string _voterName, uint256 _votingWeight);
+    event TeamVotedByPlayer(
+        string _teamName, address indexed _voter, string _voterName, 
+        string _teamVoterAssociatedWith, uint256 _votingWeight
+    );
 
 
+    // ------------------------------------------------------------------------
+    // Emit the StateChanged event
+    // ------------------------------------------------------------------------
+    function emitStateChanged(string _state, string _staffName) public {
+        require(
+            _state.isEmpty() == false,
+            "'_state' might not be empty."
+        );
 
+        require(
+            _staffName.isEmpty() == false,
+            "'_staffName' might not be empty."
+        );
 
-    function emitStateChanged(string _state, string _staffName) public view {
         address staff = msg.sender;
         emit StateChanged(_state, staff, _staffName);
     }
 
-    function emitStateChanged(string _state, address _staffContract) public view {
+    // ------------------------------------------------------------------------
+    // Emit the StateChanged event
+    // ------------------------------------------------------------------------
+    function emitStateChanged(string _state, address _staffContract) public {
+        require(
+            _state.isEmpty() == false,
+            "'_state' might not be empty."
+        );
+
+        require(
+            _staffContract != address(0),
+            "'_staffContract' contains an invalid address."
+        );
+
         address staff = msg.sender;
 
         // Get a contract instance from the deployed addresses
@@ -72,7 +101,14 @@ library TestLib {
         emit StateChanged(_state, staff, staffName);
     }
 
-    function registerStaff(address _staff, string _staffName, address _staffContract) public view {
+    // ------------------------------------------------------------------------
+    // Register a new staff
+    // ------------------------------------------------------------------------
+    function registerStaff(address _staff, string _staffName, address _staffContract) public {
+        require(
+            _staffContract != address(0),
+            "'_staffContract' contains an invalid address."
+        );
 
         // Get a contract instance from the deployed addresses
         IStaffContract staffContractInstance = IStaffContract(_staffContract);
@@ -81,7 +117,14 @@ library TestLib {
         emit StaffRegistered(_staff, _staffName);
     }
 
-    function kickStaff(address _staff, address _staffContract) public view {
+    // ------------------------------------------------------------------------
+    // Remove a specific staff
+    // ------------------------------------------------------------------------
+    function kickStaff(address _staff, address _staffContract) public {
+        require(
+            _staffContract != address(0),
+            "'_staffContract' contains an invalid address."
+        );
 
         // Get a contract instance from the deployed addresses
         IStaffContract staffContractInstance = IStaffContract(_staffContract);
@@ -94,7 +137,20 @@ library TestLib {
         emit StaffKicked(_staff, staffName, kicker, kickerName);
     }
 
-    function registerPlayer(string _playerName, string _teamName, address _playerContract, address _teamContract) public view {
+    // ------------------------------------------------------------------------
+    // Register a player
+    // ------------------------------------------------------------------------
+    function registerPlayer(string _playerName, string _teamName, address _playerContract, address _teamContract) public {
+        require(
+            _playerContract != address(0),
+            "'_playerContract' contains an invalid address."
+        );
+
+        require(
+            _teamContract != address(0),
+            "'_teamContract' contains an invalid address."
+        );
+        
         address player = msg.sender;
 
         // Get contract instances from the deployed addresses
@@ -109,14 +165,27 @@ library TestLib {
         emit PlayerRegistered(player, _playerName, _teamName);
     }
 
-    function createTeam(string _teamName, string _creatorName, address _playerContract, address _teamContract) public view {
+    // ------------------------------------------------------------------------
+    // Team leader creates a team
+    // ------------------------------------------------------------------------
+    function createTeam(string _teamName, string _creatorName, address _playerContract, address _teamContract) public {
+        require(
+            _playerContract != address(0),
+            "'_playerContract' contains an invalid address."
+        );
+
+        require(
+            _teamContract != address(0),
+            "'_teamContract' contains an invalid address."
+        );
+        
         address creator = msg.sender;
 
         // Get a contract instance from the deployed addresses
         ITeamContract teamContractInstance = ITeamContract(_teamContract);
         
         // Create a new team
-        teamContractInstance.createTeam(_teamName, creator, _creatorName);
+        teamContractInstance.createTeam(_teamName);
 
         // Register a creator to a team as team leader
         registerPlayer(_creatorName, _teamName, _playerContract, _teamContract);
@@ -124,15 +193,11 @@ library TestLib {
         emit TeamCreated(_teamName, creator, _creatorName);
     }
 
-    
-    
-    
-    
     // ------------------------------------------------------------------------
     // Allow only a staff transfer the state from Initial to Registration
     // Revert a transaction if the contract does not get initialized completely
     // ------------------------------------------------------------------------
-    function doesContractGotCompletelyInitialized(
+    function isContractCompletelyInitialized(
         address _staff, 
         address _staffContract,
         address _playerContract,
@@ -176,7 +241,7 @@ library TestLib {
         address _playerContract,
         address _teamContract
     ) 
-    public view 
+    public 
     returns (
         uint256 _nextStartSearchingIndex, 
         uint256 _totalPlayersRemaining
@@ -243,7 +308,7 @@ library TestLib {
         address _playerContract,
         address _teamContract
     ) 
-    public view 
+    public 
     {
         require(
             _staffContract != address(0),
@@ -277,55 +342,10 @@ library TestLib {
         emit PlayerKicked(_player, playerName, _teamName, kicker, kickerName);
     }
 
-    /*// ------------------------------------------------------------------------
-    // Get a total number of players in a specified team
-    // ------------------------------------------------------------------------
-    function getTotalPlayersInTeam(
-        string _teamName,
-        address _playerContract,
-        address _teamContract
-    ) 
-    public view 
-    returns (
-        uint256 _total
-    ) {
-        require(
-            _playerContract != address(0),
-            "'_playerContract' contains an invalid address."
-        );
-
-        require(
-            _teamContract != address(0),
-            "'_teamContract' contains an invalid address."
-        );
-
-        // Get contract instances from the deployed addresses
-        IPlayerContract playerContractInstance = IPlayerContract(_playerContract);
-        ITeamContract teamContractInstance = ITeamContract(_teamContract);
-
-        // Get the array length of players in the specific team,
-        // including all ever removal players
-        uint256 noOfAllEverTeamPlayers = teamContractInstance.getArrayLengthOfPlayersInTeam(_teamName);
-
-        _total = 0;
-        for (uint256 i = 0; i < noOfAllEverTeamPlayers; i++) {
-            bool endOfList;  // used as a temporary variable
-            address player;
-
-            (endOfList, player) = teamContractInstance.getPlayerInTeamAtIndex(_teamName, i);
-
-            // player == address(0) if the player was removed by kickPlayer()
-            if (player != address(0) && playerContractInstance.isPlayerInTeam(player, _teamName) == true) {
-                _total++;
-            }
-        }
-    }*/
-
-
     // ------------------------------------------------------------------------
     // Remove a specific team (the team must be empty of players)
     // ------------------------------------------------------------------------
-    function kickTeam(string _teamName, address _staffContract, address _teamContract) public view {
+    function kickTeam(string _teamName, address _staffContract, address _teamContract) public {
         require(
             _staffContract != address(0),
             "'_staffContract' contains an invalid address."
@@ -345,5 +365,148 @@ library TestLib {
         address kicker = msg.sender;
         string memory kickerName = staffContractInstance.getStaffName(kicker);
         emit TeamKicked(_teamName, kicker, kickerName);
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow any staff or any player in other different teams to vote to a team
+    // ------------------------------------------------------------------------
+    function voteTeam(
+        string _teamName, 
+        uint256 _votingWeight, 
+        address _staffContract,
+        address _playerContract,
+        address _teamContract
+    ) 
+    public 
+    {
+        require(
+            _staffContract != address(0),
+            "'_staffContract' contains an invalid address."
+        );
+
+        require(
+            _teamContract != address(0),
+            "'_teamContract' contains an invalid address."
+        );
+
+        // Get contract instances from the deployed addresses
+        IStaffContract staffContractInstance = IStaffContract(_staffContract);
+        ITeamContract teamContractInstance = ITeamContract(_teamContract);
+
+        require(
+            _teamName.isEmpty() == false,
+            "'_teamName' might not be empty."
+        );
+
+        require(
+            _votingWeight > 0,
+            "'_votingWeight' must be larger than 0."
+        );
+
+        require(
+            teamContractInstance.doesTeamExist(_teamName) == true,
+            "Cannot find the specified team."
+        );
+
+        if (staffContractInstance.isStaff(msg.sender)) {
+            voteTeamByStaff(_teamName, _votingWeight, _staffContract, _teamContract);  // a staff
+        }
+        else {
+            voteTeamByDifferentTeamPlayer(_teamName, _votingWeight, _playerContract, _teamContract);  // a team player
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Vote for a team by a staff
+    // ------------------------------------------------------------------------
+    function voteTeamByStaff(
+        string _teamName, 
+        uint256 _votingWeight,
+        address _staffContract,
+        address _teamContract
+    ) 
+    internal
+    {
+        require(
+            _staffContract != address(0),
+            "'_staffContract' contains an invalid address."
+        );
+
+        require(
+            _teamContract != address(0),
+            "'_teamContract' contains an invalid address."
+        );
+
+        // Get contract instances from the deployed addresses
+        IStaffContract staffContractInstance = IStaffContract(_staffContract);
+        ITeamContract teamContractInstance = ITeamContract(_teamContract);
+
+        address voter = msg.sender;
+        assert(_teamName.isEmpty() == false);
+        assert(_votingWeight > 0);
+        assert(teamContractInstance.doesTeamExist(_teamName) == true);
+        assert(staffContractInstance.isStaff(voter));
+
+        require(
+            _votingWeight <= staffContractInstance.getTokenBalance(voter),
+            "Insufficient voting balance."
+        );
+
+        // Staff commits to vote to a team
+        staffContractInstance.commitToVote(voter, _votingWeight, _teamName);
+        teamContractInstance.voteToTeam(_teamName, voter, _votingWeight);
+
+        string memory voterName = staffContractInstance.getStaffName(voter);
+        emit TeamVotedByStaff(_teamName, voter, voterName, _votingWeight);
+    }
+
+    // ------------------------------------------------------------------------
+    // Vote for a team by a different team player
+    // ------------------------------------------------------------------------
+    function voteTeamByDifferentTeamPlayer(
+        string _teamName, 
+        uint256 _votingWeight,
+        address _playerContract,
+        address _teamContract
+    ) 
+    internal
+    {
+        require(
+            _playerContract != address(0),
+            "'_playerContract' contains an invalid address."
+        );
+
+        require(
+            _teamContract != address(0),
+            "'_teamContract' contains an invalid address."
+        );
+
+        // Get contract instances from the deployed addresses
+        IPlayerContract playerContractInstance = IPlayerContract(_playerContract);
+        ITeamContract teamContractInstance = ITeamContract(_teamContract);
+        
+        address voter = msg.sender;
+        assert(_teamName.isEmpty() == false);
+        assert(_votingWeight > 0);
+        assert(teamContractInstance.doesTeamExist(_teamName) == true);
+        assert(playerContractInstance.isPlayer(voter));
+
+        require(
+            playerContractInstance.isPlayerInTeam(voter, _teamName) == false,
+            "A player does not allow to vote to his/her own team."
+        );
+
+        require(
+            _votingWeight <= playerContractInstance.getTokenBalance(voter),
+            "Insufficient voting balance."
+        );
+
+        // Player commits to vote to a team
+        playerContractInstance.commitToVote(voter, _votingWeight, _teamName);
+        teamContractInstance.voteToTeam(_teamName, voter, _votingWeight);
+
+        string memory voterName = playerContractInstance.getPlayerName(voter);
+        string memory teamVoterAssociatedWith = playerContractInstance.getTeamNamePlayerJoined(voter);
+        emit TeamVotedByPlayer(_teamName, voter, voterName, teamVoterAssociatedWith, _votingWeight);
     }
 }

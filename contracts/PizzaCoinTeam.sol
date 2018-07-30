@@ -15,7 +15,7 @@ import "./Owned.sol";
 // Interface for exporting public and external functions of PizzaCoinTeam contract
 // ------------------------------------------------------------------------
 interface ITeamContract {
-    function createTeam(string _teamName, address _creator, string _creatorName) public;
+    function createTeam(string _teamName) public;
     function registerPlayerToTeam(address _player, string _teamName) public;
     function kickTeam(string _teamName) public;
     function kickPlayerOutOffTeam(address _player, string _teamName) public;
@@ -176,20 +176,10 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     // Team leader creates a team
     // ------------------------------------------------------------------------
-    function createTeam(string _teamName, address _creator, string _creatorName) public onlyRegistrationState onlyPizzaCoin {
+    function createTeam(string _teamName) public onlyRegistrationState onlyPizzaCoin {
         require(
             _teamName.isEmpty() == false,
             "'_teamName' might not be empty."
-        );
-
-        require(
-            _creator != address(0),
-            "'_creator' contains an invalid address."
-        );
-
-        require(
-            _creatorName.isEmpty() == false,
-            "'_creatorName' might not be empty."
         );
         
         require(

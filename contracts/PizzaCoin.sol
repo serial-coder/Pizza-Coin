@@ -25,17 +25,6 @@ import "./TestLib.sol";
 contract PizzaCoin is /*ERC20,*/ Owned {
     using BasicStringUtils for string;
 
-
-    event TeamVotedByStaff(string _teamName, address indexed _voter, string _voterName, uint256 _votingWeight);
-    event TeamVotedByPlayer(
-        string _teamName, address indexed _voter, string _voterName, 
-        string _teamVoterAssociatedWith, uint256 _votingWeight
-    );
-
-
-
-
-
     // Token info
     string public constant symbol = "PZC";
     string public constant name = "Pizza Coin";
@@ -219,7 +208,7 @@ contract PizzaCoin is /*ERC20,*/ Owned {
 
         // Allow only a staff transfer the state from Initial to Registration
         // Revert a transaction if the contract does not get initialized completely
-        TestLib.doesContractGotCompletelyInitialized(
+        TestLib.isContractCompletelyInitialized(
             staff, staffContract, playerContract, teamContract
         );
 
@@ -491,13 +480,6 @@ contract PizzaCoin is /*ERC20,*/ Owned {
         TestLib.kickPlayer(_player, _teamName, staffContract, playerContract, teamContract);
     }
 
-                /*// ------------------------------------------------------------------------
-                // Get a total number of players in a specified team
-                // ------------------------------------------------------------------------
-                function getTotalPlayersInTeam(string _teamName) public view returns (uint256 _total) {
-                    return TestLib.getTotalPlayersInTeam(_teamName, playerContract, teamContract);
-                }*/
-
     // ------------------------------------------------------------------------
     // Remove a specific team (the team must be empty of players)
     // ------------------------------------------------------------------------
@@ -531,7 +513,7 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     // Allow any staff or any player in other different teams to vote to a team
     // ------------------------------------------------------------------------
     function voteTeam(string _teamName, uint256 _votingWeight) public onlyVotingState onlyRegistered {
-        require(
+        /*require(
             _teamName.isEmpty() == false,
             "'_teamName' might not be empty."
         );
@@ -551,10 +533,12 @@ contract PizzaCoin is /*ERC20,*/ Owned {
         }
         else {
             voteTeamByDifferentTeamPlayer(_teamName, _votingWeight);  // a team player
-        }
+        }*/
+
+        TestLib.voteTeam(_teamName, _votingWeight, staffContract, playerContract, teamContract);
     }
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Vote for a team by a staff
     // ------------------------------------------------------------------------
     function voteTeamByStaff(string _teamName, uint256 _votingWeight) internal onlyVotingState {
@@ -575,9 +559,9 @@ contract PizzaCoin is /*ERC20,*/ Owned {
 
         string memory voterName = staffContractInstance.getStaffName(voter);
         emit TeamVotedByStaff(_teamName, voter, voterName, _votingWeight);
-    }
+    }*/
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Vote for a team by a different team player
     // ------------------------------------------------------------------------
     function voteTeamByDifferentTeamPlayer(string _teamName, uint256 _votingWeight) internal onlyVotingState {
@@ -604,7 +588,7 @@ contract PizzaCoin is /*ERC20,*/ Owned {
         string memory voterName = playerContractInstance.getPlayerName(voter);
         string memory teamVoterAssociatedWith = playerContractInstance.getTeamNamePlayerJoined(voter);
         emit TeamVotedByPlayer(_teamName, voter, voterName, teamVoterAssociatedWith, _votingWeight);
-    }
+    }*/
 
     // ------------------------------------------------------------------------
     // Find a maximum voting points from each team after voting is finished
