@@ -53,6 +53,16 @@ interface ITeamContract {
             uint256 _voteWeight
         );
     function voteToTeam(string _teamName, address _voter, uint256 _votingWeight) public;
+    function getMaxTeamVotingPoints() public view returns (uint256 _maxTeamVotingPoints);
+    function getTotalTeamWinners() public view returns (uint256 _total);
+    function getFirstFoundTeamWinner(uint256 _startSearchingIndex) 
+        public view
+        returns (
+            bool _endOfList,
+            uint256 _nextStartSearchingIndex,
+            string _teamName, 
+            uint256 _totalVoted
+        );
 }
 
 
@@ -578,5 +588,81 @@ contract PizzaCoinTeam is ITeamContract, Owned {
 
         teamsInfo[_teamName].votesWeight[_voter] = teamsInfo[_teamName].votesWeight[_voter].add(_votingWeight);
         teamsInfo[_teamName].totalVoted = teamsInfo[_teamName].totalVoted.add(_votingWeight);
+    }
+
+    // ------------------------------------------------------------------------
+    // Find a maximum voting points from each team after voting is finished
+    // ------------------------------------------------------------------------
+    function getMaxTeamVotingPoints() public view onlyVotingFinishedState onlyPizzaCoin returns (uint256 _maxTeamVotingPoints) {
+        _maxTeamVotingPoints = 0;
+        for (uint256 i = 0; i < teams.length; i++) {
+            // Team was not removed before
+            if (teams[i].isEmpty() == false && teamsInfo[teams[i]].wasCreated == true) {
+                // Find a new maximum points
+                if (teamsInfo[teams[i]].totalVoted > _maxTeamVotingPoints) {
+                    _maxTeamVotingPoints = teamsInfo[teams[i]].totalVoted;
+                }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a total number of team winners after voting is finished
+    // It is possible to have several teams that got the equal maximum voting points 
+    // ------------------------------------------------------------------------
+    function getTotalTeamWinners() public view onlyVotingFinishedState onlyPizzaCoin returns (uint256 _total) {
+        uint256 maxTeamVotingPoints = getMaxTeamVotingPoints();
+
+        _total = 0;
+        for (uint256 i = 0; i < teams.length; i++) {
+            // Team was not removed before
+            if (teams[i].isEmpty() == false && teamsInfo[teams[i]].wasCreated == true) {
+                // Count the team winners up
+                if (teamsInfo[teams[i]].totalVoted == maxTeamVotingPoints) {
+                    _total++;
+                }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Get the first found team winner
+    // (start searching at _startSearchingIndex)
+    // It is possible to have several teams that got the equal maximum voting points 
+    // ------------------------------------------------------------------------
+    function getFirstFoundTeamWinner(uint256 _startSearchingIndex) 
+        public view onlyVotingFinishedState onlyPizzaCoin
+        returns (
+            bool _endOfList,
+            uint256 _nextStartSearchingIndex,
+            string _teamName, 
+            uint256 _totalVoted
+        )
+    {
+        _endOfList = true;
+        _nextStartSearchingIndex = teams.length;
+        _teamName = "";
+        _totalVoted = 0;
+
+        if (_startSearchingIndex >= teams.length) {
+            return;
+        }
+
+        uint256 maxTeamVotingPoints = getMaxTeamVotingPoints();
+        for (uint256 i = _startSearchingIndex; i < teams.length; i++) {
+            string memory teamName = teams[i];
+
+            // Team was not removed before
+            if (teamName.isEmpty() == false && teamsInfo[teamName].wasCreated == true) {
+                // Find a team winner
+                if (teamsInfo[teamName].totalVoted == maxTeamVotingPoints) {
+                    _endOfList = false;
+                    _nextStartSearchingIndex = i + 1;
+                    _teamName = teamName;
+                    _totalVoted = teamsInfo[teamName].totalVoted;
+                    return;
+                }
+            }
+        }
     }
 }

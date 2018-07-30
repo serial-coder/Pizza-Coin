@@ -505,7 +505,7 @@ contract PizzaCoin is /*ERC20,*/ Owned {
         TestLib.kickTeam(_teamName, staffContract, teamContract);
     }
 
-    /*// ------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
     // Get a total number of players in a specified team
     // ------------------------------------------------------------------------
     function getTotalPlayersInTeam(string _teamName) public view returns (uint256 _total) {
@@ -525,7 +525,7 @@ contract PizzaCoin is /*ERC20,*/ Owned {
         ) 
     {
         return teamContractInstance.getFirstFoundPlayerInTeam(_teamName, _startSearchingIndex);
-    }*/
+    }
 
     // ------------------------------------------------------------------------
     // Allow any staff or any player in other different teams to vote to a team
@@ -604,5 +604,37 @@ contract PizzaCoin is /*ERC20,*/ Owned {
         string memory voterName = playerContractInstance.getPlayerName(voter);
         string memory teamVoterAssociatedWith = playerContractInstance.getTeamNamePlayerJoined(voter);
         emit TeamVotedByPlayer(_teamName, voter, voterName, teamVoterAssociatedWith, _votingWeight);
+    }
+
+    // ------------------------------------------------------------------------
+    // Find a maximum voting points from each team after voting is finished
+    // ------------------------------------------------------------------------
+    function getMaxTeamVotingPoints() public view onlyVotingFinishedState returns (uint256 _maxTeamVotingPoints) {
+        return teamContractInstance.getMaxTeamVotingPoints();
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a total number of team winners after voting is finished
+    // It is possible to have several teams that got the equal maximum voting points 
+    // ------------------------------------------------------------------------
+    function getTotalTeamWinners() public view onlyVotingFinishedState returns (uint256 _total) {
+        return teamContractInstance.getTotalTeamWinners();
+    }
+
+    // ------------------------------------------------------------------------
+    // Get the first found team winner
+    // (start searching at _startSearchingIndex)
+    // It is possible to have several teams that got the equal maximum voting points 
+    // ------------------------------------------------------------------------
+    function getFirstFoundTeamWinner(uint256 _startSearchingIndex) 
+        public view onlyVotingFinishedState
+        returns (
+            bool _endOfList,
+            uint256 _nextStartSearchingIndex,
+            string _teamName, 
+            uint256 _totalVoted
+        )
+    {
+        return teamContractInstance.getFirstFoundTeamWinner(_startSearchingIndex);
     }
 }
