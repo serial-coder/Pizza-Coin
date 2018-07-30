@@ -20,31 +20,6 @@ library TestLib {
     using SafeMath for uint256;
     using BasicStringUtils for string;
 
-    /*// Contract events (the 'indexed' keyword cannot be used with any string parameter)
-    event StateChanged(string _state, address indexed _staff, string _staffName);
-
-    function executeConstructorCode(string _ownerName, uint256 _voterInitialTokens) public {
-        require(
-            _ownerName.isEmpty() == false,
-            "'_ownerName' might not be empty."
-        );
-
-        require(
-            _voterInitialTokens > 0,
-            "'_voterInitialTokens' must be larger than 0."
-        );
-
-        //initStateMap();
-
-        //this.ownerName = _ownerName;
-        //this.voterInitialTokens = _voterInitialTokens;
-
-        //emit StateChanged(convertStateToString(), owner, _ownerName);
-    }*/
-
-
-
-
     // Contract events (the 'indexed' keyword cannot be used with any string parameter)
     event StateChanged(string _state, address indexed _staff, string _staffName);
     event StaffRegistered(address indexed _staff, string _staffName);
