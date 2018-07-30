@@ -3,6 +3,7 @@ var PizzaCoinStaffDeployer = artifacts.require("./PizzaCoinStaffDeployer.sol");
 var PizzaCoinPlayerDeployer = artifacts.require("./PizzaCoinPlayerDeployer.sol");
 var PizzaCoinTeamDeployer = artifacts.require("./PizzaCoinTeamDeployer.sol");
 var TestLib = artifacts.require("./TestLib.sol");
+var TestLib2 = artifacts.require("./TestLib2.sol");
 
 /*var PizzaCoinStaff = artifacts.require("./PizzaCoinStaff.sol");
 var PizzaCoinPlayer = artifacts.require("./PizzaCoinPlayer.sol");
@@ -13,11 +14,13 @@ module.exports = function(deployer) {
   deployer.deploy(PizzaCoinPlayerDeployer);
   deployer.deploy(PizzaCoinTeamDeployer);
   deployer.deploy(TestLib);
+  deployer.deploy(TestLib2);
 
-  /*deployer.link(PizzaCoinStaffDeployer, PizzaCoin);
+  deployer.link(PizzaCoinStaffDeployer, PizzaCoin);
   deployer.link(PizzaCoinPlayerDeployer, PizzaCoin);
   deployer.link(PizzaCoinTeamDeployer, PizzaCoin);
-  deployer.link(TestLib, PizzaCoin);*/
+  deployer.link(TestLib, PizzaCoin);
+  deployer.link(TestLib2, PizzaCoin);
 
   /*deployer.deploy(PizzaCoinStaff, 3);
   deployer.deploy(PizzaCoinPlayer, 3);

@@ -17,6 +17,7 @@ import "./PizzaCoinStaffDeployer.sol";
 import "./PizzaCoinPlayerDeployer.sol";
 import "./PizzaCoinTeamDeployer.sol";
 import "./TestLib.sol";
+import "./TestLib2.sol";
 
 
 // ----------------------------------------------------------------------------
@@ -578,14 +579,14 @@ contract PizzaCoin is ERC20, Owned {
     // Standard function of ERC token standard #20
     // ------------------------------------------------------------------------
     function totalSupply() public view returns (uint256 _totalSupply) {
-        return TestLib.totalSupply(staffContract, playerContract);
+        return TestLib2.totalSupply(staffContract, playerContract);
     }
 
     // ------------------------------------------------------------------------
     // Standard function of ERC token standard #20
     // ------------------------------------------------------------------------
     function balanceOf(address tokenOwner) public view returns (uint256 balance) {
-        return TestLib.balanceOf(tokenOwner, staffContract, playerContract);
+        return TestLib2.balanceOf(tokenOwner, staffContract, playerContract);
     }
 
     // ------------------------------------------------------------------------
@@ -594,7 +595,7 @@ contract PizzaCoin is ERC20, Owned {
     function allowance(address tokenOwner, address spender) public view returns (uint256) {
         
         // This function is never used
-        TestLib.allowance(tokenOwner, spender);
+        TestLib2.allowance(tokenOwner, spender);
     }
 
     // ------------------------------------------------------------------------
@@ -603,7 +604,7 @@ contract PizzaCoin is ERC20, Owned {
     function transfer(address to, uint256 tokens) public returns (bool) {
 
         // This function is never used
-        TestLib.transfer(to, tokens);
+        TestLib2.transfer(to, tokens);
     }
 
     // ------------------------------------------------------------------------
@@ -612,7 +613,7 @@ contract PizzaCoin is ERC20, Owned {
     function approve(address spender, uint256 tokens) public returns (bool) {
         
         // This function is never used
-        TestLib.approve(spender, tokens);
+        TestLib2.approve(spender, tokens);
     }
 
     // ------------------------------------------------------------------------
@@ -621,6 +622,6 @@ contract PizzaCoin is ERC20, Owned {
     function transferFrom(address from, address to, uint256 tokens) public returns (bool) {
         
         // This function is never used
-        TestLib.transferFrom(from, to, tokens);
+        TestLib2.transferFrom(from, to, tokens);
     }
 }
