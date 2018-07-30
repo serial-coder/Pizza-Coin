@@ -21,13 +21,15 @@ module.exports = {
       host: 'localhost',
       port: 7545,
       network_id: '*' // Match any network id
+      //,gas: 8000000,
+      //gasPrice: 10000000000
     },
     dev_rinkeby: {
       host: 'localhost',
       port: 8545,
       network_id: '4',
       from: '0x4B8Ad23e5923c7F479F35615a05e5868325aA85B',
-      gas: 6000000,
+      gas: 7000000,   // 7500000
       gasPrice: 10000000000
     }
   }

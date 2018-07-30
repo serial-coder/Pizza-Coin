@@ -7,7 +7,6 @@
 pragma solidity ^0.4.23;
 
 import "./ERC20.sol";
-//import "./SafeMath.sol";
 import "./BasicStringUtils.sol";
 import "./Owned.sol";
 import "./PizzaCoinStaff.sol";
@@ -32,7 +31,7 @@ contract PizzaCoin is ERC20, Owned {
     uint8 public constant decimals = 0;
 
     string private ownerName;
-    uint256 public voterInitialTokens;
+    uint256 private voterInitialTokens;
 
     address private staffContract;
     address private playerContract;
@@ -64,7 +63,7 @@ contract PizzaCoin is ERC20, Owned {
         ownerName = _ownerName;
         voterInitialTokens = _voterInitialTokens;
 
-        TestLib.emitStateChanged(convertStateToString(), _ownerName);
+        TestLib.emitStateChanged(getContractState(), _ownerName);
     }
 
     // ------------------------------------------------------------------------
@@ -176,17 +175,10 @@ contract PizzaCoin is ERC20, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Convert a state to a readable string
-    // ------------------------------------------------------------------------
-    function convertStateToString() internal view returns (string _state) {
-        return stateMap[keccak256(state)];
-    }
-
-    // ------------------------------------------------------------------------
     // Get a contract state in String format
     // ------------------------------------------------------------------------
     function getContractState() public view returns (string _state) {
-        return convertStateToString();
+        return stateMap[keccak256(state)];
     }
 
     // ------------------------------------------------------------------------
@@ -206,7 +198,7 @@ contract PizzaCoin is ERC20, Owned {
         // The state of child contracts does not need to do transfer because 
         // their state was set to Registration state once they were created
 
-        TestLib.emitStateChanged(convertStateToString(), staffContract);
+        TestLib.emitStateChanged(getContractState(), staffContract);
     }
 
     // ------------------------------------------------------------------------
@@ -218,7 +210,7 @@ contract PizzaCoin is ERC20, Owned {
         // Transfer the state of child contracts
         TestLib2.signalChildContractsToLockRegistration(staffContract, playerContract, teamContract);
 
-        TestLib.emitStateChanged(convertStateToString(), staffContract);
+        TestLib.emitStateChanged(getContractState(), staffContract);
     }
 
     // ------------------------------------------------------------------------
@@ -230,7 +222,7 @@ contract PizzaCoin is ERC20, Owned {
         // Transfer the state of child contracts
         TestLib2.signalChildContractsToVoting(staffContract, playerContract, teamContract);
 
-        TestLib.emitStateChanged(convertStateToString(), staffContract);
+        TestLib.emitStateChanged(getContractState(), staffContract);
     }
 
     // ------------------------------------------------------------------------
@@ -242,13 +234,13 @@ contract PizzaCoin is ERC20, Owned {
         // Transfer the state of child contracts
         TestLib2.signalChildContractsToStopVoting(staffContract, playerContract, teamContract);
 
-        TestLib.emitStateChanged(convertStateToString(), staffContract);
+        TestLib.emitStateChanged(getContractState(), staffContract);
     }
 
     // ------------------------------------------------------------------------
     // Create a staff contract
     // ------------------------------------------------------------------------
-    function createStaffContract() public onlyInitialState onlyOwner {
+    function createStaffContract() public onlyInitialState onlyOwner returns (address _contract) {
         require(
             staffContract == address(0),
             "The staff contract got initialized already."
@@ -261,6 +253,8 @@ contract PizzaCoin is ERC20, Owned {
         // Register an owner as a staff. We cannot use calling to registerStaff() 
         // because the contract state is Initial.
         TestLib.registerStaff(owner, ownerName, staffContract);
+
+        return staffContract;
     }
 
     // ------------------------------------------------------------------------
@@ -277,14 +271,14 @@ contract PizzaCoin is ERC20, Owned {
         TestLib.kickStaff(_staff, staffContract);
     }
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get a total number of staffs
     // ------------------------------------------------------------------------
     function getTotalStaffs() public view returns (uint256 _total) {
         return TestLib2.getTotalStaffs(staffContract);
-    }
+    }*/
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get an info of the first found staff 
     // (start searching at _startSearchingIndex)
     // ------------------------------------------------------------------------
@@ -299,16 +293,16 @@ contract PizzaCoin is ERC20, Owned {
         ) 
     {
         return TestLib2.getFirstFoundStaffInfo(_startSearchingIndex, staffContract);
-    }
+    }*/
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get a total number of the votes ('teamsVoted' array) made by the specified staff
     // ------------------------------------------------------------------------
     function getTotalVotesByStaff(address _staff) public view returns (uint256 _total) {
         return TestLib2.getTotalVotesByStaff(_staff, staffContract);
-    }
+    }*/
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get a team voting result (at the index of 'teamsVoted' array) made by the specified staff
     // ------------------------------------------------------------------------
     function getVoteResultAtIndexByStaff(address _staff, uint256 _votingIndex) 
@@ -320,12 +314,12 @@ contract PizzaCoin is ERC20, Owned {
         ) 
     {
         return TestLib2.getVoteResultAtIndexByStaff(_staff, _votingIndex, staffContract);
-    }
+    }*/
 
     // ------------------------------------------------------------------------
     // Create a player contract
     // ------------------------------------------------------------------------
-    function createPlayerContract() public onlyInitialState onlyOwner {
+    function createPlayerContract() public onlyInitialState onlyOwner returns (address _contract) {
         require(
             playerContract == address(0),
             "The player contract got initialized already."
@@ -334,6 +328,8 @@ contract PizzaCoin is ERC20, Owned {
         // Create a player contract
         playerContract = PizzaCoinPlayerDeployer.deployContract(voterInitialTokens);
         PizzaCoinPlayerDeployer.transferOwnership(playerContract, this);
+
+        return playerContract;
     }
 
     // ------------------------------------------------------------------------
@@ -343,14 +339,14 @@ contract PizzaCoin is ERC20, Owned {
         TestLib.registerPlayer(_playerName, _teamName, playerContract, teamContract);
     }
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get a total number of players
     // ------------------------------------------------------------------------
     function getTotalPlayers() public view returns (uint256 _total) {
         return TestLib2.getTotalPlayers(playerContract);
-    }
+    }*/
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get an info of the first found player 
     // (start searching at _startSearchingIndex)
     // ------------------------------------------------------------------------
@@ -366,16 +362,16 @@ contract PizzaCoin is ERC20, Owned {
         ) 
     {
         return TestLib2.getFirstFoundPlayerInfo(_startSearchingIndex, playerContract);
-    }
+    }*/
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get a total number of the votes ('teamsVoted' array) made by the specified player
     // ------------------------------------------------------------------------
     function getTotalVotesByPlayer(address _player) public view returns (uint256 _total) {
         return TestLib2.getTotalVotesByPlayer(_player, playerContract);
-    }
+    }*/
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get a team voting result (at the index of 'teamsVoted' array) made by the specified player
     // ------------------------------------------------------------------------
     function getVoteResultAtIndexByPlayer(address _player, uint256 _votingIndex) 
@@ -387,12 +383,12 @@ contract PizzaCoin is ERC20, Owned {
         ) 
     {
         return TestLib2.getVoteResultAtIndexByPlayer(_player, _votingIndex, playerContract);
-    }
+    }*/
 
     // ------------------------------------------------------------------------
     // Create a team contract
     // ------------------------------------------------------------------------
-    function createTeamContract() public onlyInitialState onlyOwner {
+    function createTeamContract() public onlyInitialState onlyOwner returns (address _contract) {
         require(
             teamContract == address(0),
             "The team contract got initialized already."
@@ -401,6 +397,8 @@ contract PizzaCoin is ERC20, Owned {
         // Create a team contract
         teamContract = PizzaCoinTeamDeployer.deployContract();
         PizzaCoinTeamDeployer.transferOwnership(teamContract, this);
+
+        return teamContract;
     }
 
     // ------------------------------------------------------------------------
@@ -410,14 +408,14 @@ contract PizzaCoin is ERC20, Owned {
         TestLib.createTeam(_teamName, _creatorName, playerContract, teamContract);
     }
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get a total number of teams
     // ------------------------------------------------------------------------
     function getTotalTeams() public view returns (uint256 _total) {
         return TestLib2.getTotalTeams(teamContract);
-    }
+    }*/
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get an info of the first found team 
     // (start searching at _startSearchingIndex)
     // ------------------------------------------------------------------------
@@ -431,16 +429,16 @@ contract PizzaCoin is ERC20, Owned {
         ) 
     {
         return TestLib2.getFirstFoundTeamInfo(_startSearchingIndex, teamContract);
-    }
+    }*/
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get a total number of voters to a specified team
     // ------------------------------------------------------------------------
     function getTotalVotersToTeam(string _teamName) public view returns (uint256 _total) {
         return TestLib2.getTotalVotersToTeam(_teamName, teamContract);
-    }
+    }*/
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get a voting result (by the index of voters) to a specified team
     // ------------------------------------------------------------------------
     function getVoteResultAtIndexToTeam(string _teamName, uint256 _voterIndex) 
@@ -452,18 +450,18 @@ contract PizzaCoin is ERC20, Owned {
         ) 
     {
         return TestLib2.getVoteResultAtIndexToTeam(_teamName, _voterIndex, teamContract);
-    }
+    }*/
 
     // ------------------------------------------------------------------------
     // Remove the first found player in a particular team 
     // (start searching at _startSearchingIndex)
     // ------------------------------------------------------------------------
-    function kickFirstFoundTeamPlayer(string _teamName, uint256 _startSearchingIndex) 
+    /*function kickFirstFoundTeamPlayer(string _teamName, uint256 _startSearchingIndex) 
         public onlyRegistrationState onlyStaff returns (uint256 _nextStartSearchingIndex, uint256 _totalPlayersRemaining) {
 
         (_nextStartSearchingIndex, _totalPlayersRemaining) = TestLib.kickFirstFoundTeamPlayer(
             _teamName, _startSearchingIndex, staffContract, playerContract, teamContract);
-    }
+    }*/
 
     // ------------------------------------------------------------------------
     // Remove a specific player from a particular team
@@ -479,14 +477,14 @@ contract PizzaCoin is ERC20, Owned {
         TestLib.kickTeam(_teamName, staffContract, teamContract);
     }
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get a total number of players in a specified team
     // ------------------------------------------------------------------------
     function getTotalPlayersInTeam(string _teamName) public view returns (uint256 _total) {
         return TestLib2.getTotalPlayersInTeam(_teamName, teamContract);
-    }
+    }*/
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get the first found player of a specified team
     // (start searching at _startSearchingIndex)
     // ------------------------------------------------------------------------
@@ -499,7 +497,7 @@ contract PizzaCoin is ERC20, Owned {
         ) 
     {
         return TestLib2.getFirstFoundPlayerInTeam(_teamName, _startSearchingIndex, teamContract);
-    }
+    }*/
 
     // ------------------------------------------------------------------------
     // Allow any staff or any player in other different teams to vote to a team
@@ -508,22 +506,22 @@ contract PizzaCoin is ERC20, Owned {
         TestLib.voteTeam(_teamName, _votingWeight, staffContract, playerContract, teamContract);
     }
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Find a maximum voting points from each team after voting is finished
     // ------------------------------------------------------------------------
     function getMaxTeamVotingPoints() public view onlyVotingFinishedState returns (uint256 _maxTeamVotingPoints) {
         return TestLib2.getMaxTeamVotingPoints(teamContract);
-    }
+    }*/
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get a total number of team winners after voting is finished
     // It is possible to have several teams that got the equal maximum voting points 
     // ------------------------------------------------------------------------
     function getTotalTeamWinners() public view onlyVotingFinishedState returns (uint256 _total) {
         return TestLib2.getTotalTeamWinners(teamContract);
-    }
+    }*/
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Get the first found team winner
     // (start searching at _startSearchingIndex)
     // It is possible to have several teams that got the equal maximum voting points 
@@ -538,7 +536,7 @@ contract PizzaCoin is ERC20, Owned {
         )
     {
         return TestLib2.getFirstFoundTeamWinner(_startSearchingIndex, teamContract);
-    }
+    }*/
 
 
     /*
