@@ -18,6 +18,7 @@ interface IPlayerContract {
     function lockRegistration() external;
     function startVoting() external;
     function stopVoting() external;
+    function getTotalSupply() external view returns (uint256 _totalSupply);
     function isPlayer(address _user) external view returns (bool bPlayer);
     function isPlayerInTeam(address _user, string _teamName) external view returns (bool bTeamPlayer);
     function getPlayerName(address _player) external view returns (string _name);
@@ -75,7 +76,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     mapping(address => PlayerInfo) private playersInfo;  // mapping(player => PlayerInfo)
 
     uint256 private voterInitialTokens;
-    uint256 private _totalSupply;
+    uint256 private totalSupply;
 
     enum State { Registration, RegistrationLocked, Voting, VotingFinished }
     State private state = State.Registration;
@@ -170,6 +171,13 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     // ------------------------------------------------------------------------
     function stopVoting() external onlyVotingState onlyPizzaCoin {
         state = State.VotingFinished;
+    }
+
+    // ------------------------------------------------------------------------
+    // Get a total supply
+    // ------------------------------------------------------------------------
+    function getTotalSupply() external view onlyPizzaCoin returns (uint256 _totalSupply) {
+        return totalSupply;
     }
 
     // ------------------------------------------------------------------------
@@ -289,7 +297,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
             */
         });
 
-        _totalSupply = _totalSupply.add(voterInitialTokens);
+        totalSupply = totalSupply.add(voterInitialTokens);
     }
 
     // ------------------------------------------------------------------------
@@ -325,7 +333,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
         // Remove a specified player from a mapping
         delete playersInfo[_player];
 
-        _totalSupply = _totalSupply.sub(voterInitialTokens);
+        totalSupply = totalSupply.sub(voterInitialTokens);
     }
 
     // ------------------------------------------------------------------------

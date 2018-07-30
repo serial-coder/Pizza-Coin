@@ -22,7 +22,7 @@ import "./TestLib.sol";
 // ----------------------------------------------------------------------------
 // Pizza Coin Contract
 // ----------------------------------------------------------------------------
-contract PizzaCoin is /*ERC20,*/ Owned {
+contract PizzaCoin is ERC20, Owned {
     using BasicStringUtils for string;
 
     // Token info
@@ -564,5 +564,63 @@ contract PizzaCoin is /*ERC20,*/ Owned {
         )
     {
         return teamContractInstance.getFirstFoundTeamWinner(_startSearchingIndex);
+    }
+
+
+    /*
+    *
+    * This contract partially complies with ERC token standard #20 interface.
+    * That is, only the balanceOf() and totalSupply() will be used.
+    *
+    */
+
+    // ------------------------------------------------------------------------
+    // Standard function of ERC token standard #20
+    // ------------------------------------------------------------------------
+    function totalSupply() public view returns (uint256 _totalSupply) {
+        return TestLib.totalSupply(staffContract, playerContract);
+    }
+
+    // ------------------------------------------------------------------------
+    // Standard function of ERC token standard #20
+    // ------------------------------------------------------------------------
+    function balanceOf(address tokenOwner) public view returns (uint256 balance) {
+        return TestLib.balanceOf(tokenOwner, staffContract, playerContract);
+    }
+
+    // ------------------------------------------------------------------------
+    // Standard function of ERC token standard #20
+    // ------------------------------------------------------------------------
+    function allowance(address tokenOwner, address spender) public view returns (uint256) {
+        
+        // This function is never used
+        TestLib.allowance(tokenOwner, spender);
+    }
+
+    // ------------------------------------------------------------------------
+    // Standard function of ERC token standard #20
+    // ------------------------------------------------------------------------
+    function transfer(address to, uint256 tokens) public returns (bool) {
+
+        // This function is never used
+        TestLib.transfer(to, tokens);
+    }
+
+    // ------------------------------------------------------------------------
+    // Standard function of ERC token standard #20
+    // ------------------------------------------------------------------------
+    function approve(address spender, uint256 tokens) public returns (bool) {
+        
+        // This function is never used
+        TestLib.approve(spender, tokens);
+    }
+
+    // ------------------------------------------------------------------------
+    // Standard function of ERC token standard #20
+    // ------------------------------------------------------------------------
+    function transferFrom(address from, address to, uint256 tokens) public returns (bool) {
+        
+        // This function is never used
+        TestLib.transferFrom(from, to, tokens);
     }
 }

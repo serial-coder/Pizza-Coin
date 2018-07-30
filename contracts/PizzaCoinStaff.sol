@@ -18,6 +18,7 @@ interface IStaffContract {
     function lockRegistration() external;
     function startVoting() external;
     function stopVoting() external;
+    function getTotalSupply() external view returns (uint256 _totalSupply);
     function isStaff(address _user) external view returns (bool bStaff);
     function getStaffName(address _staff) external view returns (string _name);
     function registerStaff(address _staff, string _staffName) external;
@@ -73,7 +74,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     mapping(address => StaffInfo) private staffsInfo;  // mapping(staff => StaffInfo)
 
     uint256 private voterInitialTokens;
-    uint256 private _totalSupply;
+    uint256 private totalSupply;
 
     enum State { Registration, RegistrationLocked, Voting, VotingFinished }
     State private state = State.Registration;
@@ -182,6 +183,13 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     }
 
     // ------------------------------------------------------------------------
+    // Get a total supply
+    // ------------------------------------------------------------------------
+    function getTotalSupply() external view onlyPizzaCoin returns (uint256 _totalSupply) {
+        return totalSupply;
+    }
+
+    // ------------------------------------------------------------------------
     // Determine if _user is a project deployer (i.e., PizzaCoin's owner) or not
     // ------------------------------------------------------------------------
     function isProjectDeployer(address _user) internal view onlyPizzaCoin returns (bool bDeployer) {
@@ -265,7 +273,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
             */
         });
 
-        _totalSupply = _totalSupply.add(voterInitialTokens);
+        totalSupply = totalSupply.add(voterInitialTokens);
     }
 
     // ------------------------------------------------------------------------
@@ -301,7 +309,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
         // Remove a specified staff from a mapping
         delete staffsInfo[_staff];
 
-        _totalSupply = _totalSupply.sub(voterInitialTokens);
+        totalSupply = totalSupply.sub(voterInitialTokens);
     }
 
     // ------------------------------------------------------------------------

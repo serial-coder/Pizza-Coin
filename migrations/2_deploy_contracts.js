@@ -14,10 +14,10 @@ module.exports = function(deployer) {
   deployer.deploy(PizzaCoinTeamDeployer);
   deployer.deploy(TestLib);
 
-  deployer.link(PizzaCoinStaffDeployer, PizzaCoin);
+  /*deployer.link(PizzaCoinStaffDeployer, PizzaCoin);
   deployer.link(PizzaCoinPlayerDeployer, PizzaCoin);
   deployer.link(PizzaCoinTeamDeployer, PizzaCoin);
-  deployer.link(TestLib, PizzaCoin);
+  deployer.link(TestLib, PizzaCoin);*/
 
   /*deployer.deploy(PizzaCoinStaff, 3);
   deployer.deploy(PizzaCoinPlayer, 3);
