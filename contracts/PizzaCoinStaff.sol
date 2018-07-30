@@ -15,6 +15,9 @@ import "./Owned.sol";
 // Interface for exporting external functions of PizzaCoinStaff contract
 // ------------------------------------------------------------------------
 interface IStaffContract {
+    function lockRegistration() external;
+    function startVoting() external;
+    function stopVoting() external;
     function isStaff(address _user) external view returns (bool bStaff);
     function getStaffName(address _staff) external view returns (string _name);
     function registerStaff(address _staff, string _staffName) external;
@@ -155,6 +158,27 @@ contract PizzaCoinStaff is IStaffContract, Owned {
             "The present state is not VotingFinished."
         );
         _;
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a staff freeze Registration state and transfer the state to RegistrationLocked
+    // ------------------------------------------------------------------------
+    function lockRegistration() external onlyRegistrationState onlyPizzaCoin {
+        state = State.RegistrationLocked;
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a staff transfer a state from RegistrationLocked to Voting
+    // ------------------------------------------------------------------------
+    function startVoting() external onlyRegistrationLockedState onlyPizzaCoin {
+        state = State.Voting;
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a staff transfer a state from Voting to VotingFinished
+    // ------------------------------------------------------------------------
+    function stopVoting() external onlyVotingState onlyPizzaCoin {
+        state = State.VotingFinished;
     }
 
     // ------------------------------------------------------------------------

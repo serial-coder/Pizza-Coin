@@ -15,6 +15,9 @@ import "./Owned.sol";
 // Interface for exporting external functions of PizzaCoinTeam contract
 // ------------------------------------------------------------------------
 interface ITeamContract {
+    function lockRegistration() external;
+    function startVoting() external;
+    function stopVoting() external;
     function createTeam(string _teamName) external;
     function registerPlayerToTeam(address _player, string _teamName) external;
     function kickTeam(string _teamName) external;
@@ -159,6 +162,27 @@ contract PizzaCoinTeam is ITeamContract, Owned {
             "The present state is not VotingFinished."
         );
         _;
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a staff freeze Registration state and transfer the state to RegistrationLocked
+    // ------------------------------------------------------------------------
+    function lockRegistration() external onlyRegistrationState onlyPizzaCoin {
+        state = State.RegistrationLocked;
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a staff transfer a state from RegistrationLocked to Voting
+    // ------------------------------------------------------------------------
+    function startVoting() external onlyRegistrationLockedState onlyPizzaCoin {
+        state = State.Voting;
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a staff transfer a state from Voting to VotingFinished
+    // ------------------------------------------------------------------------
+    function stopVoting() external onlyVotingState onlyPizzaCoin {
+        state = State.VotingFinished;
     }
 
     // ------------------------------------------------------------------------

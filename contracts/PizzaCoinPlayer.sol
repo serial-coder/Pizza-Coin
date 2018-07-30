@@ -15,6 +15,9 @@ import "./Owned.sol";
 // Interface for exporting external functions of PizzaCoinPlayer contract
 // ------------------------------------------------------------------------
 interface IPlayerContract {
+    function lockRegistration() external;
+    function startVoting() external;
+    function stopVoting() external;
     function isPlayer(address _user) external view returns (bool bPlayer);
     function isPlayerInTeam(address _user, string _teamName) external view returns (bool bTeamPlayer);
     function getPlayerName(address _player) external view returns (string _name);
@@ -146,6 +149,27 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
             "The present state is not VotingFinished."
         );
         _;
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a staff freeze Registration state and transfer the state to RegistrationLocked
+    // ------------------------------------------------------------------------
+    function lockRegistration() external onlyRegistrationState onlyPizzaCoin {
+        state = State.RegistrationLocked;
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a staff transfer a state from RegistrationLocked to Voting
+    // ------------------------------------------------------------------------
+    function startVoting() external onlyRegistrationLockedState onlyPizzaCoin {
+        state = State.Voting;
+    }
+
+    // ------------------------------------------------------------------------
+    // Allow a staff transfer a state from Voting to VotingFinished
+    // ------------------------------------------------------------------------
+    function stopVoting() external onlyVotingState onlyPizzaCoin {
+        state = State.VotingFinished;
     }
 
     // ------------------------------------------------------------------------

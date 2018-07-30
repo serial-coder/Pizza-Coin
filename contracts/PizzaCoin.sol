@@ -214,6 +214,9 @@ contract PizzaCoin is /*ERC20,*/ Owned {
 
         state = State.Registration;
 
+        // The state of child contracts does not need to do transfer because 
+        // their state was set to Registration state once they were created
+
         TestLib.emitStateChanged(convertStateToString(), staffContractInstance);
     }
 
@@ -222,6 +225,11 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     // ------------------------------------------------------------------------
     function lockRegistration() public onlyRegistrationState onlyStaff {
         state = State.RegistrationLocked;
+
+        // Transfer the state of child contracts
+        staffContractInstance.lockRegistration();
+        playerContractInstance.lockRegistration();
+        teamContractInstance.lockRegistration();
 
         TestLib.emitStateChanged(convertStateToString(), staffContractInstance);
     }
@@ -232,6 +240,11 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     function startVoting() public onlyRegistrationLockedState onlyStaff {
         state = State.Voting;
 
+        // Transfer the state of child contracts
+        staffContractInstance.startVoting();
+        playerContractInstance.startVoting();
+        teamContractInstance.startVoting();
+
         TestLib.emitStateChanged(convertStateToString(), staffContractInstance);
     }
 
@@ -240,6 +253,11 @@ contract PizzaCoin is /*ERC20,*/ Owned {
     // ------------------------------------------------------------------------
     function stopVoting() public onlyVotingState onlyStaff {
         state = State.VotingFinished;
+
+        // Transfer the state of child contracts
+        staffContractInstance.stopVoting();
+        playerContractInstance.stopVoting();
+        teamContractInstance.stopVoting();
 
         TestLib.emitStateChanged(convertStateToString(), staffContractInstance);
     }
