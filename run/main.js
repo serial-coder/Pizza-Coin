@@ -68,8 +68,12 @@ async function main() {
     console.log('\nRegistering a staff succeeded...');
 
     // Kick a staff
-    kickStaff(ethAccounts, ethAccounts[1]);
+    kickStaff(ethAccounts, ethAccounts[2]);
     console.log('\nKicking a staff succeeded...');
+
+    // Register a staff
+    registerStaff(ethAccounts, ethAccounts[2], 'bright');
+    console.log('\nRegistering a staff succeeded...');
 }
 
 async function registerStaff(ethAccounts, staffAddr, staffName) {

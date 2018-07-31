@@ -125,18 +125,11 @@ library TestLib {
         // Get a contract instance from the deployed addresses
         IStaffContract staffContractInstance = IStaffContract(_staffContract);
 
-        staffContractInstance.kickStaff(_staff);
-
-        /*address kicker = msg.sender;
-        string memory staffName = staffContractInstance.getStaffName(_staff);
-        string memory kickerName = staffContractInstance.getStaffName(kicker);*/
-        //emit StaffKicked(_staff, staffName, kicker, kickerName);
-
-        //staff_ = _staff;
         _kicker = msg.sender;
         _staffName = staffContractInstance.getStaffName(_staff);
         _kickerName = staffContractInstance.getStaffName(_kicker);
-        //return (_staff, staffName, kicker, kickerName);
+
+        staffContractInstance.kickStaff(_staff);
     }
 
     // ------------------------------------------------------------------------
@@ -332,15 +325,16 @@ library TestLib {
         IPlayerContract playerContractInstance = IPlayerContract(_playerContract);
         ITeamContract teamContractInstance = ITeamContract(_teamContract);
 
+        address kicker = msg.sender;
+        string memory playerName = playerContractInstance.getPlayerName(_player);
+        string memory kickerName = staffContractInstance.getStaffName(kicker);
+
         // Remove a player from the player list
         playerContractInstance.kickPlayer(_player, _teamName);
 
         // Remove a player from the player list of the specified team
         teamContractInstance.kickPlayerOutOffTeam(_player, _teamName);
 
-        address kicker = msg.sender;
-        string memory playerName = playerContractInstance.getPlayerName(_player);
-        string memory kickerName = staffContractInstance.getStaffName(kicker);
         emit PlayerKicked(_player, playerName, _teamName, kicker, kickerName);
     }
 
