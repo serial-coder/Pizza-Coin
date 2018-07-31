@@ -25,6 +25,11 @@ import "./TestLib2.sol";
 contract PizzaCoin is ERC20, Owned {
     using BasicStringUtils for string;
 
+    // Contract events (the 'indexed' keyword cannot be used with any string parameter)
+    //event StateChanged(string _state, address indexed _staff, string _staffName);
+    event ChildContractCreated(address indexed _contract);
+    event StaffRegistered(address indexed _staff, string _staffName);
+
     // Token info
     string public constant symbol = "PZC";
     string public constant name = "Pizza Coin";
@@ -63,7 +68,8 @@ contract PizzaCoin is ERC20, Owned {
         ownerName = _ownerName;
         voterInitialTokens = _voterInitialTokens;
 
-        TestLib.emitStateChanged(getContractState(), _ownerName);
+        //TestLib.emitStateChanged(getContractState(), _ownerName);
+        //emit StateChanged(getContractState(), owner, ownerName);
     }
 
     // ------------------------------------------------------------------------
@@ -198,7 +204,9 @@ contract PizzaCoin is ERC20, Owned {
         // The state of child contracts does not need to do transfer because 
         // their state was set to Registration state once they were created
 
-        TestLib.emitStateChanged(getContractState(), staffContract);
+        //TestLib.emitStateChanged(getContractState(), staffContract);
+        //string memory staffName = TestLib.getStaffName(staff, staffContract);
+        //emit StateChanged(getContractState(), staff, staffName);
     }
 
     // ------------------------------------------------------------------------
@@ -210,7 +218,10 @@ contract PizzaCoin is ERC20, Owned {
         // Transfer the state of child contracts
         TestLib2.signalChildContractsToLockRegistration(staffContract, playerContract, teamContract);
 
-        TestLib.emitStateChanged(getContractState(), staffContract);
+        //TestLib.emitStateChanged(getContractState(), staffContract);
+        /*address staff = msg.sender;
+        string memory staffName = TestLib.getStaffName(staff, staffContract);
+        emit StateChanged(getContractState(), staff, staffName);*/
     }
 
     // ------------------------------------------------------------------------
@@ -222,7 +233,10 @@ contract PizzaCoin is ERC20, Owned {
         // Transfer the state of child contracts
         TestLib2.signalChildContractsToVoting(staffContract, playerContract, teamContract);
 
-        TestLib.emitStateChanged(getContractState(), staffContract);
+        //TestLib.emitStateChanged(getContractState(), staffContract);
+        /*address staff = msg.sender;
+        string memory staffName = TestLib.getStaffName(staff, staffContract);
+        emit StateChanged(getContractState(), staff, staffName);*/
     }
 
     // ------------------------------------------------------------------------
@@ -234,7 +248,10 @@ contract PizzaCoin is ERC20, Owned {
         // Transfer the state of child contracts
         TestLib2.signalChildContractsToStopVoting(staffContract, playerContract, teamContract);
 
-        TestLib.emitStateChanged(getContractState(), staffContract);
+        //TestLib.emitStateChanged(getContractState(), staffContract);
+        /*address staff = msg.sender;
+        string memory staffName = TestLib.getStaffName(staff, staffContract);
+        emit StateChanged(getContractState(), staff, staffName);*/
     }
 
     // ------------------------------------------------------------------------
@@ -254,6 +271,7 @@ contract PizzaCoin is ERC20, Owned {
         // because the contract state is Initial.
         TestLib.registerStaff(owner, ownerName, staffContract);
 
+        emit ChildContractCreated(staffContract);
         return staffContract;
     }
 
@@ -262,6 +280,7 @@ contract PizzaCoin is ERC20, Owned {
     // ------------------------------------------------------------------------
     function registerStaff(address _staff, string _staffName) public onlyRegistrationState onlyStaff {
         TestLib.registerStaff(_staff, _staffName, staffContract);
+        emit StaffRegistered(_staff, _staffName);
     }
 
     // ------------------------------------------------------------------------
@@ -329,6 +348,7 @@ contract PizzaCoin is ERC20, Owned {
         playerContract = PizzaCoinPlayerDeployer.deployContract(voterInitialTokens);
         PizzaCoinPlayerDeployer.transferOwnership(playerContract, this);
 
+        emit ChildContractCreated(playerContract);
         return playerContract;
     }
 
@@ -398,6 +418,7 @@ contract PizzaCoin is ERC20, Owned {
         teamContract = PizzaCoinTeamDeployer.deployContract();
         PizzaCoinTeamDeployer.transferOwnership(teamContract, this);
 
+        emit ChildContractCreated(teamContract);
         return teamContract;
     }
 

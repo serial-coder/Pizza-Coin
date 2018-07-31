@@ -21,8 +21,8 @@ library TestLib {
     using BasicStringUtils for string;
 
     // Contract events (the 'indexed' keyword cannot be used with any string parameter)
-    event StateChanged(string _state, address indexed _staff, string _staffName);
-    event StaffRegistered(address indexed _staff, string _staffName);
+    //event StateChanged(string _state, address indexed _staff, string _staffName);
+    //event StaffRegistered(address indexed _staff, string _staffName);
     event StaffKicked(address indexed _staffToBeKicked, string _staffName, address indexed _kicker, string _kickerName);
     event PlayerRegistered(address indexed _player, string _playerName, string _teamName);
     event TeamCreated(string _teamName, address indexed _creator, string _creatorName);
@@ -37,7 +37,7 @@ library TestLib {
     );
 
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Emit the StateChanged event
     // ------------------------------------------------------------------------
     function emitStateChanged(string _state, string _staffName) public {
@@ -76,6 +76,20 @@ library TestLib {
 
         string memory staffName = staffContractInstance.getStaffName(staff);
         emit StateChanged(_state, staff, staffName);
+    }*/
+
+    // ------------------------------------------------------------------------
+    // Get a staff name
+    // ------------------------------------------------------------------------
+    function getStaffName(address _staff, address _staffContract) public view returns (string _name) {
+        require(
+            _staffContract != address(0),
+            "'_staffContract' contains an invalid address."
+        );
+
+        // Get a contract instance from the deployed addresses
+        IStaffContract staffContractInstance = IStaffContract(_staffContract);
+        return staffContractInstance.getStaffName(_staff);
     }
 
     // ------------------------------------------------------------------------
@@ -91,7 +105,7 @@ library TestLib {
         IStaffContract staffContractInstance = IStaffContract(_staffContract);
 
         staffContractInstance.registerStaff(_staff, _staffName);
-        emit StaffRegistered(_staff, _staffName);
+        //emit StaffRegistered(_staff, _staffName);
     }
 
     // ------------------------------------------------------------------------
