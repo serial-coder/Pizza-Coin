@@ -20,10 +20,12 @@ var Web3               = require('web3'),
         since web3@1.0.0 does no longer support for HttpProvider() anymore
     */
 var web3 = new Web3('http://localhost:7545');
+//var web3 = new Web3('http://localhost:8545');
 
 var PizzaCoin = new web3.eth.Contract(
     PizzaCoinJson.abi,
     PizzaCoinJson.networks[5777].address
+    //PizzaCoinJson.networks[4].address
 );
 
 main();
@@ -42,7 +44,6 @@ async function main() {
     let ethAccounts = await web3.eth.getAccounts();
 
     console.log('Project deployer address: ' + ethAccounts[0]);
-    //console.log('PizzaCoin address: ' + PizzaCoinJson.networks[5777].address);
 
     // Initialized contracts
     let [
@@ -53,6 +54,7 @@ async function main() {
 
     console.log('\nInitializing contracts succeeded...');
     console.log('PizzaCoin address: ' + PizzaCoinJson.networks[5777].address);
+    //console.log('PizzaCoin address: ' + PizzaCoinJson.networks[4].address);
     console.log('PizzaCoinStaff address: ' + staffContractAddr);
     console.log('PizzaCoinPlayer address: ' + playerContractAddr);
     console.log('PizzaCoinTeam address: ' + teamContractAddr);
@@ -60,6 +62,14 @@ async function main() {
     // Register a staff
     registerStaff(ethAccounts, ethAccounts[1], 'bright');
     console.log('\nRegistering a staff succeeded...');
+
+    // Register a staff
+    registerStaff(ethAccounts, ethAccounts[2], 'bright');
+    console.log('\nRegistering a staff succeeded...');
+
+    // Kick a staff
+    kickStaff(ethAccounts, ethAccounts[1]);
+    console.log('\nKicking a staff succeeded...');
 }
 
 async function registerStaff(ethAccounts, staffAddr, staffName) {
@@ -84,6 +94,30 @@ async function registerStaff(ethAccounts, staffAddr, staffName) {
 
     if (staffAddr !== staffAddrRet || staffName !== staffNameRet) {
         throw new Error("Registering a staff failed");
+    }
+}
+
+async function kickStaff(ethAccounts, staffAddr) {
+    let err, receipt;
+    let staffAddrRet;
+
+    // Kick a staff
+    [err, receipt] = await callContractFunction(
+        PizzaCoin.methods.kickStaff(staffAddr).send({
+            from: ethAccounts[0],
+            gas: 6500000,
+            gasPrice: 10000000000
+        })
+    );
+
+    if (err) {
+        throw new Error(err);
+    }
+
+    staffAddrRet = receipt.events.StaffKicked.returnValues._staffToBeKicked;
+
+    if (staffAddr !== staffAddrRet) {
+        throw new Error("Kicking a staff failed");
     }
 }
 

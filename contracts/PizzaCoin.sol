@@ -29,6 +29,7 @@ contract PizzaCoin is ERC20, Owned {
     //event StateChanged(string _state, address indexed _staff, string _staffName);
     event ChildContractCreated(address indexed _contract);
     event StaffRegistered(address indexed _staff, string _staffName);
+    event StaffKicked(address indexed _staffToBeKicked, string _staffName, address indexed _kicker, string _kickerName);
 
     // Token info
     string public constant symbol = "PZC";
@@ -287,7 +288,12 @@ contract PizzaCoin is ERC20, Owned {
     // Remove a specific staff
     // ------------------------------------------------------------------------
     function kickStaff(address _staff) public onlyRegistrationState onlyOwner {
-        TestLib.kickStaff(_staff, staffContract);
+        address kicker;
+        string memory staffName;
+        string memory kickerName;
+
+        (staffName, kicker, kickerName) = TestLib.kickStaff(_staff, staffContract);
+        emit StaffKicked(_staff, staffName, kicker, kickerName);
     }
 
     /*// ------------------------------------------------------------------------

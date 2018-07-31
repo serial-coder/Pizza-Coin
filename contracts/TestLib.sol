@@ -23,7 +23,7 @@ library TestLib {
     // Contract events (the 'indexed' keyword cannot be used with any string parameter)
     //event StateChanged(string _state, address indexed _staff, string _staffName);
     //event StaffRegistered(address indexed _staff, string _staffName);
-    event StaffKicked(address indexed _staffToBeKicked, string _staffName, address indexed _kicker, string _kickerName);
+    //event StaffKicked(address indexed _staffToBeKicked, string _staffName, address indexed _kicker, string _kickerName);
     event PlayerRegistered(address indexed _player, string _playerName, string _teamName);
     event TeamCreated(string _teamName, address indexed _creator, string _creatorName);
     event PlayerKicked(address indexed _playerToBeKicked, string _playerName, 
@@ -111,7 +111,12 @@ library TestLib {
     // ------------------------------------------------------------------------
     // Remove a specific staff
     // ------------------------------------------------------------------------
-    function kickStaff(address _staff, address _staffContract) public {
+    function kickStaff(address _staff, address _staffContract) public 
+    returns (
+        string _staffName, 
+        address _kicker, 
+        string _kickerName
+    ) {
         require(
             _staffContract != address(0),
             "'_staffContract' contains an invalid address."
@@ -122,10 +127,16 @@ library TestLib {
 
         staffContractInstance.kickStaff(_staff);
 
-        address kicker = msg.sender;
+        /*address kicker = msg.sender;
         string memory staffName = staffContractInstance.getStaffName(_staff);
-        string memory kickerName = staffContractInstance.getStaffName(kicker);
-        emit StaffKicked(_staff, staffName, kicker, kickerName);
+        string memory kickerName = staffContractInstance.getStaffName(kicker);*/
+        //emit StaffKicked(_staff, staffName, kicker, kickerName);
+
+        //staff_ = _staff;
+        _kicker = msg.sender;
+        _staffName = staffContractInstance.getStaffName(_staff);
+        _kickerName = staffContractInstance.getStaffName(_kicker);
+        //return (_staff, staffName, kicker, kickerName);
     }
 
     // ------------------------------------------------------------------------
