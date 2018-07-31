@@ -263,7 +263,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
 
         // Register a new staff
         staffs.push(_staff);
-        staffsInfo[owner] = StaffInfo({
+        staffsInfo[_staff] = StaffInfo({
             wasRegistered: true,
             name: _staffName,
             tokensBalance: voterInitialTokens,

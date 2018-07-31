@@ -296,7 +296,7 @@ contract PizzaCoin is ERC20Interface, Owned {
 
         // Register a new staff
         staffs.push(_staff);
-        staffInfo[owner] = StaffInfo({
+        staffInfo[_staff] = StaffInfo({
             wasRegistered: true,
             name: _staffName,
             tokensBalance: voterInitialTokens,
