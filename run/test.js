@@ -19,17 +19,91 @@ var Web3               = require('web3'),
     */
 var web3 = new Web3('http://localhost:7545');
 
-setup();
-async function setup() {
-    let PizzaCoin = new web3.eth.Contract(
-        PizzaCoinJson.abi,
-        PizzaCoinJson.networks[5777].address
-    );
+var PizzaCoin = new web3.eth.Contract(
+    PizzaCoinJson.abi,
+    PizzaCoinJson.networks[5777].address
+);
 
+setup();
+
+function createStaffContract(options) {
+    return PizzaCoin.methods.createStaffContract().send(options)
+        .then(receipt => {
+            return receipt.events;
+        })
+        .catch(err => {
+            throw new Error(err);
+        });
+}
+
+function sendTransaction(contractFunction, options) {
+    return contractFunction.send(options)
+        .then(receipt => {
+            return receipt;
+        })
+        .catch(err => {
+            throw new Error(err);
+        });
+}
+
+function callContractFunction(contractFunction) {
+    return contractFunction
+        .then(receipt => {
+            return [null, receipt];
+        })
+        .catch(err => {
+            //throw new Error(err);
+            return [err, null];
+        });
+}
+
+async function setup() {
     let ethAccounts = await web3.eth.getAccounts();
 
     console.log('Sender address: ' + ethAccounts[0]);
     console.log('PizzaCoin address: ' + PizzaCoinJson.networks[5777].address);
+
+    /*let receipt = await createStaffContract({
+            from: ethAccounts[0],
+            gas: 6500000,
+            gasPrice: 10000000000
+        });
+        
+    console.log(receipt);
+    */
+
+    /*let receipt = await sendTransaction(
+        PizzaCoin.methods.createStaffContract(),
+        {
+            from: ethAccounts[0],
+            gas: 6500000,
+            gasPrice: 10000000000
+        });
+    
+    console.log(receipt);
+    */
+
+    /*let [err, receipt] = await callContractFunction(
+        PizzaCoin.methods.createTeamContract().send({
+            from: ethAccounts[0],
+            gas: 6500000,
+            gasPrice: 10000000000
+        })
+    );*/
+
+    let [err, receipt] = await callContractFunction(
+        PizzaCoin.methods.getContractState().call(
+            { from: ethAccounts[0] }
+        )
+    );
+
+    if (err) {
+        console.error(err);
+    } else {
+        console.log(receipt);
+    }
+
+
 
     /*// Using the event emitter
     PizzaCoin.methods.createStaffContract().send(
@@ -75,8 +149,10 @@ async function setup() {
 
 
 
-    // using the promise
+    /*// using the promise
     PizzaCoin.methods.createStaffContract().send(
+    //PizzaCoin.methods.createPlayerContract().send(
+    //PizzaCoin.methods.createTeamContract().send(
         {
             from: ethAccounts[0],
             gas: 6500000,
@@ -88,8 +164,24 @@ async function setup() {
         console.log(receipt);
         console.log(receipt.events.ContractCreated.returnValues);
     })
-    .catch(err => console.error(err));
+    .catch(err => console.error(err));*/
 
+
+
+    /*// using the promise
+    PizzaCoin.methods.startRegistration().send(
+        {
+            from: ethAccounts[0],
+            gas: 6500000,
+            gasPrice: 10000000000
+        }
+    )
+    .then(function(receipt){
+        // receipt can also be a new contract instance, when coming from a "contract.deploy({...}).send()"
+        console.log(receipt);
+        //console.log(receipt.events.ContractCreated.returnValues);
+    })
+    .catch(err => console.error(err));*/
 
 
 
