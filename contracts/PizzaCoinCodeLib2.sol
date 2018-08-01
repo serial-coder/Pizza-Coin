@@ -13,9 +13,9 @@ import "./PizzaCoinTeam.sol";
 
 
 // ----------------------------------------------------------------------------
-// TestLib2 Library
+// Pizza Coin Code Library #2
 // ----------------------------------------------------------------------------
-library TestLib2 {
+library PizzaCoinCodeLib2 {
     using SafeMath for uint256;
 
 

@@ -10,7 +10,7 @@ import "./PizzaCoinStaff.sol";
 
 
 // ----------------------------------------------------------------------------
-// PizzaCoinStaffDeployer Library
+// Pizza Coin Staff Deployer Library
 // ----------------------------------------------------------------------------
 library PizzaCoinStaffDeployer {
 
