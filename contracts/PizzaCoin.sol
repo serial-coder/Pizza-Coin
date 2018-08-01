@@ -475,9 +475,9 @@ contract PizzaCoin is ERC20, Owned {
     // (start searching at _startSearchingIndex)
     // ------------------------------------------------------------------------
     function kickFirstFoundTeamPlayer(string _teamName, uint256 _startSearchingIndex) 
-        public onlyRegistrationState onlyStaff returns (uint256 _nextStartSearchingIndex, uint256 _totalPlayersRemaining) {
+        public onlyRegistrationState onlyStaff returns (uint256 _nextStartSearchingIndex) {
 
-        (_nextStartSearchingIndex, _totalPlayersRemaining) = TestLib.kickFirstFoundTeamPlayer(
+        _nextStartSearchingIndex = TestLib.kickFirstFoundTeamPlayer(
             _teamName, _startSearchingIndex, staffContract, playerContract, teamContract);
 
         emit PlayerKicked();

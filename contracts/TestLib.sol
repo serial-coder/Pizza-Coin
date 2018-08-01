@@ -172,11 +172,8 @@ library TestLib {
         address _playerContract,
         address _teamContract
     ) 
-    public 
-    returns (
-        uint256 _nextStartSearchingIndex, 
-        uint256 _totalPlayersRemaining
-    ) {
+    public returns (uint256 _nextStartSearchingIndex) 
+    {
         require(
             _staffContract != address(0),
             "'_staffContract' contains an invalid address."
@@ -198,20 +195,16 @@ library TestLib {
 
         // Get the array length of players in the specific team,
         // including all ever removal players
-        //uint256 noOfAllEverTeamPlayers = teamContractInstance.getArrayLengthOfPlayersInTeam(_teamName);
+        uint256 noOfAllEverTeamPlayers = teamContractInstance.getArrayLengthOfPlayersInTeam(_teamName);
 
         require(
-            _startSearchingIndex < /*noOfAllEverTeamPlayers*/
-                teamContractInstance.getArrayLengthOfPlayersInTeam(_teamName),
+            _startSearchingIndex < noOfAllEverTeamPlayers,
             "'_startSearchingIndex' is out of bound."
         );
 
-        _nextStartSearchingIndex = /*noOfAllEverTeamPlayers*/teamContractInstance.getArrayLengthOfPlayersInTeam(_teamName);
-        _totalPlayersRemaining = 0;
+        _nextStartSearchingIndex = noOfAllEverTeamPlayers;
 
-        for (uint256 i = _startSearchingIndex; i < /*noOfAllEverTeamPlayers*/
-            teamContractInstance.getArrayLengthOfPlayersInTeam(_teamName); i++
-        ) {
+        for (uint256 i = _startSearchingIndex; i < noOfAllEverTeamPlayers; i++) {
             bool endOfList;  // used as a temporary variable
             address player;
 
@@ -222,8 +215,6 @@ library TestLib {
 
                 // Start next searching at the next array element
                 _nextStartSearchingIndex = i + 1;
-                _totalPlayersRemaining = teamContractInstance.getTotalPlayersInTeam(_teamName);
-                //_totalPlayersRemaining = getTotalPlayersInTeam(_teamName, _playerContract, _teamContract);
                 return;     
             }
         }
