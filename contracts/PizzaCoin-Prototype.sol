@@ -131,7 +131,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     address[] private staffs;                                 // The first staff is the contract owner
-    mapping(address => StaffInfo) private staffInfo;         // mapping(staff => StaffInfo)
+    mapping(address => StaffInfo) private staffsInfo;         // mapping(staff => StaffInfo)
 
     address[] private players;
     mapping(address => TeamPlayerInfo) private playersInfo;  // mapping(player => TeamPlayerInfo)
@@ -184,7 +184,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     modifier notRegistered {
         require(
-            staffInfo[msg.sender].wasRegistered == false && 
+            staffsInfo[msg.sender].wasRegistered == false && 
             playersInfo[msg.sender].wasRegistered == false,
             "This address was registered already."
         );
@@ -196,7 +196,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     modifier onlyRegistered {
         require(
-            staffInfo[msg.sender].wasRegistered == true || 
+            staffsInfo[msg.sender].wasRegistered == true || 
             playersInfo[msg.sender].wasRegistered == true,
             "This address was not being registered."
         );
@@ -208,7 +208,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     modifier onlyStaff {
         require(
-            staffInfo[msg.sender].wasRegistered == true || msg.sender == owner,
+            staffsInfo[msg.sender].wasRegistered == true || msg.sender == owner,
             "This address is not a staff."
         );
         _;
@@ -290,13 +290,13 @@ contract PizzaCoin is ERC20Interface, Owned {
         );
 
         require(
-            staffInfo[_staff].wasRegistered == false,
+            staffsInfo[_staff].wasRegistered == false,
             "The specified staff was registered already."
         );
 
         // Register a new staff
         staffs.push(_staff);
-        staffInfo[_staff] = StaffInfo({
+        staffsInfo[_staff] = StaffInfo({
             wasRegistered: true,
             name: _staffName,
             tokensBalance: voterInitialTokens,
@@ -322,7 +322,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         );
 
         require(
-            staffInfo[_staff].wasRegistered == true,
+            staffsInfo[_staff].wasRegistered == true,
             "Cannot find the specified staff."
         );
 
@@ -340,14 +340,14 @@ contract PizzaCoin is ERC20Interface, Owned {
         }
 
         address kicker = msg.sender;
-        string memory staffName = staffInfo[_staff].name;
-        string memory kickerName = staffInfo[kicker].name;
+        string memory staffName = staffsInfo[_staff].name;
+        string memory kickerName = staffsInfo[kicker].name;
 
         // Reset an element to 0 but the array length never decrease (beware!!)
         delete staffs[staffIndex];
 
         // Remove a specified staff from a mapping
-        delete staffInfo[_staff];
+        delete staffsInfo[_staff];
 
         _totalSupply = _totalSupply.sub(voterInitialTokens);
 
@@ -526,7 +526,7 @@ contract PizzaCoin is ERC20Interface, Owned {
 
         address kicker = msg.sender;
         string memory playerName = playersInfo[_player].name;
-        string memory kickerName = staffInfo[kicker].name;
+        string memory kickerName = staffsInfo[kicker].name;
 
         // Reset an element to 0 but the array length never decrease (beware!!)
         delete players[playerIndex];
@@ -623,7 +623,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         delete teamsInfo[_teamName];
 
         address kicker = msg.sender;
-        string memory kickerName = staffInfo[kicker].name;
+        string memory kickerName = staffsInfo[kicker].name;
         emit TeamKicked(_teamName, kicker, kickerName);
         return true;
     }
@@ -653,7 +653,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         state = State.RegistrationLocked;
 
         address staff = msg.sender;
-        string memory staffName = staffInfo[staff].name;
+        string memory staffName = staffsInfo[staff].name;
         emit StateChanged(convertStateToString(), staff, staffName);
         return true;
     }
@@ -665,7 +665,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         state = State.Voting;
 
         address staff = msg.sender;
-        string memory staffName = staffInfo[staff].name;
+        string memory staffName = staffsInfo[staff].name;
         emit StateChanged(convertStateToString(), staff, staffName);
         return true;
     }
@@ -677,7 +677,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         state = State.VotingFinished;
 
         address staff = msg.sender;
-        string memory staffName = staffInfo[staff].name;
+        string memory staffName = staffsInfo[staff].name;
         emit StateChanged(convertStateToString(), staff, staffName);
         return true;
     }
@@ -689,7 +689,7 @@ contract PizzaCoin is ERC20Interface, Owned {
         _total = 0;
         for (uint256 i = 0; i < staffs.length; i++) {
             // Staff was not removed before
-            if (staffs[i] != address(0) && staffInfo[staffs[i]].wasRegistered == true) {
+            if (staffs[i] != address(0) && staffsInfo[staffs[i]].wasRegistered == true) {
                 _total++;
             }
         }
@@ -723,12 +723,12 @@ contract PizzaCoin is ERC20Interface, Owned {
             address staff = staffs[i];
 
             // Staff was not removed before
-            if (staff != address(0) && staffInfo[staff].wasRegistered == true) {
+            if (staff != address(0) && staffsInfo[staff].wasRegistered == true) {
                 _endOfList = false;
                 _nextStartSearchingIndex = i + 1;
                 _staff = staff;
-                _name = staffInfo[staff].name;
-                _tokensBalance = staffInfo[staff].tokensBalance;
+                _name = staffsInfo[staff].name;
+                _tokensBalance = staffsInfo[staff].tokensBalance;
                 return;
             }
         }
@@ -744,11 +744,11 @@ contract PizzaCoin is ERC20Interface, Owned {
         );
 
         require(
-            staffInfo[_staff].wasRegistered == true,
+            staffsInfo[_staff].wasRegistered == true,
             "Cannot find the specified staff."
         );
 
-        return staffInfo[_staff].teamsVoted.length;
+        return staffsInfo[_staff].teamsVoted.length;
     }
 
     // ------------------------------------------------------------------------
@@ -768,11 +768,11 @@ contract PizzaCoin is ERC20Interface, Owned {
         );
 
         require(
-            staffInfo[_staff].wasRegistered == true,
+            staffsInfo[_staff].wasRegistered == true,
             "Cannot find the specified staff."
         );
 
-        if (_votingIndex >= staffInfo[_staff].teamsVoted.length) {
+        if (_votingIndex >= staffsInfo[_staff].teamsVoted.length) {
             _endOfList = true;
             _team = "";
             _voteWeight = 0;
@@ -780,8 +780,8 @@ contract PizzaCoin is ERC20Interface, Owned {
         }
 
         _endOfList = false;
-        _team = staffInfo[_staff].teamsVoted[_votingIndex];
-        _voteWeight = staffInfo[_staff].votesWeight[_team];
+        _team = staffsInfo[_staff].teamsVoted[_votingIndex];
+        _voteWeight = staffsInfo[_staff].votesWeight[_team];
     }
 
     // ------------------------------------------------------------------------
@@ -1094,7 +1094,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // Determine if _user is a staff or not
     // ------------------------------------------------------------------------
     function isStaff(address _user) internal view returns (bool bStaff) {
-        return staffInfo[_user].wasRegistered;
+        return staffsInfo[_user].wasRegistered;
     }
 
     // ------------------------------------------------------------------------
@@ -1115,29 +1115,29 @@ contract PizzaCoin is ERC20Interface, Owned {
         assert(isStaff(voter));
 
         require(
-            _votingWeight <= staffInfo[voter].tokensBalance,
+            _votingWeight <= staffsInfo[voter].tokensBalance,
             "Insufficient voting balance."
         );
 
-        staffInfo[voter].tokensBalance = staffInfo[voter].tokensBalance.sub(_votingWeight);
+        staffsInfo[voter].tokensBalance = staffsInfo[voter].tokensBalance.sub(_votingWeight);
 
-        // If staffInfo[voter].votesWeight[_teamName] > 0 is true, this implies that 
+        // If staffsInfo[voter].votesWeight[_teamName] > 0 is true, this implies that 
         // the voter was used to give a vote to the specified team previously
-        if (staffInfo[voter].votesWeight[_teamName] == 0) {
+        if (staffsInfo[voter].votesWeight[_teamName] == 0) {
             // The voter has never been given a vote to the specified team before
             // We, therefore, have to add a new team to the 'teamsVoted' array
-            staffInfo[voter].teamsVoted.push(_teamName);
+            staffsInfo[voter].teamsVoted.push(_teamName);
 
             // We also need to add a new voter to the 'voters' array 
             // which is in the 'teamsInfo' mapping
             teamsInfo[_teamName].voters.push(voter);
         }
 
-        staffInfo[voter].votesWeight[_teamName] = staffInfo[voter].votesWeight[_teamName].add(_votingWeight);
+        staffsInfo[voter].votesWeight[_teamName] = staffsInfo[voter].votesWeight[_teamName].add(_votingWeight);
         teamsInfo[_teamName].votesWeight[voter] = teamsInfo[_teamName].votesWeight[voter].add(_votingWeight);
         teamsInfo[_teamName].totalVoted = teamsInfo[_teamName].totalVoted.add(_votingWeight);
 
-        string memory voterName = staffInfo[voter].name;
+        string memory voterName = staffsInfo[voter].name;
         emit TeamVotedByStaff(_teamName, voter, voterName, _votingWeight);
         return true;
     }
@@ -1282,7 +1282,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     function balanceOf(address tokenOwner) public view returns (uint256 balance) {
         if (isStaff(tokenOwner)) {
-            return staffInfo[tokenOwner].tokensBalance;
+            return staffsInfo[tokenOwner].tokensBalance;
         }
         else if (isTeamPlayer(tokenOwner)) {
             return playersInfo[tokenOwner].tokensBalance;
