@@ -81,6 +81,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     using SafeMath for uint256;
     using BasicStringUtils for string;
 
+
     // Team with players
     struct TeamInfo {
         bool wasCreated;    // Check if the team was created for uniqueness
@@ -98,6 +99,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
 
     enum State { Registration, RegistrationLocked, Voting, VotingFinished }
     State private state = State.Registration;
+
 
     // ------------------------------------------------------------------------
     // Constructor

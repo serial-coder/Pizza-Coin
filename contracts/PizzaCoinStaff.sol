@@ -60,6 +60,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     using SafeMath for uint256;
     using BasicStringUtils for string;
 
+
     struct StaffInfo {
         bool wasRegistered;    // Check if a specific staff is being registered
         string name;
@@ -78,6 +79,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
 
     enum State { Registration, RegistrationLocked, Voting, VotingFinished }
     State private state = State.Registration;
+
 
     // ------------------------------------------------------------------------
     // Constructor

@@ -25,6 +25,7 @@ import "./TestLib2.sol";
 contract PizzaCoin is ERC20, Owned {
     using BasicStringUtils for string;
 
+
     // Contract events (the 'indexed' keyword cannot be used with any string parameter)
     event StateChanged(string _state);
     event ChildContractCreated(address indexed _contract);
@@ -35,6 +36,7 @@ contract PizzaCoin is ERC20, Owned {
     event PlayerKicked();
     event TeamKicked();
     event TeamVoted();
+
 
     // Token info
     string public constant symbol = "PZC";
@@ -53,6 +55,7 @@ contract PizzaCoin is ERC20, Owned {
 
     // mapping(keccak256(state) => stateInString)
     mapping(bytes32 => string) private stateMap;
+
 
     // ------------------------------------------------------------------------
     // Constructor

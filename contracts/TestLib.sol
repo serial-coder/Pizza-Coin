@@ -25,10 +25,7 @@ library TestLib {
     // Register a new staff
     // ------------------------------------------------------------------------
     function registerStaff(address _staff, string _staffName, address _staffContract) public {
-        require(
-            _staffContract != address(0),
-            "'_staffContract' contains an invalid address."
-        );
+        assert(_staffContract != address(0));
 
         // Get a contract instance from the deployed addresses
         IStaffContract staffContractInstance = IStaffContract(_staffContract);
@@ -45,10 +42,7 @@ library TestLib {
         address _kicker, 
         string _kickerName
     ) {
-        require(
-            _staffContract != address(0),
-            "'_staffContract' contains an invalid address."
-        );
+        assert(_staffContract != address(0));
 
         // Get a contract instance from the deployed addresses
         IStaffContract staffContractInstance = IStaffContract(_staffContract);
@@ -64,15 +58,8 @@ library TestLib {
     // Register a player
     // ------------------------------------------------------------------------
     function registerPlayer(string _playerName, string _teamName, address _playerContract, address _teamContract) public {
-        require(
-            _playerContract != address(0),
-            "'_playerContract' contains an invalid address."
-        );
-
-        require(
-            _teamContract != address(0),
-            "'_teamContract' contains an invalid address."
-        );
+        assert(_playerContract != address(0));
+        assert(_teamContract != address(0));
         
         address player = msg.sender;
 
@@ -90,15 +77,8 @@ library TestLib {
     // Team leader creates a team
     // ------------------------------------------------------------------------
     function createTeam(string _teamName, string _creatorName, address _playerContract, address _teamContract) public {
-        require(
-            _playerContract != address(0),
-            "'_playerContract' contains an invalid address."
-        );
-
-        require(
-            _teamContract != address(0),
-            "'_teamContract' contains an invalid address."
-        );
+        assert(_playerContract != address(0));
+        assert(_teamContract != address(0));
 
         // Get a contract instance from the deployed addresses
         ITeamContract teamContractInstance = ITeamContract(_teamContract);
@@ -160,20 +140,9 @@ library TestLib {
     ) 
     public returns (uint256 _nextStartSearchingIndex) 
     {
-        require(
-            _staffContract != address(0),
-            "'_staffContract' contains an invalid address."
-        );
-
-        require(
-            _playerContract != address(0),
-            "'_playerContract' contains an invalid address."
-        );
-
-        require(
-            _teamContract != address(0),
-            "'_teamContract' contains an invalid address."
-        );
+        assert(_staffContract != address(0));
+        assert(_playerContract != address(0));
+        assert(_teamContract != address(0));
 
         // Get contract instances from the deployed addresses
         IPlayerContract playerContractInstance = IPlayerContract(_playerContract);
@@ -221,20 +190,9 @@ library TestLib {
         string _kickerName
     )
     {
-        require(
-            _staffContract != address(0),
-            "'_staffContract' contains an invalid address."
-        );
-
-        require(
-            _playerContract != address(0),
-            "'_playerContract' contains an invalid address."
-        );
-
-        require(
-            _teamContract != address(0),
-            "'_teamContract' contains an invalid address."
-        );
+        assert(_staffContract != address(0));
+        assert(_playerContract != address(0));
+        assert(_teamContract != address(0));
 
         // Get contract instances from the deployed addresses
         IStaffContract staffContractInstance = IStaffContract(_staffContract);
@@ -258,15 +216,8 @@ library TestLib {
     function kickTeam(string _teamName, address _staffContract, address _teamContract) 
     public returns (string _kickerName)
     {
-        require(
-            _staffContract != address(0),
-            "'_staffContract' contains an invalid address."
-        );
-
-        require(
-            _teamContract != address(0),
-            "'_teamContract' contains an invalid address."
-        );
+        assert(_staffContract != address(0));
+        assert(_teamContract != address(0));
 
         // Get contract instances from the deployed addresses
         IStaffContract staffContractInstance = IStaffContract(_staffContract);
@@ -290,15 +241,8 @@ library TestLib {
     ) 
     public 
     {
-        require(
-            _staffContract != address(0),
-            "'_staffContract' contains an invalid address."
-        );
-
-        require(
-            _teamContract != address(0),
-            "'_teamContract' contains an invalid address."
-        );
+        assert(_staffContract != address(0));
+        assert(_teamContract != address(0));
 
         // Get contract instances from the deployed addresses
         IStaffContract staffContractInstance = IStaffContract(_staffContract);
@@ -338,15 +282,8 @@ library TestLib {
     ) 
     internal
     {
-        require(
-            _staffContract != address(0),
-            "'_staffContract' contains an invalid address."
-        );
-
-        require(
-            _teamContract != address(0),
-            "'_teamContract' contains an invalid address."
-        );
+        assert(_staffContract != address(0));
+        assert(_teamContract != address(0));
 
         // Get contract instances from the deployed addresses
         IStaffContract staffContractInstance = IStaffContract(_staffContract);
@@ -379,15 +316,8 @@ library TestLib {
     ) 
     internal
     {
-        require(
-            _playerContract != address(0),
-            "'_playerContract' contains an invalid address."
-        );
-
-        require(
-            _teamContract != address(0),
-            "'_teamContract' contains an invalid address."
-        );
+        assert(_playerContract != address(0));
+        assert(_teamContract != address(0));
 
         // Get contract instances from the deployed addresses
         IPlayerContract playerContractInstance = IPlayerContract(_playerContract);

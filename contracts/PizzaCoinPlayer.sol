@@ -61,6 +61,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     using SafeMath for uint256;
     using BasicStringUtils for string;
 
+
     struct PlayerInfo {
         bool wasRegistered;    // Check if a specific player is being registered
         string name;
@@ -80,6 +81,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
 
     enum State { Registration, RegistrationLocked, Voting, VotingFinished }
     State private state = State.Registration;
+
 
     // ------------------------------------------------------------------------
     // Constructor

@@ -7,7 +7,6 @@
 pragma solidity ^0.4.23;
 
 import "./SafeMath.sol";
-//import "./BasicStringUtils.sol";
 import "./PizzaCoinStaff.sol";
 import "./PizzaCoinPlayer.sol";
 import "./PizzaCoinTeam.sol";
@@ -18,17 +17,13 @@ import "./PizzaCoinTeam.sol";
 // ----------------------------------------------------------------------------
 library TestLib2 {
     using SafeMath for uint256;
-    //using BasicStringUtils for string;
 
 
     // ------------------------------------------------------------------------
     // Determine if _user is a staff or not
     // ------------------------------------------------------------------------
     function isStaff(address _user, address _staffContract) public view returns (bool bStaff) {
-        require(
-            _staffContract != address(0),
-            "'_staffContract' contains an invalid address."
-        );
+        assert(_staffContract != address(0));
 
         // Get a contract instance from the deployed addresses
         IStaffContract staffContractInstance = IStaffContract(_staffContract);
@@ -40,10 +35,7 @@ library TestLib2 {
     // Determine if _user is a player or not
     // ------------------------------------------------------------------------
     function isPlayer(address _user, address _playerContract) public view returns (bool bPlayer) {
-        require(
-            _playerContract != address(0),
-            "'_playerContract' contains an invalid address."
-        );
+        assert(_playerContract != address(0));
 
         // Get a contract instance from the deployed addresses
         IPlayerContract playerContractInstance = IPlayerContract(_playerContract);
@@ -61,20 +53,9 @@ library TestLib2 {
     ) 
     public 
     {
-        require(
-            _staffContract != address(0),
-            "'_staffContract' contains an invalid address."
-        );
-
-        require(
-            _playerContract != address(0),
-            "'_playerContract' contains an invalid address."
-        );
-
-        require(
-            _teamContract != address(0),
-            "'_teamContract' contains an invalid address."
-        );
+        assert(_staffContract != address(0));
+        assert(_playerContract != address(0));
+        assert(_teamContract != address(0));
 
         // Get contract instances from the deployed addresses
         IStaffContract staffContractInstance = IStaffContract(_staffContract);
@@ -97,20 +78,9 @@ library TestLib2 {
     ) 
     public 
     {
-        require(
-            _staffContract != address(0),
-            "'_staffContract' contains an invalid address."
-        );
-
-        require(
-            _playerContract != address(0),
-            "'_playerContract' contains an invalid address."
-        );
-
-        require(
-            _teamContract != address(0),
-            "'_teamContract' contains an invalid address."
-        );
+        assert(_staffContract != address(0));
+        assert(_playerContract != address(0));
+        assert(_teamContract != address(0));
 
         // Get contract instances from the deployed addresses
         IStaffContract staffContractInstance = IStaffContract(_staffContract);
@@ -133,20 +103,9 @@ library TestLib2 {
     ) 
     public 
     {
-        require(
-            _staffContract != address(0),
-            "'_staffContract' contains an invalid address."
-        );
-
-        require(
-            _playerContract != address(0),
-            "'_playerContract' contains an invalid address."
-        );
-
-        require(
-            _teamContract != address(0),
-            "'_teamContract' contains an invalid address."
-        );
+        assert(_staffContract != address(0));
+        assert(_playerContract != address(0));
+        assert(_teamContract != address(0));
 
         // Get contract instances from the deployed addresses
         IStaffContract staffContractInstance = IStaffContract(_staffContract);
@@ -170,15 +129,8 @@ library TestLib2 {
     // Standard function of ERC token standard #20
     // ------------------------------------------------------------------------
     function totalSupply(address _staffContract, address _playerContract) public view returns (uint256 _totalSupply) {
-        require(
-            _staffContract != address(0),
-            "'_staffContract' contains an invalid address."
-        );
-
-        require(
-            _playerContract != address(0),
-            "'_playerContract' contains an invalid address."
-        );
+        assert(_staffContract != address(0));
+        assert(_playerContract != address(0));
 
         // Get contract instances from the deployed addresses
         IStaffContract staffContractInstance = IStaffContract(_staffContract);
@@ -200,15 +152,8 @@ library TestLib2 {
     public view 
     returns (uint256 balance) 
     {
-        require(
-            _staffContract != address(0),
-            "'_staffContract' contains an invalid address."
-        );
-
-        require(
-            _playerContract != address(0),
-            "'_playerContract' contains an invalid address."
-        );
+        assert(_staffContract != address(0));
+        assert(_playerContract != address(0));
 
         // Get contract instances from the deployed addresses
         IStaffContract staffContractInstance = IStaffContract(_staffContract);
