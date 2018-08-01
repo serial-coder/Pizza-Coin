@@ -185,7 +185,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     // ------------------------------------------------------------------------
     // Get a total supply
     // ------------------------------------------------------------------------
-    function getTotalSupply() external view onlyPizzaCoin returns (uint256 _totalSupply) {
+    function getTotalSupply() external view returns (uint256 _totalSupply) {
         return totalSupply;
     }
 
@@ -209,14 +209,14 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     // ------------------------------------------------------------------------
     // Determine if _user is a staff or not (external)
     // ------------------------------------------------------------------------
-    function isStaff(address _user) external view onlyPizzaCoin returns (bool bStaff) {
+    function isStaff(address _user) external view returns (bool bStaff) {
         return __isStaff(_user);
     }
 
     // ------------------------------------------------------------------------
     // Determine if _user is a staff or not (internal)
     // ------------------------------------------------------------------------
-    function __isStaff(address _user) internal view onlyPizzaCoin returns (bool bStaff) {
+    function __isStaff(address _user) internal view returns (bool bStaff) {
         require(
             _user != address(0),
             "'_user' contains an invalid address."
@@ -228,7 +228,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     // ------------------------------------------------------------------------
     // Get a staff name
     // ------------------------------------------------------------------------
-    function getStaffName(address _staff) external view onlyPizzaCoin returns (string _name) {
+    function getStaffName(address _staff) external view returns (string _name) {
         require(
             _staff != address(0),
             "'_staff' contains an invalid address."
@@ -333,7 +333,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     // ------------------------------------------------------------------------
     // Get a total number of staffs
     // ------------------------------------------------------------------------
-    function getTotalStaffs() external view onlyPizzaCoin returns (uint256 _total) {
+    function getTotalStaffs() external view returns (uint256 _total) {
         _total = 0;
         for (uint256 i = 0; i < staffs.length; i++) {
             // Staff was not removed before
@@ -348,7 +348,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     // (start searching at _startSearchingIndex)
     // ------------------------------------------------------------------------
     function getFirstFoundStaffInfo(uint256 _startSearchingIndex) 
-        external view onlyPizzaCoin
+        external view
         returns (
             bool _endOfList, 
             uint256 _nextStartSearchingIndex,
@@ -385,7 +385,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     // ------------------------------------------------------------------------
     // Get a total number of the votes ('teamsVoted' array) made by the specified staff
     // ------------------------------------------------------------------------
-    function getTotalVotesByStaff(address _staff) external view onlyPizzaCoin returns (uint256 _total) {
+    function getTotalVotesByStaff(address _staff) external view returns (uint256 _total) {
         require(
             _staff != address(0),
             "'_staff' contains an invalid address."
@@ -403,7 +403,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     // Get a team voting result (at the index of 'teamsVoted' array) made by the specified staff
     // ------------------------------------------------------------------------
     function getVoteResultAtIndexByStaff(address _staff, uint256 _votingIndex) 
-        external view onlyPizzaCoin
+        external view
         returns (
             bool _endOfList,
             string _team,
@@ -435,7 +435,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     // ------------------------------------------------------------------------
     // Get a token balance of the specified staff
     // ------------------------------------------------------------------------
-    function getTokenBalance(address _staff) external view onlyPizzaCoin returns (uint256 _tokenBalance) {
+    function getTokenBalance(address _staff) external view returns (uint256 _tokenBalance) {
         require(
             _staff != address(0),
             "'_staff' contains an invalid address."

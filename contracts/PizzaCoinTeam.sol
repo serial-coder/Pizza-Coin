@@ -188,7 +188,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     // Determine if the specified team exists
     // ------------------------------------------------------------------------
-    function doesTeamExist(string _teamName) external view onlyPizzaCoin returns (bool bTeamExist) {
+    function doesTeamExist(string _teamName) external view returns (bool bTeamExist) {
         require(
             _teamName.isEmpty() == false,
             "'_teamName' might not be empty."
@@ -338,7 +338,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     // Get the array length of players in the specific team (including all ever removal players)
     // ------------------------------------------------------------------------
-    function getArrayLengthOfPlayersInTeam(string _teamName) external view onlyPizzaCoin returns (uint256 _length) {
+    function getArrayLengthOfPlayersInTeam(string _teamName) external view returns (uint256 _length) {
         require(
             _teamName.isEmpty() == false,
             "'_teamName' might not be empty."
@@ -355,14 +355,14 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     // Get a total number of players in a specified team (external)
     // ------------------------------------------------------------------------
-    function getTotalPlayersInTeam(string _teamName) external view onlyPizzaCoin returns (uint256 _total) {
+    function getTotalPlayersInTeam(string _teamName) external view returns (uint256 _total) {
         return __getTotalPlayersInTeam(_teamName);
     }
 
     // ------------------------------------------------------------------------
     // Get a total number of players in a specified team (internal)
     // ------------------------------------------------------------------------
-    function __getTotalPlayersInTeam(string _teamName) internal view onlyPizzaCoin returns (uint256 _total) {
+    function __getTotalPlayersInTeam(string _teamName) internal view returns (uint256 _total) {
         require(
             _teamName.isEmpty() == false,
             "'_teamName' might not be empty."
@@ -389,7 +389,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // (start searching at _startSearchingIndex)
     // ------------------------------------------------------------------------
     function getFirstFoundPlayerInTeam(string _teamName, uint256 _startSearchingIndex) 
-        external view onlyPizzaCoin
+        external view
         returns (
             bool _endOfList, 
             uint256 _nextStartSearchingIndex,
@@ -431,7 +431,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // Get a player in the specified team at the specified index (including all ever removal players)
     // ------------------------------------------------------------------------
     function getPlayerInTeamAtIndex(string _teamName, uint256 _playerIndex) 
-        external view onlyPizzaCoin 
+        external view 
         returns (
             bool _endOfList, 
             address _player
@@ -478,7 +478,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     // Get a total number of teams
     // ------------------------------------------------------------------------
-    function getTotalTeams() external view onlyPizzaCoin returns (uint256 _total) {
+    function getTotalTeams() external view returns (uint256 _total) {
         _total = 0;
         for (uint256 i = 0; i < teams.length; i++) {
             // Team was not removed before
@@ -493,7 +493,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // (start searching at _startSearchingIndex)
     // ------------------------------------------------------------------------
     function getFirstFoundTeamInfo(uint256 _startSearchingIndex) 
-        external view onlyPizzaCoin
+        external view
         returns (
             bool _endOfList, 
             uint256 _nextStartSearchingIndex,
@@ -527,7 +527,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     // Get a total number of voters to a specified team
     // ------------------------------------------------------------------------
-    function getTotalVotersToTeam(string _teamName) external view onlyPizzaCoin returns (uint256 _total) {
+    function getTotalVotersToTeam(string _teamName) external view returns (uint256 _total) {
         require(
             _teamName.isEmpty() == false,
             "'_teamName' might not be empty."
@@ -545,7 +545,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // Get a voting result (by the index of voters) to a specified team
     // ------------------------------------------------------------------------
     function getVoteResultAtIndexToTeam(string _teamName, uint256 _voterIndex) 
-        external view onlyPizzaCoin
+        external view
         returns (
             bool _endOfList,
             address _voter,
@@ -614,14 +614,14 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     // Find a maximum voting points from each team after voting is finished (external)
     // ------------------------------------------------------------------------
-    function getMaxTeamVotingPoints() external view onlyVotingFinishedState onlyPizzaCoin returns (uint256 _maxTeamVotingPoints) {
+    function getMaxTeamVotingPoints() external view onlyVotingFinishedState returns (uint256 _maxTeamVotingPoints) {
         return __getMaxTeamVotingPoints();
     }
 
     // ------------------------------------------------------------------------
     // Find a maximum voting points from each team after voting is finished (internal)
     // ------------------------------------------------------------------------
-    function __getMaxTeamVotingPoints() internal view onlyVotingFinishedState onlyPizzaCoin returns (uint256 _maxTeamVotingPoints) {
+    function __getMaxTeamVotingPoints() internal view onlyVotingFinishedState returns (uint256 _maxTeamVotingPoints) {
         _maxTeamVotingPoints = 0;
         for (uint256 i = 0; i < teams.length; i++) {
             // Team was not removed before
@@ -638,7 +638,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // Get a total number of team winners after voting is finished
     // It is possible to have several teams that got the equal maximum voting points 
     // ------------------------------------------------------------------------
-    function getTotalTeamWinners() external view onlyVotingFinishedState onlyPizzaCoin returns (uint256 _total) {
+    function getTotalTeamWinners() external view onlyVotingFinishedState returns (uint256 _total) {
         uint256 maxTeamVotingPoints = __getMaxTeamVotingPoints();
 
         _total = 0;
@@ -659,7 +659,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // It is possible to have several teams that got the equal maximum voting points 
     // ------------------------------------------------------------------------
     function getFirstFoundTeamWinner(uint256 _startSearchingIndex) 
-        external view onlyVotingFinishedState onlyPizzaCoin
+        external view onlyVotingFinishedState
         returns (
             bool _endOfList,
             uint256 _nextStartSearchingIndex,

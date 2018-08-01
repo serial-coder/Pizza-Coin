@@ -285,51 +285,6 @@ contract PizzaCoin is ERC20, Owned {
         emit StaffKicked();
     }
 
-    /*// ------------------------------------------------------------------------
-    // Get a total number of staffs
-    // ------------------------------------------------------------------------
-    function getTotalStaffs() public view returns (uint256 _total) {
-        return TestLib2.getTotalStaffs(staffContract);
-    }*/
-
-    /*// ------------------------------------------------------------------------
-    // Get an info of the first found staff 
-    // (start searching at _startSearchingIndex)
-    // ------------------------------------------------------------------------
-    function getFirstFoundStaffInfo(uint256 _startSearchingIndex) 
-        public view
-        returns (
-            bool _endOfList, 
-            uint256 _nextStartSearchingIndex,
-            address _staff,
-            string _name,
-            uint256 _tokensBalance
-        ) 
-    {
-        return TestLib2.getFirstFoundStaffInfo(_startSearchingIndex, staffContract);
-    }*/
-
-    /*// ------------------------------------------------------------------------
-    // Get a total number of the votes ('teamsVoted' array) made by the specified staff
-    // ------------------------------------------------------------------------
-    function getTotalVotesByStaff(address _staff) public view returns (uint256 _total) {
-        return TestLib2.getTotalVotesByStaff(_staff, staffContract);
-    }*/
-
-    /*// ------------------------------------------------------------------------
-    // Get a team voting result (at the index of 'teamsVoted' array) made by the specified staff
-    // ------------------------------------------------------------------------
-    function getVoteResultAtIndexByStaff(address _staff, uint256 _votingIndex) 
-        public view
-        returns (
-            bool _endOfList,
-            string _team,
-            uint256 _voteWeight
-        ) 
-    {
-        return TestLib2.getVoteResultAtIndexByStaff(_staff, _votingIndex, staffContract);
-    }*/
-
     // ------------------------------------------------------------------------
     // Create a player contract
     // ------------------------------------------------------------------------
@@ -355,52 +310,6 @@ contract PizzaCoin is ERC20, Owned {
         emit PlayerRegistered();
     }
 
-    /*// ------------------------------------------------------------------------
-    // Get a total number of players
-    // ------------------------------------------------------------------------
-    function getTotalPlayers() public view returns (uint256 _total) {
-        return TestLib2.getTotalPlayers(playerContract);
-    }*/
-
-    /*// ------------------------------------------------------------------------
-    // Get an info of the first found player 
-    // (start searching at _startSearchingIndex)
-    // ------------------------------------------------------------------------
-    function getFirstFoundPlayerInfo(uint256 _startSearchingIndex) 
-        public view
-        returns (
-            bool _endOfList, 
-            uint256 _nextStartSearchingIndex,
-            address _player,
-            string _name,
-            uint256 _tokensBalance,
-            string _teamName
-        ) 
-    {
-        return TestLib2.getFirstFoundPlayerInfo(_startSearchingIndex, playerContract);
-    }*/
-
-    /*// ------------------------------------------------------------------------
-    // Get a total number of the votes ('teamsVoted' array) made by the specified player
-    // ------------------------------------------------------------------------
-    function getTotalVotesByPlayer(address _player) public view returns (uint256 _total) {
-        return TestLib2.getTotalVotesByPlayer(_player, playerContract);
-    }*/
-
-    /*// ------------------------------------------------------------------------
-    // Get a team voting result (at the index of 'teamsVoted' array) made by the specified player
-    // ------------------------------------------------------------------------
-    function getVoteResultAtIndexByPlayer(address _player, uint256 _votingIndex) 
-        public view
-        returns (
-            bool _endOfList,
-            string _team,
-            uint256 _voteWeight
-        ) 
-    {
-        return TestLib2.getVoteResultAtIndexByPlayer(_player, _votingIndex, playerContract);
-    }*/
-
     // ------------------------------------------------------------------------
     // Create a team contract
     // ------------------------------------------------------------------------
@@ -425,50 +334,6 @@ contract PizzaCoin is ERC20, Owned {
         TestLib.createTeam(_teamName, _creatorName, playerContract, teamContract);
         emit TeamCreated();
     }
-
-    /*// ------------------------------------------------------------------------
-    // Get a total number of teams
-    // ------------------------------------------------------------------------
-    function getTotalTeams() public view returns (uint256 _total) {
-        return TestLib2.getTotalTeams(teamContract);
-    }*/
-
-    /*// ------------------------------------------------------------------------
-    // Get an info of the first found team 
-    // (start searching at _startSearchingIndex)
-    // ------------------------------------------------------------------------
-    function getFirstFoundTeamInfo(uint256 _startSearchingIndex) 
-        public view
-        returns (
-            bool _endOfList, 
-            uint256 _nextStartSearchingIndex,
-            string _teamName,
-            uint256 _totalVoted
-        ) 
-    {
-        return TestLib2.getFirstFoundTeamInfo(_startSearchingIndex, teamContract);
-    }*/
-
-    /*// ------------------------------------------------------------------------
-    // Get a total number of voters to a specified team
-    // ------------------------------------------------------------------------
-    function getTotalVotersToTeam(string _teamName) public view returns (uint256 _total) {
-        return TestLib2.getTotalVotersToTeam(_teamName, teamContract);
-    }*/
-
-    /*// ------------------------------------------------------------------------
-    // Get a voting result (by the index of voters) to a specified team
-    // ------------------------------------------------------------------------
-    function getVoteResultAtIndexToTeam(string _teamName, uint256 _voterIndex) 
-        public view
-        returns (
-            bool _endOfList,
-            address _voter,
-            uint256 _voteWeight
-        ) 
-    {
-        return TestLib2.getVoteResultAtIndexToTeam(_teamName, _voterIndex, teamContract);
-    }*/
 
     // ------------------------------------------------------------------------
     // Remove the first found player in a particular team 
@@ -499,28 +364,6 @@ contract PizzaCoin is ERC20, Owned {
         emit TeamKicked();
     }
 
-    /*// ------------------------------------------------------------------------
-    // Get a total number of players in a specified team
-    // ------------------------------------------------------------------------
-    function getTotalPlayersInTeam(string _teamName) public view returns (uint256 _total) {
-        return TestLib2.getTotalPlayersInTeam(_teamName, teamContract);
-    }*/
-
-    /*// ------------------------------------------------------------------------
-    // Get the first found player of a specified team
-    // (start searching at _startSearchingIndex)
-    // ------------------------------------------------------------------------
-    function getFirstFoundPlayerInTeam(string _teamName, uint256 _startSearchingIndex) 
-        public view
-        returns (
-            bool _endOfList, 
-            uint256 _nextStartSearchingIndex,
-            address _player
-        ) 
-    {
-        return TestLib2.getFirstFoundPlayerInTeam(_teamName, _startSearchingIndex, teamContract);
-    }*/
-
     // ------------------------------------------------------------------------
     // Allow any staff or any player in other different teams to vote to a team
     // ------------------------------------------------------------------------
@@ -528,38 +371,6 @@ contract PizzaCoin is ERC20, Owned {
         TestLib.voteTeam(_teamName, _votingWeight, staffContract, playerContract, teamContract);
         emit TeamVoted();
     }
-
-    /*// ------------------------------------------------------------------------
-    // Find a maximum voting points from each team after voting is finished
-    // ------------------------------------------------------------------------
-    function getMaxTeamVotingPoints() public view onlyVotingFinishedState returns (uint256 _maxTeamVotingPoints) {
-        return TestLib2.getMaxTeamVotingPoints(teamContract);
-    }*/
-
-    /*// ------------------------------------------------------------------------
-    // Get a total number of team winners after voting is finished
-    // It is possible to have several teams that got the equal maximum voting points 
-    // ------------------------------------------------------------------------
-    function getTotalTeamWinners() public view onlyVotingFinishedState returns (uint256 _total) {
-        return TestLib2.getTotalTeamWinners(teamContract);
-    }*/
-
-    /*// ------------------------------------------------------------------------
-    // Get the first found team winner
-    // (start searching at _startSearchingIndex)
-    // It is possible to have several teams that got the equal maximum voting points 
-    // ------------------------------------------------------------------------
-    function getFirstFoundTeamWinner(uint256 _startSearchingIndex) 
-        public view onlyVotingFinishedState
-        returns (
-            bool _endOfList,
-            uint256 _nextStartSearchingIndex,
-            string _teamName, 
-            uint256 _totalVoted
-        )
-    {
-        return TestLib2.getFirstFoundTeamWinner(_startSearchingIndex, teamContract);
-    }*/
 
 
     /*

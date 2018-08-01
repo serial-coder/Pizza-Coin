@@ -176,21 +176,21 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     // ------------------------------------------------------------------------
     // Get a total supply
     // ------------------------------------------------------------------------
-    function getTotalSupply() external view onlyPizzaCoin returns (uint256 _totalSupply) {
+    function getTotalSupply() external view returns (uint256 _totalSupply) {
         return totalSupply;
     }
 
     // ------------------------------------------------------------------------
     // Determine if _user is a player or not (external)
     // ------------------------------------------------------------------------
-    function isPlayer(address _user) external view onlyPizzaCoin returns (bool bPlayer) {
+    function isPlayer(address _user) external view returns (bool bPlayer) {
         return __isPlayer(_user);
     }
 
     // ------------------------------------------------------------------------
     // Determine if _user is a player or not (internal)
     // ------------------------------------------------------------------------
-    function __isPlayer(address _user) internal view onlyPizzaCoin returns (bool bPlayer) {
+    function __isPlayer(address _user) internal view returns (bool bPlayer) {
         require(
             _user != address(0),
             "'_user' contains an invalid address."
@@ -202,14 +202,14 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     // ------------------------------------------------------------------------
     // Determine if _user is a player in the specified _teamName or not (external)
     // ------------------------------------------------------------------------
-    function isPlayerInTeam(address _user, string _teamName) external view onlyPizzaCoin returns (bool bTeamPlayer) {
+    function isPlayerInTeam(address _user, string _teamName) external view returns (bool bTeamPlayer) {
         return __isPlayerInTeam(_user, _teamName);
     }
 
     // ------------------------------------------------------------------------
     // Determine if _user is a player in the specified _teamName or not (internal)
     // ------------------------------------------------------------------------
-    function __isPlayerInTeam(address _user, string _teamName) internal view onlyPizzaCoin returns (bool bTeamPlayer) {
+    function __isPlayerInTeam(address _user, string _teamName) internal view returns (bool bTeamPlayer) {
         require(
             _user != address(0),
             "'_user' contains an invalid address."
@@ -229,7 +229,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     // ------------------------------------------------------------------------
     // Get a player name
     // ------------------------------------------------------------------------
-    function getPlayerName(address _player) external view onlyPizzaCoin returns (string _name) {
+    function getPlayerName(address _player) external view returns (string _name) {
         require(
             _player != address(0),
             "'_player' contains an invalid address."
@@ -246,7 +246,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     // ------------------------------------------------------------------------
     // Get a team name the player associated with
     // ------------------------------------------------------------------------
-    function getTeamNamePlayerJoined(address _player) external view onlyPizzaCoin returns (string _name) {
+    function getTeamNamePlayerJoined(address _player) external view returns (string _name) {
         require(
             _player != address(0),
             "'_player' contains an invalid address."
@@ -357,7 +357,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     // ------------------------------------------------------------------------
     // Get a total number of players
     // ------------------------------------------------------------------------
-    function getTotalPlayers() external view onlyPizzaCoin returns (uint256 _total) {
+    function getTotalPlayers() external view returns (uint256 _total) {
         _total = 0;
         for (uint256 i = 0; i < players.length; i++) {
             // Player was not removed before
@@ -372,7 +372,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     // (start searching at _startSearchingIndex)
     // ------------------------------------------------------------------------
     function getFirstFoundPlayerInfo(uint256 _startSearchingIndex) 
-        external view onlyPizzaCoin
+        external view
         returns (
             bool _endOfList, 
             uint256 _nextStartSearchingIndex,
@@ -412,7 +412,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     // ------------------------------------------------------------------------
     // Get a total number of the votes ('teamsVoted' array) made by the specified player
     // ------------------------------------------------------------------------
-    function getTotalVotesByPlayer(address _player) external view onlyPizzaCoin returns (uint256 _total) {
+    function getTotalVotesByPlayer(address _player) external view returns (uint256 _total) {
         require(
             _player != address(0),
             "'_player' contains an invalid address."
@@ -430,7 +430,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     // Get a team voting result (at the index of 'teamsVoted' array) made by the specified player
     // ------------------------------------------------------------------------
     function getVoteResultAtIndexByPlayer(address _player, uint256 _votingIndex) 
-        external view onlyPizzaCoin
+        external view
         returns (
             bool _endOfList,
             string _team,
@@ -462,7 +462,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     // ------------------------------------------------------------------------
     // Get a token balance of the specified player
     // ------------------------------------------------------------------------
-    function getTokenBalance(address _player) external view onlyPizzaCoin returns (uint256 _tokenBalance) {
+    function getTokenBalance(address _player) external view returns (uint256 _tokenBalance) {
         require(
             _player != address(0),
             "'_player' contains an invalid address."
