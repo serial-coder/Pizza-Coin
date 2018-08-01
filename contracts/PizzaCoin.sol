@@ -28,8 +28,14 @@ contract PizzaCoin is ERC20, Owned {
     // Contract events (the 'indexed' keyword cannot be used with any string parameter)
     //event StateChanged(string _state, address indexed _staff, string _staffName);
     event ChildContractCreated(address indexed _contract);
-    event StaffRegistered(address indexed _staff, string _staffName);
+    /*event StaffRegistered(address indexed _staff, string _staffName);
     event StaffKicked(address indexed _staffToBeKicked, string _staffName, address indexed _kicker, string _kickerName);
+    event PlayerRegistered(address indexed _player, string _playerName, string _teamName);
+    event TeamCreated(string _teamName, address indexed _creator, string _creatorName);
+    event PlayerKicked(address indexed _playerToBeKicked, string _playerName, 
+        string _teamName, address indexed _kicker, string _kickerName
+    );
+    event TeamKicked(string _teamName, address indexed _kicker, string _kickerName);*/
 
     // Token info
     string public constant symbol = "PZC";
@@ -266,7 +272,7 @@ contract PizzaCoin is ERC20, Owned {
 
         // Create a staff contract
         staffContract = PizzaCoinStaffDeployer.deployContract(voterInitialTokens);
-        PizzaCoinStaffDeployer.transferOwnership(staffContract, this);
+        //PizzaCoinStaffDeployer.transferOwnership(staffContract, this);
 
         // Register an owner as a staff. We cannot use calling to registerStaff() 
         // because the contract state is Initial.
@@ -279,21 +285,25 @@ contract PizzaCoin is ERC20, Owned {
     // ------------------------------------------------------------------------
     // Register a new staff
     // ------------------------------------------------------------------------
+    event StaffRegistered();
     function registerStaff(address _staff, string _staffName) public onlyRegistrationState onlyStaff {
         TestLib.registerStaff(_staff, _staffName, staffContract);
-        emit StaffRegistered(_staff, _staffName);
+        //emit StaffRegistered(_staff, _staffName);
+        emit StaffRegistered();
     }
 
     // ------------------------------------------------------------------------
     // Remove a specific staff
     // ------------------------------------------------------------------------
+    event StaffKicked();
     function kickStaff(address _staff) public onlyRegistrationState onlyOwner {
-        address kicker;
+        /*address kicker;
         string memory staffName;
-        string memory kickerName;
+        string memory kickerName;*/
 
-        (staffName, kicker, kickerName) = TestLib.kickStaff(_staff, staffContract);
-        emit StaffKicked(_staff, staffName, kicker, kickerName);
+        /*(staffName, kicker, kickerName) =*/ TestLib.kickStaff(_staff, staffContract);
+        //emit StaffKicked(_staff, staffName, kicker, kickerName);
+        emit StaffKicked();
     }
 
     /*// ------------------------------------------------------------------------
@@ -352,7 +362,7 @@ contract PizzaCoin is ERC20, Owned {
 
         // Create a player contract
         playerContract = PizzaCoinPlayerDeployer.deployContract(voterInitialTokens);
-        PizzaCoinPlayerDeployer.transferOwnership(playerContract, this);
+        //PizzaCoinPlayerDeployer.transferOwnership(playerContract, this);
 
         emit ChildContractCreated(playerContract);
         return playerContract;
@@ -361,8 +371,13 @@ contract PizzaCoin is ERC20, Owned {
     // ------------------------------------------------------------------------
     // Register a player
     // ------------------------------------------------------------------------
+    event PlayerRegistered();
     function registerPlayer(string _playerName, string _teamName) public onlyRegistrationState notRegistered {
         TestLib.registerPlayer(_playerName, _teamName, playerContract, teamContract);
+
+        /*address player = msg.sender;
+        emit PlayerRegistered(player, _playerName, _teamName);*/
+        emit PlayerRegistered();
     }
 
     /*// ------------------------------------------------------------------------
@@ -422,7 +437,7 @@ contract PizzaCoin is ERC20, Owned {
 
         // Create a team contract
         teamContract = PizzaCoinTeamDeployer.deployContract();
-        PizzaCoinTeamDeployer.transferOwnership(teamContract, this);
+        //PizzaCoinTeamDeployer.transferOwnership(teamContract, this);
 
         emit ChildContractCreated(teamContract);
         return teamContract;
@@ -431,8 +446,13 @@ contract PizzaCoin is ERC20, Owned {
     // ------------------------------------------------------------------------
     // Team leader creates a team
     // ------------------------------------------------------------------------
+    event TeamCreated();
     function createTeam(string _teamName, string _creatorName) public onlyRegistrationState notRegistered {
         TestLib.createTeam(_teamName, _creatorName, playerContract, teamContract);
+
+        /*address creator = msg.sender;
+        emit TeamCreated(_teamName, creator, _creatorName);*/
+        emit TeamCreated();
     }
 
     /*// ------------------------------------------------------------------------
@@ -483,25 +503,41 @@ contract PizzaCoin is ERC20, Owned {
     // Remove the first found player in a particular team 
     // (start searching at _startSearchingIndex)
     // ------------------------------------------------------------------------
-    /*function kickFirstFoundTeamPlayer(string _teamName, uint256 _startSearchingIndex) 
+    function kickFirstFoundTeamPlayer(string _teamName, uint256 _startSearchingIndex) 
         public onlyRegistrationState onlyStaff returns (uint256 _nextStartSearchingIndex, uint256 _totalPlayersRemaining) {
 
         (_nextStartSearchingIndex, _totalPlayersRemaining) = TestLib.kickFirstFoundTeamPlayer(
             _teamName, _startSearchingIndex, staffContract, playerContract, teamContract);
-    }*/
+
+        emit PlayerKicked();
+    }
 
     // ------------------------------------------------------------------------
     // Remove a specific player from a particular team
     // ------------------------------------------------------------------------
+    event PlayerKicked();
     function kickPlayer(address _player, string _teamName) public onlyRegistrationState onlyStaff {
-        TestLib.kickPlayer(_player, _teamName, staffContract, playerContract, teamContract);
+        /*address kicker = msg.sender;
+        string memory playerName;
+        string memory kickerName;*/
+
+        /*(playerName, kickerName) =*/ TestLib.kickPlayer(_player, _teamName, staffContract, playerContract, teamContract);
+
+        //emit PlayerKicked(_player, playerName, _teamName, kicker, kickerName);
+        emit PlayerKicked();
     }
 
     // ------------------------------------------------------------------------
     // Remove a specific team (the team must be empty of players)
     // ------------------------------------------------------------------------
+    event TeamKicked();
     function kickTeam(string _teamName) public onlyRegistrationState onlyStaff {
-        TestLib.kickTeam(_teamName, staffContract, teamContract);
+        /*address kicker = msg.sender;
+        string memory kickerName;*/
+        /*kickerName =*/ TestLib.kickTeam(_teamName, staffContract, teamContract);
+
+        //emit TeamKicked(_teamName, kicker, kickerName);
+        emit TeamKicked();
     }
 
     /*// ------------------------------------------------------------------------
@@ -529,8 +565,10 @@ contract PizzaCoin is ERC20, Owned {
     // ------------------------------------------------------------------------
     // Allow any staff or any player in other different teams to vote to a team
     // ------------------------------------------------------------------------
+    event TeamVoted();
     function voteTeam(string _teamName, uint256 _votingWeight) public onlyVotingState onlyRegistered {
         TestLib.voteTeam(_teamName, _votingWeight, staffContract, playerContract, teamContract);
+        emit TeamVoted();
     }
 
     /*// ------------------------------------------------------------------------

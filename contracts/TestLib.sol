@@ -24,17 +24,17 @@ library TestLib {
     //event StateChanged(string _state, address indexed _staff, string _staffName);
     //event StaffRegistered(address indexed _staff, string _staffName);
     //event StaffKicked(address indexed _staffToBeKicked, string _staffName, address indexed _kicker, string _kickerName);
-    event PlayerRegistered(address indexed _player, string _playerName, string _teamName);
-    event TeamCreated(string _teamName, address indexed _creator, string _creatorName);
-    event PlayerKicked(address indexed _playerToBeKicked, string _playerName, 
+    //event PlayerRegistered(address indexed _player, string _playerName, string _teamName);
+    //event TeamCreated(string _teamName, address indexed _creator, string _creatorName);
+    /*event PlayerKicked(address indexed _playerToBeKicked, string _playerName, 
         string _teamName, address indexed _kicker, string _kickerName
-    );
-    event TeamKicked(string _teamName, address indexed _kicker, string _kickerName);
+    );*/
+    /*event TeamKicked(string _teamName, address indexed _kicker, string _kickerName);
     event TeamVotedByStaff(string _teamName, address indexed _voter, string _voterName, uint256 _votingWeight);
     event TeamVotedByPlayer(
         string _teamName, address indexed _voter, string _voterName, 
         string _teamVoterAssociatedWith, uint256 _votingWeight
-    );
+    );*/
 
 
     /*// ------------------------------------------------------------------------
@@ -157,7 +157,7 @@ library TestLib {
         // Add a player to a team he/she associates with
         teamContractInstance.registerPlayerToTeam(player, _teamName);
 
-        emit PlayerRegistered(player, _playerName, _teamName);
+        //emit PlayerRegistered(player, _playerName, _teamName);
     }
 
     // ------------------------------------------------------------------------
@@ -174,7 +174,7 @@ library TestLib {
             "'_teamContract' contains an invalid address."
         );
         
-        address creator = msg.sender;
+        //address creator = msg.sender;
 
         // Get a contract instance from the deployed addresses
         ITeamContract teamContractInstance = ITeamContract(_teamContract);
@@ -185,7 +185,7 @@ library TestLib {
         // Register a creator to a team as team leader
         registerPlayer(_creatorName, _teamName, _playerContract, _teamContract);
 
-        emit TeamCreated(_teamName, creator, _creatorName);
+        //emit TeamCreated(_teamName, creator, _creatorName);
     }
 
     // ------------------------------------------------------------------------
@@ -303,7 +303,10 @@ library TestLib {
         address _playerContract,
         address _teamContract
     ) 
-    public 
+    public returns (
+        string _playerName,
+        string _kickerName
+    )
     {
         require(
             _staffContract != address(0),
@@ -326,8 +329,10 @@ library TestLib {
         ITeamContract teamContractInstance = ITeamContract(_teamContract);
 
         address kicker = msg.sender;
-        string memory playerName = playerContractInstance.getPlayerName(_player);
-        string memory kickerName = staffContractInstance.getStaffName(kicker);
+        /*string memory playerName = playerContractInstance.getPlayerName(_player);
+        string memory kickerName = staffContractInstance.getStaffName(kicker);*/
+        _playerName = playerContractInstance.getPlayerName(_player);
+        _kickerName = staffContractInstance.getStaffName(kicker);
 
         // Remove a player from the player list
         playerContractInstance.kickPlayer(_player, _teamName);
@@ -335,13 +340,15 @@ library TestLib {
         // Remove a player from the player list of the specified team
         teamContractInstance.kickPlayerOutOffTeam(_player, _teamName);
 
-        emit PlayerKicked(_player, playerName, _teamName, kicker, kickerName);
+        //emit PlayerKicked(_player, playerName, _teamName, kicker, kickerName);
     }
 
     // ------------------------------------------------------------------------
     // Remove a specific team (the team must be empty of players)
     // ------------------------------------------------------------------------
-    function kickTeam(string _teamName, address _staffContract, address _teamContract) public {
+    function kickTeam(string _teamName, address _staffContract, address _teamContract) 
+    public returns (string _kickerName)
+    {
         require(
             _staffContract != address(0),
             "'_staffContract' contains an invalid address."
@@ -358,9 +365,13 @@ library TestLib {
 
         teamContractInstance.kickTeam(_teamName);
 
-        address kicker = msg.sender;
+        /*address kicker = msg.sender;
         string memory kickerName = staffContractInstance.getStaffName(kicker);
-        emit TeamKicked(_teamName, kicker, kickerName);
+        emit TeamKicked(_teamName, kicker, kickerName);*/
+
+        address kicker = msg.sender;
+        _kickerName = staffContractInstance.getStaffName(kicker);
+        //emit TeamKicked(_teamName, kicker, kickerName);
     }
 
     // ------------------------------------------------------------------------
@@ -452,8 +463,8 @@ library TestLib {
         staffContractInstance.commitToVote(voter, _votingWeight, _teamName);
         teamContractInstance.voteToTeam(_teamName, voter, _votingWeight);
 
-        string memory voterName = staffContractInstance.getStaffName(voter);
-        emit TeamVotedByStaff(_teamName, voter, voterName, _votingWeight);
+        //string memory voterName = staffContractInstance.getStaffName(voter);
+        //emit TeamVotedByStaff(_teamName, voter, voterName, _votingWeight);
     }
 
     // ------------------------------------------------------------------------
@@ -501,8 +512,8 @@ library TestLib {
         playerContractInstance.commitToVote(voter, _votingWeight, _teamName);
         teamContractInstance.voteToTeam(_teamName, voter, _votingWeight);
 
-        string memory voterName = playerContractInstance.getPlayerName(voter);
-        string memory teamVoterAssociatedWith = playerContractInstance.getTeamNamePlayerJoined(voter);
-        emit TeamVotedByPlayer(_teamName, voter, voterName, teamVoterAssociatedWith, _votingWeight);
+        //string memory voterName = playerContractInstance.getPlayerName(voter);
+        //string memory teamVoterAssociatedWith = playerContractInstance.getTeamNamePlayerJoined(voter);
+        //emit TeamVotedByPlayer(_teamName, voter, voterName, teamVoterAssociatedWith, _votingWeight);
     }
 }

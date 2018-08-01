@@ -93,12 +93,12 @@ async function registerStaff(ethAccounts, staffAddr, staffName) {
         throw new Error(err);
     }
 
-    staffAddrRet = receipt.events.StaffRegistered.returnValues._staff;
+    /*staffAddrRet = receipt.events.StaffRegistered.returnValues._staff;
     staffNameRet = receipt.events.StaffRegistered.returnValues._staffName;
 
     if (staffAddr !== staffAddrRet || staffName !== staffNameRet) {
         throw new Error("Registering a staff failed");
-    }
+    }*/
 }
 
 async function kickStaff(ethAccounts, staffAddr) {
@@ -118,11 +118,11 @@ async function kickStaff(ethAccounts, staffAddr) {
         throw new Error(err);
     }
 
-    staffAddrRet = receipt.events.StaffKicked.returnValues._staffToBeKicked;
+    /*staffAddrRet = receipt.events.StaffKicked.returnValues._staffToBeKicked;
 
     if (staffAddr !== staffAddrRet) {
         throw new Error("Kicking a staff failed");
-    }
+    }*/
 }
 
 async function initContracts(ethAccounts) {
