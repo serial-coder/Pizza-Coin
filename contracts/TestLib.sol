@@ -22,20 +22,6 @@ library TestLib {
 
 
     // ------------------------------------------------------------------------
-    // Get a staff name
-    // ------------------------------------------------------------------------
-    function getStaffName(address _staff, address _staffContract) public view returns (string _name) {
-        require(
-            _staffContract != address(0),
-            "'_staffContract' contains an invalid address."
-        );
-
-        // Get a contract instance from the deployed addresses
-        IStaffContract staffContractInstance = IStaffContract(_staffContract);
-        return staffContractInstance.getStaffName(_staff);
-    }
-
-    // ------------------------------------------------------------------------
     // Register a new staff
     // ------------------------------------------------------------------------
     function registerStaff(address _staff, string _staffName, address _staffContract) public {
