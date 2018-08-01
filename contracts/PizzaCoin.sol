@@ -26,16 +26,15 @@ contract PizzaCoin is ERC20, Owned {
     using BasicStringUtils for string;
 
     // Contract events (the 'indexed' keyword cannot be used with any string parameter)
-    //event StateChanged(string _state, address indexed _staff, string _staffName);
+    event StateChanged(string _state);
     event ChildContractCreated(address indexed _contract);
-    /*event StaffRegistered(address indexed _staff, string _staffName);
-    event StaffKicked(address indexed _staffToBeKicked, string _staffName, address indexed _kicker, string _kickerName);
-    event PlayerRegistered(address indexed _player, string _playerName, string _teamName);
-    event TeamCreated(string _teamName, address indexed _creator, string _creatorName);
-    event PlayerKicked(address indexed _playerToBeKicked, string _playerName, 
-        string _teamName, address indexed _kicker, string _kickerName
-    );
-    event TeamKicked(string _teamName, address indexed _kicker, string _kickerName);*/
+    event StaffRegistered();
+    event StaffKicked();
+    event PlayerRegistered();
+    event TeamCreated();
+    event PlayerKicked();
+    event TeamKicked();
+    event TeamVoted();
 
     // Token info
     string public constant symbol = "PZC";
@@ -75,8 +74,7 @@ contract PizzaCoin is ERC20, Owned {
         ownerName = _ownerName;
         voterInitialTokens = _voterInitialTokens;
 
-        //TestLib.emitStateChanged(getContractState(), _ownerName);
-        //emit StateChanged(getContractState(), owner, ownerName);
+        emit StateChanged(getContractState());
     }
 
     // ------------------------------------------------------------------------
@@ -211,9 +209,7 @@ contract PizzaCoin is ERC20, Owned {
         // The state of child contracts does not need to do transfer because 
         // their state was set to Registration state once they were created
 
-        //TestLib.emitStateChanged(getContractState(), staffContract);
-        //string memory staffName = TestLib.getStaffName(staff, staffContract);
-        //emit StateChanged(getContractState(), staff, staffName);
+        emit StateChanged(getContractState());
     }
 
     // ------------------------------------------------------------------------
@@ -225,10 +221,7 @@ contract PizzaCoin is ERC20, Owned {
         // Transfer the state of child contracts
         TestLib2.signalChildContractsToLockRegistration(staffContract, playerContract, teamContract);
 
-        //TestLib.emitStateChanged(getContractState(), staffContract);
-        /*address staff = msg.sender;
-        string memory staffName = TestLib.getStaffName(staff, staffContract);
-        emit StateChanged(getContractState(), staff, staffName);*/
+        emit StateChanged(getContractState());
     }
 
     // ------------------------------------------------------------------------
@@ -240,10 +233,7 @@ contract PizzaCoin is ERC20, Owned {
         // Transfer the state of child contracts
         TestLib2.signalChildContractsToVoting(staffContract, playerContract, teamContract);
 
-        //TestLib.emitStateChanged(getContractState(), staffContract);
-        /*address staff = msg.sender;
-        string memory staffName = TestLib.getStaffName(staff, staffContract);
-        emit StateChanged(getContractState(), staff, staffName);*/
+        emit StateChanged(getContractState());
     }
 
     // ------------------------------------------------------------------------
@@ -255,10 +245,7 @@ contract PizzaCoin is ERC20, Owned {
         // Transfer the state of child contracts
         TestLib2.signalChildContractsToStopVoting(staffContract, playerContract, teamContract);
 
-        //TestLib.emitStateChanged(getContractState(), staffContract);
-        /*address staff = msg.sender;
-        string memory staffName = TestLib.getStaffName(staff, staffContract);
-        emit StateChanged(getContractState(), staff, staffName);*/
+        emit StateChanged(getContractState());
     }
 
     // ------------------------------------------------------------------------
@@ -285,24 +272,16 @@ contract PizzaCoin is ERC20, Owned {
     // ------------------------------------------------------------------------
     // Register a new staff
     // ------------------------------------------------------------------------
-    event StaffRegistered();
     function registerStaff(address _staff, string _staffName) public onlyRegistrationState onlyStaff {
         TestLib.registerStaff(_staff, _staffName, staffContract);
-        //emit StaffRegistered(_staff, _staffName);
         emit StaffRegistered();
     }
 
     // ------------------------------------------------------------------------
     // Remove a specific staff
     // ------------------------------------------------------------------------
-    event StaffKicked();
     function kickStaff(address _staff) public onlyRegistrationState onlyOwner {
-        /*address kicker;
-        string memory staffName;
-        string memory kickerName;*/
-
-        /*(staffName, kicker, kickerName) =*/ TestLib.kickStaff(_staff, staffContract);
-        //emit StaffKicked(_staff, staffName, kicker, kickerName);
+        TestLib.kickStaff(_staff, staffContract);
         emit StaffKicked();
     }
 
@@ -371,12 +350,8 @@ contract PizzaCoin is ERC20, Owned {
     // ------------------------------------------------------------------------
     // Register a player
     // ------------------------------------------------------------------------
-    event PlayerRegistered();
     function registerPlayer(string _playerName, string _teamName) public onlyRegistrationState notRegistered {
         TestLib.registerPlayer(_playerName, _teamName, playerContract, teamContract);
-
-        /*address player = msg.sender;
-        emit PlayerRegistered(player, _playerName, _teamName);*/
         emit PlayerRegistered();
     }
 
@@ -446,12 +421,8 @@ contract PizzaCoin is ERC20, Owned {
     // ------------------------------------------------------------------------
     // Team leader creates a team
     // ------------------------------------------------------------------------
-    event TeamCreated();
     function createTeam(string _teamName, string _creatorName) public onlyRegistrationState notRegistered {
         TestLib.createTeam(_teamName, _creatorName, playerContract, teamContract);
-
-        /*address creator = msg.sender;
-        emit TeamCreated(_teamName, creator, _creatorName);*/
         emit TeamCreated();
     }
 
@@ -515,28 +486,16 @@ contract PizzaCoin is ERC20, Owned {
     // ------------------------------------------------------------------------
     // Remove a specific player from a particular team
     // ------------------------------------------------------------------------
-    event PlayerKicked();
     function kickPlayer(address _player, string _teamName) public onlyRegistrationState onlyStaff {
-        /*address kicker = msg.sender;
-        string memory playerName;
-        string memory kickerName;*/
-
-        /*(playerName, kickerName) =*/ TestLib.kickPlayer(_player, _teamName, staffContract, playerContract, teamContract);
-
-        //emit PlayerKicked(_player, playerName, _teamName, kicker, kickerName);
+        TestLib.kickPlayer(_player, _teamName, staffContract, playerContract, teamContract);
         emit PlayerKicked();
     }
 
     // ------------------------------------------------------------------------
     // Remove a specific team (the team must be empty of players)
     // ------------------------------------------------------------------------
-    event TeamKicked();
     function kickTeam(string _teamName) public onlyRegistrationState onlyStaff {
-        /*address kicker = msg.sender;
-        string memory kickerName;*/
-        /*kickerName =*/ TestLib.kickTeam(_teamName, staffContract, teamContract);
-
-        //emit TeamKicked(_teamName, kicker, kickerName);
+        TestLib.kickTeam(_teamName, staffContract, teamContract);
         emit TeamKicked();
     }
 
@@ -565,7 +524,6 @@ contract PizzaCoin is ERC20, Owned {
     // ------------------------------------------------------------------------
     // Allow any staff or any player in other different teams to vote to a team
     // ------------------------------------------------------------------------
-    event TeamVoted();
     function voteTeam(string _teamName, uint256 _votingWeight) public onlyVotingState onlyRegistered {
         TestLib.voteTeam(_teamName, _votingWeight, staffContract, playerContract, teamContract);
         emit TeamVoted();
