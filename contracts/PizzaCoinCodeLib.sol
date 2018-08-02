@@ -162,6 +162,8 @@ library PizzaCoinCodeLib {
             address player;
 
             (endOfList, player) = teamContractInstance.getPlayerInTeamAtIndex(_teamName, i);
+            
+            // player == address(0) if a player was kicked previously
             if (player != address(0) && playerContractInstance.isPlayerInTeam(player, _teamName) == true) {
                 // Remove a specific player
                 kickPlayer(player, _teamName, _staffContract, _playerContract, _teamContract);

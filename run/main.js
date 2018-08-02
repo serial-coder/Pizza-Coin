@@ -60,6 +60,21 @@ async function main() {
         console.log('PizzaCoinPlayer address: ' + playerContractAddr);
         console.log('PizzaCoinTeam address: ' + teamContractAddr);
 
+        let PizzaCoinStaff = new web3.eth.Contract(
+            PizzaCoinStaffJson.abi,
+            staffContractAddr
+        );
+
+        let PizzaCoinPlayer = new web3.eth.Contract(
+            PizzaCoinPlayerJson.abi,
+            playerContractAddr
+        );
+
+        let PizzaCoinTeam = new web3.eth.Contract(
+            PizzaCoinTeamJson.abi,
+            teamContractAddr
+        );
+
         // Register a staff
         await registerStaff(ethAccounts[0], ethAccounts[1], 'bright');
 
@@ -90,22 +105,48 @@ async function main() {
         // Kick a player
         await kickPlayer(ethAccounts[0], ethAccounts[6], 'pizzaHack');
 
-
-
-
         // Kick the first found player in team
         let nextStartSearchingIndex = await kickFirstFoundPlayerInTeam(ethAccounts[0], 'pizzaHack', 0);
         console.log('nextStartSearchingIndex: ' + nextStartSearchingIndex);
 
-        // Kick a player
-        //await kickPlayer(ethAccounts[0], ethAccounts[6], 'pizzaHack');
-
         // Kick a team
-        await kickTeam(ethAccounts[0], 'pizzaHack');
+        //await kickTeam(ethAccounts[0], 'pizzaHack');
 
+        // Change all contracts' state from Registration to RegistrationLocked
+        await lockRegistration(ethAccounts[0]);
 
-        // Register a staff
-        //await registerStaff(ethAccounts[2], ethAccounts[8], 'bright');
+        // Change all contracts' state from RegistrationLocked to Voting
+        await startVoting(ethAccounts[0]);
+
+        // Vote to a team
+        await voteTeam(ethAccounts[0], 'pizza', 1);
+        await voteTeam(ethAccounts[0], 'pizza', 1);
+        await voteTeam(ethAccounts[0], 'pizzaHack', 1);
+
+        await voteTeam(ethAccounts[3], 'pizzaHack', 1);
+        await voteTeam(ethAccounts[3], 'pizzaHack', 2);
+
+        await voteTeam(ethAccounts[1], 'pizza', 3);
+
+        // Get a total number of voters to the specific team
+        let totalVoters = await getTotalVotersToTeam(PizzaCoinTeam, 'pizza');
+        console.log('totalVoters: ' + totalVoters);
+
+        let i = 0;
+        while (true) 
+        {
+            let [endOfList, voter, voteWeight] = await getVoteResultAtIndexToTeam(PizzaCoinTeam, 'pizza', i);
+            if (endOfList) {
+                break;
+            }
+            console.log('endOfList: ' + endOfList);
+            console.log('voter: ' + voter);
+            console.log('voteWeight: ' + voteWeight + '\n');
+            i++;
+        }
+
+        // Change all contracts' state from Voting to VotingFinished
+        await stopVoting(ethAccounts[0]);
     }
     catch (err) {
         return console.error(err);
@@ -115,6 +156,159 @@ async function main() {
     // vote (by staff, player)
     // call functions above in other different contract states
     // show results, ...
+}
+
+async function getVoteResultAtIndexToTeam(PizzaCoinTeam, teamName, voterIndex) {
+    let err;
+    let tupleReturned;
+
+    console.log('\nQuerying for a voting result (by the index of voters) to a specified team --> "' + teamName + '" ...');
+    [err, tupleReturned] = await callContractFunction(
+        PizzaCoinTeam.methods.getVoteResultAtIndexToTeam(teamName, voterIndex).call({})
+    );
+
+    if (err) {
+        throw new Error(err.message);
+    }
+    console.log('... succeeded');
+    return [tupleReturned._endOfList, tupleReturned._voter, tupleReturned._voteWeight];
+}
+
+async function getTotalVotersToTeam(PizzaCoinTeam, teamName) {
+    let err, totalVoters;
+
+    console.log('\nQuerying for a total number of voters to the specific team --> "' + teamName + '" ...');
+    [err, totalVoters] = await callContractFunction(
+        PizzaCoinTeam.methods.getTotalVotersToTeam(teamName).call({})
+    );
+
+    if (err) {
+        throw new Error(err.message);
+    }
+    console.log('... succeeded');
+    return totalVoters;
+}
+
+// For both a staff and a player
+async function voteTeam(voterAddr, teamName, votingWeight) {
+    let err, receipt;
+    console.log('\nVoting to a team -->  team: "' + teamName + '" weight: "' + votingWeight + '" ...');
+
+    // Vote to a team
+    [err, receipt] = await callContractFunction(
+        PizzaCoin.methods.voteTeam(teamName, votingWeight).send({
+            from: voterAddr,
+            gas: 6500000,
+            gasPrice: 10000000000
+        })
+    );
+
+    if (err) {
+        throw new Error(err.message);
+    }
+    console.log('... succeeded');
+}
+
+async function lockRegistration(projectDeployerAddr)
+{
+    let err, receipt;
+    let state;
+
+    // Change all contracts' state from Registration to RegistrationLocked
+    console.log("\nChanging the contracts' state to RegistrationLocked ...");
+    [err, receipt] = await callContractFunction(
+        PizzaCoin.methods.lockRegistration().send({
+            from: projectDeployerAddr,
+            gas: 6500000,
+            gasPrice: 10000000000
+        })
+    );
+    console.log('... succeeded');
+
+    if (err) {
+        throw new Error(err.message);
+    }
+
+    // Check the contracts' state
+    console.log("\nValidating the contracts' state ...");
+    [err, state] = await callContractFunction(
+        PizzaCoin.methods.getContractState().call({
+            from: projectDeployerAddr
+        })
+    );
+
+    if (err || state !== 'Registration Locked') {
+        throw new Error("Changing contracts' state failed");
+    }
+    console.log('... succeeded');
+}
+
+async function startVoting(projectDeployerAddr)
+{
+    let err, receipt;
+    let state;
+
+    // Change all contracts' state from RegistrationLocked to Voting
+    console.log("\nChanging the contracts' state to Voting ...");
+    [err, receipt] = await callContractFunction(
+        PizzaCoin.methods.startVoting().send({
+            from: projectDeployerAddr,
+            gas: 6500000,
+            gasPrice: 10000000000
+        })
+    );
+    console.log('... succeeded');
+
+    if (err) {
+        throw new Error(err.message);
+    }
+
+    // Check the contracts' state
+    console.log("\nValidating the contracts' state ...");
+    [err, state] = await callContractFunction(
+        PizzaCoin.methods.getContractState().call({
+            from: projectDeployerAddr
+        })
+    );
+
+    if (err || state !== 'Voting') {
+        throw new Error("Changing contracts' state failed");
+    }
+    console.log('... succeeded');
+}
+
+async function stopVoting(projectDeployerAddr)
+{
+    let err, receipt;
+    let state;
+
+    // Change all contracts' state from Voting to VotingFinished
+    console.log("\nChanging the contracts' state to Voting ...");
+    [err, receipt] = await callContractFunction(
+        PizzaCoin.methods.stopVoting().send({
+            from: projectDeployerAddr,
+            gas: 6500000,
+            gasPrice: 10000000000
+        })
+    );
+    console.log('... succeeded');
+
+    if (err) {
+        throw new Error(err.message);
+    }
+
+    // Check the contracts' state
+    console.log("\nValidating the contracts' state ...");
+    [err, state] = await callContractFunction(
+        PizzaCoin.methods.getContractState().call({
+            from: projectDeployerAddr
+        })
+    );
+
+    if (err || state !== 'Voting Finished') {
+        throw new Error("Changing contracts' state failed");
+    }
+    console.log('... succeeded');
 }
 
 async function registerPlayer(playerAddr, playerName, teamName) {
@@ -326,11 +520,11 @@ async function initContracts(projectDeployerAddr) {
     console.log("\nValidating the contracts' registration state ...");
     [err, state] = await callContractFunction(
         PizzaCoin.methods.getContractState().call({
-            from: projectDeployerAddr,
+            from: projectDeployerAddr
         })
     );
 
-    if (state !== 'Registration') {
+    if (err || state !== 'Registration') {
         throw new Error("Changing contracts' state failed");
     }
     console.log('... succeeded');
