@@ -139,7 +139,7 @@ async function main() {
 
         // Get a total number of voters to the specific team
         let totalVoters = await getTotalVotersToTeam(PizzaCoinTeam, 'pizzaCoin');
-        console.log('totalVoters: ' + totalVoters);
+        console.log('totalVoters: ' + totalVoters + '\n');
 
         let i = 0;
         while (true) 
@@ -148,7 +148,6 @@ async function main() {
             if (endOfList) {
                 break;
             }
-            console.log('endOfList: ' + endOfList);
             console.log('voter: ' + voter);
             console.log('voteWeight: ' + voteWeight + '\n');
             i++;
@@ -163,7 +162,7 @@ async function main() {
 
         // Get a total number of team winners
         let totalWinners = await getTotalTeamWinners(PizzaCoinTeam);
-        console.log('totalWinners: ' + totalWinners);
+        console.log('totalWinners: ' + totalWinners + '\n');
 
         let startSearchingIndex = 0;
         let endOfList, teamName, totalVoted;
@@ -186,13 +185,17 @@ async function main() {
     catch (err) {
         return console.error(err);
     }
+
+
+
+    // TO DO: Event subscription
 }
 
 async function getFirstFoundTeamWinner(PizzaCoinTeam, startSearchingIndex) {
     let err;
     let tupleReturned;
 
-    console.log('\nQuerying for the first found team winner (by the index of voters) ...');
+    //console.log('\nQuerying for the first found team winner (by the index of voters) ...');
     [err, tupleReturned] = await callContractFunction(
         PizzaCoinTeam.methods.getFirstFoundTeamWinner(startSearchingIndex).call({})
     );
@@ -200,7 +203,7 @@ async function getFirstFoundTeamWinner(PizzaCoinTeam, startSearchingIndex) {
     if (err) {
         throw new Error(err.message);
     }
-    console.log('... succeeded');
+    //console.log('... succeeded');
 
     return [
         tupleReturned._endOfList, 
@@ -244,7 +247,7 @@ async function getVoteResultAtIndexToTeam(PizzaCoinTeam, teamName, voterIndex) {
     let err;
     let tupleReturned;
 
-    console.log('\nQuerying for a voting result (by the index of voters) to a specified team --> "' + teamName + '" ...');
+    //console.log('\nQuerying for a voting result (by the index of voters) to a specified team --> "' + teamName + '" ...');
     [err, tupleReturned] = await callContractFunction(
         PizzaCoinTeam.methods.getVoteResultAtIndexToTeam(teamName, voterIndex).call({})
     );
@@ -252,7 +255,7 @@ async function getVoteResultAtIndexToTeam(PizzaCoinTeam, teamName, voterIndex) {
     if (err) {
         throw new Error(err.message);
     }
-    console.log('... succeeded');
+    //console.log('... succeeded');
     return [tupleReturned._endOfList, tupleReturned._voter, tupleReturned._voteWeight];
 }
 
