@@ -27,7 +27,7 @@ contract PizzaCoin is ERC20, Owned {
 
 
     // Contract events (the 'indexed' keyword cannot be used with any string parameter)
-    event StateChanged(string _state);
+    event StateChanged(/*string _state*/);
     event ChildContractCreated(address indexed _contract);
     event StaffRegistered();
     event StaffKicked();
@@ -77,7 +77,7 @@ contract PizzaCoin is ERC20, Owned {
         ownerName = _ownerName;
         voterInitialTokens = _voterInitialTokens;
 
-        emit StateChanged(getContractState());
+        emit StateChanged(/*getContractState()*/);
     }
 
     // ------------------------------------------------------------------------
@@ -90,10 +90,10 @@ contract PizzaCoin is ERC20, Owned {
     // ------------------------------------------------------------------------
     // Guarantee that msg.sender has not been registered before
     // ------------------------------------------------------------------------
-    modifier notRegistered {
+    modifier notRegistered(address _user) {
         require(
-            PizzaCoinCodeLib2.isStaff(msg.sender, staffContract) == false && 
-            PizzaCoinCodeLib2.isPlayer(msg.sender, playerContract) == false,
+            PizzaCoinCodeLib2.isStaff(_user, staffContract) == false && 
+            PizzaCoinCodeLib2.isPlayer(_user, playerContract) == false,
             "This address was registered already."
         );
         _;
@@ -212,7 +212,7 @@ contract PizzaCoin is ERC20, Owned {
         // The state of child contracts does not need to do transfer because 
         // their state was set to Registration state once they were created
 
-        emit StateChanged(getContractState());
+        emit StateChanged(/*getContractState()*/);
     }
 
     // ------------------------------------------------------------------------
@@ -224,7 +224,7 @@ contract PizzaCoin is ERC20, Owned {
         // Transfer the state of child contracts
         PizzaCoinCodeLib2.signalChildContractsToLockRegistration(staffContract, playerContract, teamContract);
 
-        emit StateChanged(getContractState());
+        emit StateChanged(/*getContractState()*/);
     }
 
     // ------------------------------------------------------------------------
@@ -236,7 +236,7 @@ contract PizzaCoin is ERC20, Owned {
         // Transfer the state of child contracts
         PizzaCoinCodeLib2.signalChildContractsToVoting(staffContract, playerContract, teamContract);
 
-        emit StateChanged(getContractState());
+        emit StateChanged(/*getContractState()*/);
     }
 
     // ------------------------------------------------------------------------
@@ -248,7 +248,7 @@ contract PizzaCoin is ERC20, Owned {
         // Transfer the state of child contracts
         PizzaCoinCodeLib2.signalChildContractsToStopVoting(staffContract, playerContract, teamContract);
 
-        emit StateChanged(getContractState());
+        emit StateChanged(/*getContractState()*/);
     }
 
     // ------------------------------------------------------------------------
@@ -275,8 +275,8 @@ contract PizzaCoin is ERC20, Owned {
     // ------------------------------------------------------------------------
     // Register a new staff
     // ------------------------------------------------------------------------
-    function registerStaff(address _staff, string _staffName) public onlyRegistrationState onlyStaff {
-        PizzaCoinCodeLib.registerStaff(_staff, _staffName, staffContract);
+    function registerStaff(address _newStaff, string _newStaffName) public onlyRegistrationState onlyStaff notRegistered(_newStaff) {
+        PizzaCoinCodeLib.registerStaff(_newStaff, _newStaffName, staffContract);
         emit StaffRegistered();
     }
 
@@ -308,7 +308,7 @@ contract PizzaCoin is ERC20, Owned {
     // ------------------------------------------------------------------------
     // Register a player
     // ------------------------------------------------------------------------
-    function registerPlayer(string _playerName, string _teamName) public onlyRegistrationState notRegistered {
+    function registerPlayer(string _playerName, string _teamName) public onlyRegistrationState notRegistered(msg.sender) {
         PizzaCoinCodeLib.registerPlayer(_playerName, _teamName, playerContract, teamContract);
         emit PlayerRegistered();
     }
@@ -333,7 +333,7 @@ contract PizzaCoin is ERC20, Owned {
     // ------------------------------------------------------------------------
     // Team leader creates a team
     // ------------------------------------------------------------------------
-    function createTeam(string _teamName, string _creatorName) public onlyRegistrationState notRegistered {
+    function createTeam(string _teamName, string _creatorName) public onlyRegistrationState notRegistered(msg.sender) {
         PizzaCoinCodeLib.createTeam(_teamName, _creatorName, playerContract, teamContract);
         emit TeamCreated();
     }

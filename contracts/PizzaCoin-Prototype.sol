@@ -182,10 +182,10 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Guarantee that msg.sender has not been registered before
     // ------------------------------------------------------------------------
-    modifier notRegistered {
+    modifier notRegistered(address _user) {
         require(
-            staffsInfo[msg.sender].wasRegistered == false && 
-            playersInfo[msg.sender].wasRegistered == false,
+            staffsInfo[_user].wasRegistered == false && 
+            playersInfo[_user].wasRegistered == false,
             "This address was registered already."
         );
         _;
@@ -278,27 +278,30 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Register a new staff
     // ------------------------------------------------------------------------
-    function registerStaff(address _staff, string _staffName) public onlyRegistrationState onlyStaff returns (bool success) {
+    function registerStaff(address _newStaff, string _newStaffName) 
+        public onlyRegistrationState onlyStaff notRegistered(_newStaff) 
+        returns (bool success) 
+    {
         require(
-            address(_staff) != address(0),
-            "'_staff' contains an invalid address."
+            address(_newStaff) != address(0),
+            "'_newStaff' contains an invalid address."
         );
 
         require(
-            _staffName.isEmpty() == false,
-            "'_staffName' might not be empty."
+            _newStaffName.isEmpty() == false,
+            "'_newStaffName' might not be empty."
         );
 
         require(
-            staffsInfo[_staff].wasRegistered == false,
+            staffsInfo[_newStaff].wasRegistered == false,
             "The specified staff was registered already."
         );
 
         // Register a new staff
-        staffs.push(_staff);
-        staffsInfo[_staff] = StaffInfo({
+        staffs.push(_newStaff);
+        staffsInfo[_newStaff] = StaffInfo({
             wasRegistered: true,
-            name: _staffName,
+            name: _newStaffName,
             tokensBalance: voterInitialTokens,
             teamsVoted: new string[](0)
             /*
@@ -308,7 +311,7 @@ contract PizzaCoin is ERC20Interface, Owned {
 
         _totalSupply = _totalSupply.add(voterInitialTokens);
 
-        emit StaffRegistered(_staff, _staffName);
+        emit StaffRegistered(_newStaff, _newStaffName);
         return true;
     }
 
@@ -376,7 +379,7 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Team leader creates a team
     // ------------------------------------------------------------------------
-    function createTeam(string _teamName, string _creatorName) public onlyRegistrationState notRegistered returns (bool success) {
+    function createTeam(string _teamName, string _creatorName) public onlyRegistrationState notRegistered(msg.sender) returns (bool success) {
         require(
             _teamName.isEmpty() == false,
             "'_teamName' might not be empty."
@@ -415,7 +418,10 @@ contract PizzaCoin is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Register a team player
     // ------------------------------------------------------------------------
-    function registerTeamPlayer(string _playerName, string _teamName) public onlyRegistrationState notRegistered returns (bool success) {
+    function registerTeamPlayer(string _playerName, string _teamName) 
+        public onlyRegistrationState notRegistered(msg.sender) 
+        returns (bool success) 
+    {
         require(
             _playerName.isEmpty() == false,
             "'_playerName' might not be empty."

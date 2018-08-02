@@ -45,21 +45,21 @@ async function main() {
 
     console.log('Project deployer address: ' + ethAccounts[0]);
 
-    // Initialized contracts
-    let [
-        staffContractAddr, 
-        playerContractAddr, 
-        teamContractAddr
-    ] = await initContracts(ethAccounts[0]);
-
-    console.log('\nInitializing contracts succeeded...');
-    console.log('PizzaCoin address: ' + PizzaCoinJson.networks[5777].address);
-    //console.log('PizzaCoin address: ' + PizzaCoinJson.networks[4].address);
-    console.log('PizzaCoinStaff address: ' + staffContractAddr);
-    console.log('PizzaCoinPlayer address: ' + playerContractAddr);
-    console.log('PizzaCoinTeam address: ' + teamContractAddr);
-
     try {
+        // Initialized contracts
+        let [
+            staffContractAddr, 
+            playerContractAddr, 
+            teamContractAddr
+        ] = await initContracts(ethAccounts[0]);
+
+        console.log('\nInitializing contracts succeeded...');
+        console.log('PizzaCoin address: ' + PizzaCoinJson.networks[5777].address);
+        //console.log('PizzaCoin address: ' + PizzaCoinJson.networks[4].address);
+        console.log('PizzaCoinStaff address: ' + staffContractAddr);
+        console.log('PizzaCoinPlayer address: ' + playerContractAddr);
+        console.log('PizzaCoinTeam address: ' + teamContractAddr);
+
         // Register a staff
         await registerStaff(ethAccounts[0], ethAccounts[1], 'bright');
 
@@ -86,6 +86,16 @@ async function main() {
 
         // Register a player
         await registerPlayer(ethAccounts[7], 'bob', 'pizzaHack');
+
+        // Kick a player
+        await kickPlayer(ethAccounts[0], ethAccounts[7], 'pizzaHack');
+
+
+
+
+
+        // Register a staff
+        //await registerStaff(ethAccounts[2], ethAccounts[8], 'bright');
     }
     catch (err) {
         return console.error(err);
@@ -105,6 +115,25 @@ async function registerPlayer(playerAddr, playerName, teamName) {
     [err, receipt] = await callContractFunction(
         PizzaCoin.methods.registerPlayer(playerName, teamName).send({
             from: playerAddr,
+            gas: 6500000,
+            gasPrice: 10000000000
+        })
+    );
+
+    if (err) {
+        throw new Error(err.message);
+    }
+    console.log('... succeeded');
+}
+
+async function kickPlayer(kickerAddr, playerAddr, teamName) {
+    let err, receipt;
+    console.log('\nKicking a player --> "' + playerAddr + '" ...');
+
+    // Kick a player
+    [err, receipt] = await callContractFunction(
+        PizzaCoin.methods.kickPlayer(playerAddr, teamName).send({
+            from: kickerAddr,
             gas: 6500000,
             gasPrice: 10000000000
         })

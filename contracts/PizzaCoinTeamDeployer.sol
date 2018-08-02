@@ -26,7 +26,7 @@ library PizzaCoinTeamDeployer {
         _teamContract = new PizzaCoinTeam();
     }
 
-    // ------------------------------------------------------------------------
+    /*// ------------------------------------------------------------------------
     // Transfer a contract owner to a new one
     // ------------------------------------------------------------------------
     function transferOwnership(address _teamContract, address _newOwner) public {
@@ -41,5 +41,5 @@ library PizzaCoinTeamDeployer {
         );
 
         PizzaCoinTeam(_teamContract).transferOwnership(_newOwner);
-    }
+    }*/
 }
