@@ -6,7 +6,6 @@
 
 pragma solidity ^0.4.23;
 
-import "./SafeMath.sol";
 import "./BasicStringUtils.sol";
 import "./PizzaCoinStaff.sol";
 import "./PizzaCoinPlayer.sol";
@@ -17,7 +16,6 @@ import "./PizzaCoinTeam.sol";
 // Pizza Coin Code Library #1
 // ----------------------------------------------------------------------------
 library PizzaCoinCodeLib {
-    using SafeMath for uint256;
     using BasicStringUtils for string;
 
 
