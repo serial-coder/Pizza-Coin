@@ -27,7 +27,7 @@ contract PizzaCoin is ERC20, Owned {
 
 
     // Contract events (the 'indexed' keyword cannot be used with any string parameter)
-    event StateChanged(/*string _state*/);
+    event StateChanged();
     event ChildContractCreated(address indexed _contract);
     event StaffRegistered();
     event StaffKicked();
@@ -78,7 +78,7 @@ contract PizzaCoin is ERC20, Owned {
         ownerName = _ownerName;
         voterInitialTokens = _voterInitialTokens;
 
-        emit StateChanged(/*getContractState()*/);
+        emit StateChanged();
     }
 
     // ------------------------------------------------------------------------
@@ -213,7 +213,7 @@ contract PizzaCoin is ERC20, Owned {
         // The state of child contracts does not need to do transfer because 
         // their state was set to Registration state once they were created
 
-        emit StateChanged(/*getContractState()*/);
+        emit StateChanged();
     }
 
     // ------------------------------------------------------------------------
@@ -225,7 +225,7 @@ contract PizzaCoin is ERC20, Owned {
         // Transfer the state of child contracts
         PizzaCoinCodeLib2.signalChildContractsToLockRegistration(staffContract, playerContract, teamContract);
 
-        emit StateChanged(/*getContractState()*/);
+        emit StateChanged();
     }
 
     // ------------------------------------------------------------------------
@@ -237,7 +237,7 @@ contract PizzaCoin is ERC20, Owned {
         // Transfer the state of child contracts
         PizzaCoinCodeLib2.signalChildContractsToVoting(staffContract, playerContract, teamContract);
 
-        emit StateChanged(/*getContractState()*/);
+        emit StateChanged();
     }
 
     // ------------------------------------------------------------------------
@@ -249,7 +249,7 @@ contract PizzaCoin is ERC20, Owned {
         // Transfer the state of child contracts
         PizzaCoinCodeLib2.signalChildContractsToStopVoting(staffContract, playerContract, teamContract);
 
-        emit StateChanged(/*getContractState()*/);
+        emit StateChanged();
     }
 
     // ------------------------------------------------------------------------
@@ -263,7 +263,6 @@ contract PizzaCoin is ERC20, Owned {
 
         // Create a staff contract
         staffContract = PizzaCoinStaffDeployer.deployContract(voterInitialTokens);
-        //PizzaCoinStaffDeployer.transferOwnership(staffContract, this);
 
         // Register an owner as a staff. We cannot use calling to registerStaff() 
         // because the contract state is Initial.
@@ -300,7 +299,6 @@ contract PizzaCoin is ERC20, Owned {
 
         // Create a player contract
         playerContract = PizzaCoinPlayerDeployer.deployContract(voterInitialTokens);
-        //PizzaCoinPlayerDeployer.transferOwnership(playerContract, this);
 
         emit ChildContractCreated(playerContract);
         return playerContract;
@@ -325,7 +323,6 @@ contract PizzaCoin is ERC20, Owned {
 
         // Create a team contract
         teamContract = PizzaCoinTeamDeployer.deployContract();
-        //PizzaCoinTeamDeployer.transferOwnership(teamContract, this);
 
         emit ChildContractCreated(teamContract);
         return teamContract;

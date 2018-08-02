@@ -30,21 +30,4 @@ library PizzaCoinPlayerDeployer {
 
         _playerContract = new PizzaCoinPlayer(_voterInitialTokens);
     }
-
-    /*// ------------------------------------------------------------------------
-    // Transfer a contract owner to a new one
-    // ------------------------------------------------------------------------
-    function transferOwnership(address _playerContract, address _newOwner) public {
-        require(
-            _playerContract != address(0),
-            "'_playerContract' contains an invalid address."
-        );
-
-        require(
-            _newOwner != address(0),
-            "'_newOwner' contains an invalid address."
-        );
-
-        PizzaCoinPlayer(_playerContract).transferOwnership(_newOwner);
-    }*/
 }

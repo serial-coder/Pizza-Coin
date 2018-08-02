@@ -30,21 +30,4 @@ library PizzaCoinStaffDeployer {
 
         _staffContract = new PizzaCoinStaff(_voterInitialTokens);
     }
-
-    /*// ------------------------------------------------------------------------
-    // Transfer a contract owner to a new one
-    // ------------------------------------------------------------------------
-    function transferOwnership(address _staffContract, address _newOwner) public {
-        require(
-            _staffContract != address(0),
-            "'_staffContract' contains an invalid address."
-        );
-
-        require(
-            _newOwner != address(0),
-            "'_newOwner' contains an invalid address."
-        );
-
-        PizzaCoinStaff(_staffContract).transferOwnership(_newOwner);
-    }*/
 }

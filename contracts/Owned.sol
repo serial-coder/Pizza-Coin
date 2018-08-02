@@ -31,11 +31,4 @@ contract Owned {
         );
         _;
     }
-
-    /*// ------------------------------------------------------------------------
-    // Transfer a contract owner to a new one
-    // ------------------------------------------------------------------------
-    function transferOwnership(address _newOwner) public onlyOwner {
-        owner = _newOwner;
-    }*/
 }

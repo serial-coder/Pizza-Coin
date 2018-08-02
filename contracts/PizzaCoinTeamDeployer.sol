@@ -25,21 +25,4 @@ library PizzaCoinTeamDeployer {
     {
         _teamContract = new PizzaCoinTeam();
     }
-
-    /*// ------------------------------------------------------------------------
-    // Transfer a contract owner to a new one
-    // ------------------------------------------------------------------------
-    function transferOwnership(address _teamContract, address _newOwner) public {
-        require(
-            _teamContract != address(0),
-            "'_teamContract' contains an invalid address."
-        );
-
-        require(
-            _newOwner != address(0),
-            "'_newOwner' contains an invalid address."
-        );
-
-        PizzaCoinTeam(_teamContract).transferOwnership(_newOwner);
-    }*/
 }
