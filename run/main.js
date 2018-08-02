@@ -11,7 +11,8 @@ var Web3               = require('web3'),
     PizzaCoinJson      = require('../build/contracts/PizzaCoin.json'),
     PizzaCoinStaffJson = require('../build/contracts/PizzaCoinStaff.json'),
     PizzaCoinPlayerJson = require('../build/contracts/PizzaCoinPlayer.json'),
-    PizzaCoinTeamJson = require('../build/contracts/PizzaCoinTeam.json');
+    PizzaCoinTeamJson = require('../build/contracts/PizzaCoinTeam.json'),
+    pe = require('parse-error');
 
 
 var web3 = new Web3('http://localhost:7545');
@@ -31,7 +32,11 @@ function callContractFunction(contractFunction) {
             return [null, receipt];
         })
         .catch(err => {
-            return [err, null];
+            return [pe(err), null];
+            /*console.log('**********');
+            console.log(pe(err));
+            console.log('**********');
+            [pe(err)];*/
         });
 }
 
@@ -54,45 +59,37 @@ async function main() {
     console.log('PizzaCoinPlayer address: ' + playerContractAddr);
     console.log('PizzaCoinTeam address: ' + teamContractAddr);
 
-    // Register a staff
-    registerStaff(ethAccounts[0], ethAccounts[1], 'bright');
-    console.log('\nRegistering a staff succeeded...');
+    try {
+        // Register a staff
+        await registerStaff(ethAccounts[0], ethAccounts[1], 'bright');
 
-    // Register a staff
-    registerStaff(ethAccounts[0], ethAccounts[2], 'bright');
-    console.log('\nRegistering a staff succeeded...');
+        // Register a staff
+        await registerStaff(ethAccounts[0], ethAccounts[2], 'bright');
 
-    // Kick a staff
-    kickStaff(ethAccounts[0], ethAccounts[2]);
-    console.log('\nKicking a staff succeeded...');
+        // Kick a staff
+        await kickStaff(ethAccounts[0], ethAccounts[2]);
 
-    // Register a staff
-    registerStaff(ethAccounts[0], ethAccounts[2], 'bright');
-    console.log('\nRegistering a staff succeeded...');
+        // Register a staff
+        await registerStaff(ethAccounts[0], ethAccounts[2], 'bright');
 
-    // Create a team
-    createTeam(ethAccounts[3], 'serial-coder', 'pizza');
-    console.log('\nCreating a new team succeeded...');
+        // Create a team
+        await createTeam(ethAccounts[3], 'serial-coder', 'pizza');
 
-    // Register a player
-    registerPlayer(ethAccounts[4], 'bright', 'pizza');
-    console.log('\nRegistering a player succeeded...');
+        // Register a player
+        await registerPlayer(ethAccounts[4], 'bright', 'pizza');
 
-    // Register a player
-    registerPlayer(ethAccounts[5], 'bright', 'pizza');
-    console.log('\nRegistering a player succeeded...');
+        // Register a player
+        await registerPlayer(ethAccounts[5], 'bright', 'pizza');
 
-    // Create a team
-    createTeam(ethAccounts[6], 'robert', 'pizzaHack');
-    console.log('\nCreating a new team succeeded...');
+        // Create a team
+        await createTeam(ethAccounts[6], 'robert', 'pizzaHack');
 
-    // Register a player
-    registerPlayer(ethAccounts[7], 'bob', 'pizzaHack');
-    console.log('\nRegistering a player succeeded...');
-
-
-
-
+        // Register a player
+        await registerPlayer(ethAccounts[7], 'bob', 'pizzaHack');
+    }
+    catch (err) {
+        return console.error(err);
+    }
 
     // kick player, team, staff (by staff, project deployer (kick himself too), normal player)
     // vote (by staff, player)
@@ -102,6 +99,7 @@ async function main() {
 
 async function registerPlayer(playerAddr, playerName, teamName) {
     let err, receipt;
+    console.log('\nRegistering a player --> "' + playerAddr + '" ...');
 
     // Register a player
     [err, receipt] = await callContractFunction(
@@ -113,12 +111,14 @@ async function registerPlayer(playerAddr, playerName, teamName) {
     );
 
     if (err) {
-        throw new Error(err);
+        throw new Error(err.message);
     }
+    console.log('... succeeded');
 }
 
 async function createTeam(creatorAddr, creatorName, teamName) {
     let err, receipt;
+    console.log('\nCreating a new team --> "' + teamName + '" ...');
 
     // Create a new team
     [err, receipt] = await callContractFunction(
@@ -130,12 +130,14 @@ async function createTeam(creatorAddr, creatorName, teamName) {
     );
 
     if (err) {
-        throw new Error(err);
+        throw new Error(err.message);
     }
+    console.log('... succeeded');
 }
 
 async function registerStaff(registrarAddr, staffAddr, staffName) {
     let err, receipt;
+    console.log('\nRegistering a staff --> "' + staffAddr + '" ...');
 
     // Register a staff
     [err, receipt] = await callContractFunction(
@@ -145,14 +147,16 @@ async function registerStaff(registrarAddr, staffAddr, staffName) {
             gasPrice: 10000000000
         })
     );
-
+    
     if (err) {
-        throw new Error(err);
+        throw new Error(err.message);
     }
+    console.log('... succeeded');
 }
 
 async function kickStaff(kickerAddr, staffAddr) {
     let err, receipt;
+    console.log('\nKicking a staff --> "' + staffAddr + '" ...');
 
     // Kick a staff
     [err, receipt] = await callContractFunction(
@@ -164,8 +168,9 @@ async function kickStaff(kickerAddr, staffAddr) {
     );
 
     if (err) {
-        throw new Error(err);
+        throw new Error(err.message);
     }
+    console.log('... succeeded');
 }
 
 async function initContracts(projectDeployerAddr) {
@@ -174,6 +179,7 @@ async function initContracts(projectDeployerAddr) {
     let state;
 
     // Create PizzaCoinStaff contract
+    console.log('\nCreating PizzaCoinStaff contract ...');
     [err, receipt] = await callContractFunction(
         PizzaCoin.methods.createStaffContract().send({
             from: projectDeployerAddr,
@@ -183,12 +189,14 @@ async function initContracts(projectDeployerAddr) {
     );
 
     if (err) {
-        throw new Error(err);
+        throw new Error(err.message);
     }
+    console.log('... succeeded');
 
     staffContractAddr = receipt.events.ChildContractCreated.returnValues._contract;
 
     // Create PizzaCoinPlayer contract
+    console.log('\nCreating PizzaCoinPlayer contract ...');
     [err, receipt] = await callContractFunction(
         PizzaCoin.methods.createPlayerContract().send({
             from: projectDeployerAddr,
@@ -198,12 +206,14 @@ async function initContracts(projectDeployerAddr) {
     );
 
     if (err) {
-        throw new Error(err);
+        throw new Error(err.message);
     }
+    console.log('... succeeded');
 
     playerContractAddr = receipt.events.ChildContractCreated.returnValues._contract;
 
     // Create PizzaCoinTeam contract
+    console.log('\nCreating PizzaCoinTeam contract ...');
     [err, receipt] = await callContractFunction(
         PizzaCoin.methods.createTeamContract().send({
             from: projectDeployerAddr,
@@ -213,12 +223,14 @@ async function initContracts(projectDeployerAddr) {
     );
 
     if (err) {
-        throw new Error(err);
+        throw new Error(err.message);
     }
+    console.log('... succeeded');
 
     teamContractAddr = receipt.events.ChildContractCreated.returnValues._contract;
 
     // Change all contracts' state from Initial to Registration
+    console.log("\nStarting the contracts' registration state ...");
     [err, receipt] = await callContractFunction(
         PizzaCoin.methods.startRegistration().send({
             from: projectDeployerAddr,
@@ -226,12 +238,14 @@ async function initContracts(projectDeployerAddr) {
             gasPrice: 10000000000
         })
     );
+    console.log('... succeeded');
 
     if (err) {
-        throw new Error(err);
+        throw new Error(err.message);
     }
 
     // Check the contracts' state
+    console.log("\nValidating the contracts' registration state ...");
     [err, state] = await callContractFunction(
         PizzaCoin.methods.getContractState().call({
             from: projectDeployerAddr,
@@ -241,6 +255,7 @@ async function initContracts(projectDeployerAddr) {
     if (state !== 'Registration') {
         throw new Error("Changing contracts' state failed");
     }
+    console.log('... succeeded');
 
     return [staffContractAddr, playerContractAddr, teamContractAddr];
 }
