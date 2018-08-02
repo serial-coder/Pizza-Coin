@@ -88,10 +88,20 @@ async function main() {
         await registerPlayer(ethAccounts[7], 'bob', 'pizzaHack');
 
         // Kick a player
-        await kickPlayer(ethAccounts[0], ethAccounts[7], 'pizzaHack');
+        await kickPlayer(ethAccounts[0], ethAccounts[6], 'pizzaHack');
 
 
 
+
+        // Kick the first found player in team
+        let nextStartSearchingIndex = await kickFirstFoundPlayerInTeam(ethAccounts[0], 'pizzaHack', 0);
+        console.log('nextStartSearchingIndex: ' + nextStartSearchingIndex);
+
+        // Kick a player
+        //await kickPlayer(ethAccounts[0], ethAccounts[6], 'pizzaHack');
+
+        // Kick a team
+        await kickTeam(ethAccounts[0], 'pizzaHack');
 
 
         // Register a staff
@@ -145,6 +155,26 @@ async function kickPlayer(kickerAddr, playerAddr, teamName) {
     console.log('... succeeded');
 }
 
+async function kickFirstFoundPlayerInTeam(kickerAddr, teamName, startSearchingIndex) {
+    let err, receipt;
+    console.log('\nKicking the first found player in team --> "' + teamName + '" ...');
+
+    // Kick the first found player in team
+    [err, receipt] = await callContractFunction(
+        PizzaCoin.methods.kickFirstFoundPlayerInTeam(teamName, startSearchingIndex).send({
+            from: kickerAddr,
+            gas: 6500000,
+            gasPrice: 10000000000
+        })
+    );
+
+    if (err) {
+        throw new Error(err.message);
+    }
+    console.log('... succeeded');
+    return receipt.events.FirstFoundPlayerInTeamKicked.returnValues._nextStartSearchingIndex;
+}
+
 async function createTeam(creatorAddr, creatorName, teamName) {
     let err, receipt;
     console.log('\nCreating a new team --> "' + teamName + '" ...');
@@ -153,6 +183,25 @@ async function createTeam(creatorAddr, creatorName, teamName) {
     [err, receipt] = await callContractFunction(
         PizzaCoin.methods.createTeam(teamName, creatorName).send({
             from: creatorAddr,
+            gas: 6500000,
+            gasPrice: 10000000000
+        })
+    );
+
+    if (err) {
+        throw new Error(err.message);
+    }
+    console.log('... succeeded');
+}
+
+async function kickTeam(kickerAddr, teamName) {
+    let err, receipt;
+    console.log('\nKicking a team --> "' + teamName + '" ...');
+
+    // Create a new team
+    [err, receipt] = await callContractFunction(
+        PizzaCoin.methods.kickTeam(teamName).send({
+            from: kickerAddr,
             gas: 6500000,
             gasPrice: 10000000000
         })

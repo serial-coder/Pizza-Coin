@@ -34,6 +34,7 @@ contract PizzaCoin is ERC20, Owned {
     event PlayerRegistered();
     event TeamCreated();
     event PlayerKicked();
+    event FirstFoundPlayerInTeamKicked(uint256 _nextStartSearchingIndex);
     event TeamKicked();
     event TeamVoted();
 
@@ -342,13 +343,14 @@ contract PizzaCoin is ERC20, Owned {
     // Remove the first found player in a particular team 
     // (start searching at _startSearchingIndex)
     // ------------------------------------------------------------------------
-    function kickFirstFoundTeamPlayer(string _teamName, uint256 _startSearchingIndex) 
+    function kickFirstFoundPlayerInTeam(string _teamName, uint256 _startSearchingIndex) 
         public onlyRegistrationState onlyStaff returns (uint256 _nextStartSearchingIndex) {
 
-        _nextStartSearchingIndex = PizzaCoinCodeLib.kickFirstFoundTeamPlayer(
+        _nextStartSearchingIndex = PizzaCoinCodeLib.kickFirstFoundPlayerInTeam(
             _teamName, _startSearchingIndex, staffContract, playerContract, teamContract);
 
         emit PlayerKicked();
+        emit FirstFoundPlayerInTeamKicked(_nextStartSearchingIndex);
     }
 
     // ------------------------------------------------------------------------

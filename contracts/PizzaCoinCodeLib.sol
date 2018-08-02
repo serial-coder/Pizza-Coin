@@ -129,7 +129,7 @@ library PizzaCoinCodeLib {
     // Remove the first found player in a particular team 
     // (start searching at _startSearchingIndex)
     // ------------------------------------------------------------------------
-    function kickFirstFoundTeamPlayer(
+    function kickFirstFoundPlayerInTeam(
         string _teamName, 
         uint256 _startSearchingIndex,
         address _staffContract,
@@ -162,7 +162,7 @@ library PizzaCoinCodeLib {
             address player;
 
             (endOfList, player) = teamContractInstance.getPlayerInTeamAtIndex(_teamName, i);
-            if (playerContractInstance.isPlayerInTeam(player, _teamName) == true) {
+            if (player != address(0) && playerContractInstance.isPlayerInTeam(player, _teamName) == true) {
                 // Remove a specific player
                 kickPlayer(player, _teamName, _staffContract, _playerContract, _teamContract);
 
