@@ -112,6 +112,12 @@ async function main() {
         // Kick a team
         //await kickTeam(ethAccounts[0], 'pizzaHack');
 
+        // Create a team
+        await createTeam(ethAccounts[8], 'john', 'pizzaCoin');
+
+        // Register a player
+        await registerPlayer(ethAccounts[9], 'james', 'pizzaCoin');
+
         // Change all contracts' state from Registration to RegistrationLocked
         await lockRegistration(ethAccounts[0]);
 
@@ -128,14 +134,17 @@ async function main() {
 
         await voteTeam(ethAccounts[1], 'pizza', 3);
 
+        await voteTeam(ethAccounts[5], 'pizzaCoin', 3);
+        await voteTeam(ethAccounts[2], 'pizzaCoin', 2);
+
         // Get a total number of voters to the specific team
-        let totalVoters = await getTotalVotersToTeam(PizzaCoinTeam, 'pizza');
+        let totalVoters = await getTotalVotersToTeam(PizzaCoinTeam, 'pizzaCoin');
         console.log('totalVoters: ' + totalVoters);
 
         let i = 0;
         while (true) 
         {
-            let [endOfList, voter, voteWeight] = await getVoteResultAtIndexToTeam(PizzaCoinTeam, 'pizza', i);
+            let [endOfList, voter, voteWeight] = await getVoteResultAtIndexToTeam(PizzaCoinTeam, 'pizzaCoin', i);
             if (endOfList) {
                 break;
             }
@@ -147,15 +156,88 @@ async function main() {
 
         // Change all contracts' state from Voting to VotingFinished
         await stopVoting(ethAccounts[0]);
+
+        // Get a maximum voting points
+        let maxTeamVotingPoints = await getMaxTeamVotingPoints(PizzaCoinTeam);
+        console.log('maxTeamVotingPoints: ' + maxTeamVotingPoints);
+
+        // Get a total number of team winners
+        let totalWinners = await getTotalTeamWinners(PizzaCoinTeam);
+        console.log('totalWinners: ' + totalWinners);
+
+        let startSearchingIndex = 0;
+        let endOfList, teamName, totalVoted;
+        while (true) 
+        {
+            [
+                endOfList, 
+                startSearchingIndex, 
+                teamName, 
+                totalVoted
+            ] = await getFirstFoundTeamWinner(PizzaCoinTeam, startSearchingIndex);
+
+            if (endOfList) {
+                break;
+            }
+            console.log('teamName: ' + teamName);
+            console.log('totalVoted: ' + totalVoted + '\n');
+        }
     }
     catch (err) {
         return console.error(err);
     }
+}
 
-    // kick player, team, staff (by staff, project deployer (kick himself too), normal player)
-    // vote (by staff, player)
-    // call functions above in other different contract states
-    // show results, ...
+async function getFirstFoundTeamWinner(PizzaCoinTeam, startSearchingIndex) {
+    let err;
+    let tupleReturned;
+
+    console.log('\nQuerying for the first found team winner (by the index of voters) ...');
+    [err, tupleReturned] = await callContractFunction(
+        PizzaCoinTeam.methods.getFirstFoundTeamWinner(startSearchingIndex).call({})
+    );
+
+    if (err) {
+        throw new Error(err.message);
+    }
+    console.log('... succeeded');
+
+    return [
+        tupleReturned._endOfList, 
+        tupleReturned._nextStartSearchingIndex, 
+        tupleReturned._teamName, 
+        tupleReturned._totalVoted
+    ];
+}
+
+async function getTotalTeamWinners(PizzaCoinTeam) {
+    let err, totalWinners;
+
+    console.log('\nQuerying for a total number of team winners ...');
+    [err, totalWinners] = await callContractFunction(
+        PizzaCoinTeam.methods.getTotalTeamWinners().call({})
+    );
+
+    if (err) {
+        throw new Error(err.message);
+    }
+    console.log('... succeeded');
+    return totalWinners;
+}
+
+async function getMaxTeamVotingPoints(PizzaCoinTeam) {
+    let err, maxTeamVotingPoints;
+
+    console.log('\nQuerying for a maximum voting points ...');
+    [err, maxTeamVotingPoints] = await callContractFunction(
+        PizzaCoinTeam.methods.getMaxTeamVotingPoints().call({})
+    );
+
+    if (err) {
+        throw new Error(err.message);
+    }
+    console.log('... succeeded');
+    return maxTeamVotingPoints;
 }
 
 async function getVoteResultAtIndexToTeam(PizzaCoinTeam, teamName, voterIndex) {
