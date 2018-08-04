@@ -92,6 +92,11 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         mapping(address => uint256) votesWeight;  // A collection of team voting weights from each voter (i.e., staffs + other teams' members)
         
         uint256 totalVoted;  // Total voting weight got from voters
+
+        // The following are used to reduce the potential gas cost consumption when kicking a team and/or a player in a team
+        uint256 id;            // A pointing index to a particular team on the 'teams' array
+        uint256 totalPlayers;  // Total players in a team
+        mapping(address => uint256) playerIdMap;  // mapping(player => id)
     }
 
     string[] private teams;
@@ -219,9 +224,14 @@ contract PizzaCoinTeam is ITeamContract, Owned {
             wasCreated: true,
             players: new address[](0),
             voters: new address[](0),
-            totalVoted: 0
+            totalVoted: 0,
             /*
                 Omit 'votesWeight'
+            */
+            id: teams.length - 1,
+            totalPlayers: 0
+            /*
+                Omit 'playerIdMap'
             */
         });
     }
@@ -245,8 +255,11 @@ contract PizzaCoinTeam is ITeamContract, Owned {
             "The given team does not exist."
         );
 
-        // Add a player to a team he/she associates with
+        // Add a player to a team that he/she is associateing with
         teamsInfo[_teamName].players.push(_player);
+
+        teamsInfo[_teamName].totalPlayers = teamsInfo[_teamName].totalPlayers.add(1);
+        teamsInfo[_teamName].playerIdMap[_player] = teamsInfo[_teamName].players.length - 1;
     }
 
     // ------------------------------------------------------------------------
@@ -307,25 +320,26 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         bool found;
         uint playerIndex;
 
-        (found, playerIndex) = getTeamPlayerIndex(_player, _teamName);
+        (found, playerIndex) = getPlayerIndexInTeam(_player, _teamName);
         if (!found) {
             revert("Cannot find the specified player in a given team.");
         }
 
         // Reset an element to 0 but the array length never decrease (beware!!)
         delete teamsInfo[_teamName].players[playerIndex];
+        teamsInfo[_teamName].totalPlayers = teamsInfo[_teamName].totalPlayers.sub(1);
     }
 
     // ------------------------------------------------------------------------
     // Get the index of a specific player in a given team 
     // found in the the array 'players' in the mapping 'teamsInfo'
     // ------------------------------------------------------------------------
-    function getTeamPlayerIndex(address _player, string _teamName) internal view onlyPizzaCoin returns (bool _found, uint256 _playerIndex) {
+    function getPlayerIndexInTeam(address _player, string _teamName) internal view onlyPizzaCoin returns (bool _found, uint256 _playerIndex) {
         assert(_player != address(0));
         assert(_teamName.isEmpty() == false);
         assert(teamsInfo[_teamName].wasCreated == true);
 
-        _found = false;
+        /*_found = false;
         _playerIndex = 0;
 
         for (uint256 i = 0; i < teamsInfo[_teamName].players.length; i++) {
@@ -334,7 +348,10 @@ contract PizzaCoinTeam is ITeamContract, Owned {
                 _playerIndex = i;
                 return;
             }
-        }
+        }*/
+
+        _playerIndex = teamsInfo[_teamName].playerIdMap[_player];
+        _found = teamsInfo[_teamName].players[_playerIndex] == _player;
     }
 
     // ------------------------------------------------------------------------
@@ -375,7 +392,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
             "Cannot find the specified team."
         );
 
-        _total = 0;
+        /*_total = 0;
         for (uint256 i = 0; i < teamsInfo[_teamName].players.length; i++) {
             address player = teamsInfo[_teamName].players[i];
 
@@ -383,7 +400,9 @@ contract PizzaCoinTeam is ITeamContract, Owned {
             if (player != address(0)) {
                 _total++;
             }
-        }
+        }*/
+
+        _total = teamsInfo[_teamName].totalPlayers;
     }
 
     // ------------------------------------------------------------------------
@@ -465,7 +484,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     function getTeamIndex(string _teamName) internal view onlyPizzaCoin returns (bool _found, uint256 _teamIndex) {
         assert(_teamName.isEmpty() == false);
 
-        _found = false;
+        /*_found = false;
         _teamIndex = 0;
 
         for (uint256 i = 0; i < teams.length; i++) {
@@ -474,7 +493,10 @@ contract PizzaCoinTeam is ITeamContract, Owned {
                 _teamIndex = i;
                 return;
             }
-        }
+        }*/
+
+        _found = teamsInfo[_teamName].wasCreated;
+        _teamIndex = teamsInfo[_teamName].id;
     }
 
     // ------------------------------------------------------------------------
