@@ -71,6 +71,9 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
         
         // mapping(team => votes)
         mapping(string => uint256) votesWeight;  // A collection of teams with voting weight approved by this player
+
+        // The following is used to reduce the potential gas cost consumption when kicking a player
+        uint256 id;  // A pointing index to a particular player on the 'players' array
     }
 
     address[] private players;
@@ -293,10 +296,11 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
             name: _playerName,
             tokensBalance: voterInitialTokens,
             teamName: _teamName,
-            teamsVoted: new string[](0)
+            teamsVoted: new string[](0),
             /*
                 Omit 'votesWeight'
             */
+            id: players.length - 1
         });
 
         totalSupply = totalSupply.add(voterInitialTokens);
@@ -344,7 +348,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     function getPlayerIndex(address _player) internal view onlyPizzaCoin returns (bool _found, uint256 _playerIndex) {
         assert(_player != address(0));
 
-        _found = false;
+        /*_found = false;
         _playerIndex = 0;
 
         for (uint256 i = 0; i < players.length; i++) {
@@ -353,7 +357,10 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
                 _playerIndex = i;
                 return;
             }
-        }
+        }*/
+
+        _found = playersInfo[_player].wasRegistered;
+        _playerIndex = playersInfo[_player].id;
     }
 
     // ------------------------------------------------------------------------
