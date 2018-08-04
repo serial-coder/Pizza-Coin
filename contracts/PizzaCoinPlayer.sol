@@ -348,17 +348,6 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     function getPlayerIndex(address _player) internal view onlyPizzaCoin returns (bool _found, uint256 _playerIndex) {
         assert(_player != address(0));
 
-        /*_found = false;
-        _playerIndex = 0;
-
-        for (uint256 i = 0; i < players.length; i++) {
-            if (players[i] == _player) {
-                _found = true;
-                _playerIndex = i;
-                return;
-            }
-        }*/
-
         _found = playersInfo[_player].wasRegistered;
         _playerIndex = playersInfo[_player].id;
     }

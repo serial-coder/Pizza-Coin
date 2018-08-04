@@ -67,7 +67,7 @@ library PizzaCoinCodeLib {
 
         playerContractInstance.registerPlayer(player, _playerName, _teamName);
 
-        // Add a player to a team he/she associates with
+        // Add a player to a team that he/she is associateing with
         teamContractInstance.registerPlayerToTeam(player, _teamName);
     }
 

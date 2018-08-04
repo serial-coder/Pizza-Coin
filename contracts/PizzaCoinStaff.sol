@@ -324,17 +324,6 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     function getStaffIndex(address _staff) internal view onlyPizzaCoin returns (bool _found, uint256 _staffIndex) {
         assert(_staff != address(0));
 
-        /*_found = false;
-        _staffIndex = 0;
-
-        for (uint256 i = 0; i < staffs.length; i++) {
-            if (staffs[i] == _staff) {
-                _found = true;
-                _staffIndex = i;
-                return;
-            }
-        }*/
-
         _found = staffsInfo[_staff].wasRegistered;
         _staffIndex = staffsInfo[_staff].id;
     }
