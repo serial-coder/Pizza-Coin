@@ -69,6 +69,9 @@ contract PizzaCoinStaff is IStaffContract, Owned {
         
         // mapping(team => votes)
         mapping(string => uint256) votesWeight;  // A collection of teams with voting weight approved by this staff
+
+        // The following is used to reduce the potential gas cost consumption when kicking a staff
+        uint256 id;  // A pointing index to a particular staff on the 'staffs' array
     }
 
     address[] private staffs;                          // The first staff is the contract owner
@@ -269,10 +272,11 @@ contract PizzaCoinStaff is IStaffContract, Owned {
             wasRegistered: true,
             name: _staffName,
             tokensBalance: voterInitialTokens,
-            teamsVoted: new string[](0)
+            teamsVoted: new string[](0),
             /*
                 Omit 'votesWeight'
             */
+            id: staffs.length - 1
         });
 
         totalSupply = totalSupply.add(voterInitialTokens);
@@ -320,7 +324,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     function getStaffIndex(address _staff) internal view onlyPizzaCoin returns (bool _found, uint256 _staffIndex) {
         assert(_staff != address(0));
 
-        _found = false;
+        /*_found = false;
         _staffIndex = 0;
 
         for (uint256 i = 0; i < staffs.length; i++) {
@@ -329,7 +333,10 @@ contract PizzaCoinStaff is IStaffContract, Owned {
                 _staffIndex = i;
                 return;
             }
-        }
+        }*/
+
+        _found = staffsInfo[_staff].wasRegistered;
+        _staffIndex = staffsInfo[_staff].id;
     }
 
     // ------------------------------------------------------------------------
