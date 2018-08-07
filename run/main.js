@@ -162,8 +162,8 @@ async function main() {
         let maxTeamVotingPoints = await getMaxTeamVotingPoints(PizzaCoinTeam);
         console.log('maxTeamVotingPoints: ' + maxTeamVotingPoints);
 
-        // Get a total number of team winners
-        let totalWinners = await getTotalTeamWinners(PizzaCoinTeam);
+        // Get a total number of winner teams
+        let totalWinners = await getTotalWinnerTeams(PizzaCoinTeam);
         console.log('totalWinners: ' + totalWinners + '\n');
 
         let startSearchingIndex = 0;
@@ -175,7 +175,7 @@ async function main() {
                 startSearchingIndex, 
                 teamName, 
                 totalVoted
-            ] = await getFirstFoundTeamWinner(PizzaCoinTeam, startSearchingIndex);
+            ] = await getFirstFoundWinnerTeam(PizzaCoinTeam, startSearchingIndex);
 
             if (endOfList) {
                 break;
@@ -219,13 +219,13 @@ function unsubscribeEvent(subscription) {
     });
 }
 
-async function getFirstFoundTeamWinner(PizzaCoinTeam, startSearchingIndex) {
+async function getFirstFoundWinnerTeam(PizzaCoinTeam, startSearchingIndex) {
     let err;
     let tupleReturned;
 
-    //console.log('\nQuerying for the first found team winner (by the index of voters) ...');
+    //console.log('\nQuerying for the first found winner team (by the index of voters) ...');
     [err, tupleReturned] = await callContractFunction(
-        PizzaCoinTeam.methods.getFirstFoundTeamWinner(startSearchingIndex).call({})
+        PizzaCoinTeam.methods.getFirstFoundWinnerTeam(startSearchingIndex).call({})
     );
 
     if (err) {
@@ -241,12 +241,12 @@ async function getFirstFoundTeamWinner(PizzaCoinTeam, startSearchingIndex) {
     ];
 }
 
-async function getTotalTeamWinners(PizzaCoinTeam) {
+async function getTotalWinnerTeams(PizzaCoinTeam) {
     let err, totalWinners;
 
-    console.log('\nQuerying for a total number of team winners ...');
+    console.log('\nQuerying for a total number of winner teams ...');
     [err, totalWinners] = await callContractFunction(
-        PizzaCoinTeam.methods.getTotalTeamWinners().call({})
+        PizzaCoinTeam.methods.getTotalWinnerTeams().call({})
     );
 
     if (err) {
