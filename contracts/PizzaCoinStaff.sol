@@ -302,8 +302,8 @@ contract PizzaCoinStaff is IStaffContract, Owned {
             revert("Cannot find the specified staff.");
         }
 
-        // Reset the element pointed by staffIndex to 0 but
-        // that array element never get really removed (beware!!)
+        // Reset the element pointed by staffIndex to 0. However,
+        // that array element never get really removed. (beware!!)
         delete staffs[staffIndex];
 
         // Remove the specified staff from a mapping
@@ -444,7 +444,9 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     // ------------------------------------------------------------------------
     // Allow a staff give a vote to the specified team
     // ------------------------------------------------------------------------
-    function commitToVote(address _staff, uint256 _votingWeight, string _teamName) external onlyVotingState onlyPizzaCoin {
+    function commitToVote(address _staff, uint256 _votingWeight, string _teamName) 
+        external onlyVotingState onlyPizzaCoin 
+    {
         require(
             _staff != address(0),
             "'_staff' contains an invalid address."
