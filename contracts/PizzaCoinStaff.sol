@@ -313,7 +313,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get an index pointed to a specific staff on the array 'staffs'
+    // Get an index pointed to a specific staff on the mapping 'staffsInfo'
     // ------------------------------------------------------------------------
     function getStaffIndex(address _staff) internal view returns (bool _found, uint256 _staffIndex) {
         assert(_staff != address(0));

@@ -57,8 +57,8 @@ interface ITeamContract {
         );
     function voteToTeam(string _teamName, address _voter, uint256 _votingWeight) external;
     function getMaxTeamVotingPoints() external view returns (uint256 _maxTeamVotingPoints);
-    function getTotalTeamWinners() external view returns (uint256 _total);
-    function getFirstFoundTeamWinner(uint256 _startSearchingIndex) 
+    function getTotalWinnerTeams() external view returns (uint256 _total);
+    function getFirstFoundWinnerTeam(uint256 _startSearchingIndex) 
         external view
         returns (
             bool _endOfList,
@@ -84,14 +84,14 @@ contract PizzaCoinTeam is ITeamContract, Owned {
 
     // Team with players
     struct TeamInfo {
-        bool wasCreated;    // Check if the team was created for uniqueness
+        bool wasCreated;    // Check if the team was created or not (for uniqueness)
         address[] players;  // A list of team members (the first list member is the team leader who creates the team)
         address[] voters;   // A list of staffs and other teams' members who gave votes to this team
 
         // mapping(voter => votes)
         mapping(address => uint256) votesWeight;  // A collection of team voting weights from each voter (i.e., staffs + other teams' members)
         
-        uint256 totalVoted;  // Total voting weight got from voters
+        uint256 totalVoted;  // Total voting weight got from all voters
 
         // The following are used to reduce the potential gas cost consumption when kicking a team and/or a player in a team
         uint256 id;            // A pointing index to a particular team on the 'teams' array
@@ -123,7 +123,11 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // Guarantee that msg.sender must be a contract deployer (i.e., PizzaCoin address)
     // ------------------------------------------------------------------------
     modifier onlyPizzaCoin {
-        require(msg.sender == owner);  // owner == PizzaCoin address
+        // owner == PizzaCoin address
+        require(
+            msg.sender == owner,
+            "This address is not PizzaCoin contract"
+        );
         _;
     }
 
@@ -239,7 +243,9 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     // Register a player to a specific team
     // ------------------------------------------------------------------------
-    function registerPlayerToTeam(address _player, string _teamName) external onlyRegistrationState onlyPizzaCoin {
+    function registerPlayerToTeam(address _player, string _teamName) 
+        external onlyRegistrationState onlyPizzaCoin 
+    {
         require(
             _player != address(0),
             "'_player' contains an invalid address."
@@ -251,11 +257,11 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         );
 
         require(
-            teamsInfo[_teamName].wasCreated == true,
+            teamsInfo[_teamName].wasCreated,
             "The given team does not exist."
         );
 
-        // Add a player to a team that he/she is associateing with
+        // Add a player to a team that he/she is associating with
         teamsInfo[_teamName].players.push(_player);
 
         teamsInfo[_teamName].totalPlayers = teamsInfo[_teamName].totalPlayers.add(1);
@@ -272,7 +278,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         );
 
         require(
-            teamsInfo[_teamName].wasCreated == true,
+            teamsInfo[_teamName].wasCreated,
             "Cannot find the specified team."
         );
 
@@ -284,24 +290,27 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         }
 
         bool found;
-        uint teamIndex;
+        uint256 teamIndex;
 
         (found, teamIndex) = getTeamIndex(_teamName);
         if (!found) {
             revert("Cannot find the specified team.");
         }
 
-        // Reset an element to 0 but the array length never decrease (beware!!)
+        // Reset the element pointed by teamIndex to 0. However,
+        // that array element never get really removed. (beware!!)
         delete teams[teamIndex];
 
-        // Remove a specified team from a mapping
+        // Remove the specified team from a mapping
         delete teamsInfo[_teamName];
     }
 
     // ------------------------------------------------------------------------
     // Remove a specific player from a particular team
     // ------------------------------------------------------------------------
-    function kickPlayerOutOffTeam(address _player, string _teamName) external onlyRegistrationState onlyPizzaCoin {
+    function kickPlayerOutOffTeam(address _player, string _teamName) 
+        external onlyRegistrationState onlyPizzaCoin 
+    {
         require(
             _player != address(0),
             "'_player' contains an invalid address."
@@ -313,38 +322,44 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         );
 
         require(
-            teamsInfo[_teamName].wasCreated == true,
+            teamsInfo[_teamName].wasCreated,
             "Cannot find the specified team."
         );
 
         bool found;
-        uint playerIndex;
+        uint256 playerIndex;
 
         (found, playerIndex) = getPlayerIndexInTeam(_player, _teamName);
         if (!found) {
             revert("Cannot find the specified player in a given team.");
         }
 
-        // Reset an element to 0 but the array length never decrease (beware!!)
+        // Reset the element pointed by playerIndex to 0. However,
+        // that array element never get really removed. (beware!!)
         delete teamsInfo[_teamName].players[playerIndex];
         teamsInfo[_teamName].totalPlayers = teamsInfo[_teamName].totalPlayers.sub(1);
     }
 
     // ------------------------------------------------------------------------
-    // Get the index of a specific player in a given team 
-    // found in the the array 'players' in the mapping 'teamsInfo'
+    // Get an index pointed to a specific player on the mapping 'playerIdMap' in a given team
     // ------------------------------------------------------------------------
-    function getPlayerIndexInTeam(address _player, string _teamName) internal view onlyPizzaCoin returns (bool _found, uint256 _playerIndex) {
+    function getPlayerIndexInTeam(address _player, string _teamName) 
+        internal view 
+        returns (
+            bool _found, 
+            uint256 _playerIndex
+        ) 
+    {
         assert(_player != address(0));
         assert(_teamName.isEmpty() == false);
-        assert(teamsInfo[_teamName].wasCreated == true);
+        assert(teamsInfo[_teamName].wasCreated);
 
         _playerIndex = teamsInfo[_teamName].playerIdMap[_player];
         _found = teamsInfo[_teamName].players[_playerIndex] == _player;
     }
 
     // ------------------------------------------------------------------------
-    // Get the array length of players in the specific team (including all ever removal players)
+    // Get an array length of players in a specified team (including all ever removal players)
     // ------------------------------------------------------------------------
     function getArrayLengthOfPlayersInTeam(string _teamName) external view returns (uint256 _length) {
         require(
@@ -353,7 +368,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         );
 
         require(
-            teamsInfo[_teamName].wasCreated == true,
+            teamsInfo[_teamName].wasCreated,
             "Cannot find the specified team."
         );
 
@@ -377,7 +392,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         );
 
         require(
-            teamsInfo[_teamName].wasCreated == true,
+            teamsInfo[_teamName].wasCreated,
             "Cannot find the specified team."
         );
 
@@ -402,7 +417,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         );
 
         require(
-            teamsInfo[_teamName].wasCreated == true,
+            teamsInfo[_teamName].wasCreated,
             "Cannot find the specified team."
         );
         
@@ -417,7 +432,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         for (uint256 i = _startSearchingIndex; i < teamsInfo[_teamName].players.length; i++) {
             address player = teamsInfo[_teamName].players[i];
 
-            // Player was not removed before
+            // Player might not be removed before
             if (player != address(0)) {
                 _endOfList = false;
                 _nextStartSearchingIndex = i + 1;
@@ -428,7 +443,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get a player in the specified team at the specified index (including all ever removal players)
+    // Get a player in a specified team at a given index (including all ever removal players)
     // ------------------------------------------------------------------------
     function getPlayerInTeamAtIndex(string _teamName, uint256 _playerIndex) 
         external view 
@@ -443,7 +458,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         );
 
         require(
-            teamsInfo[_teamName].wasCreated == true,
+            teamsInfo[_teamName].wasCreated,
             "Cannot find the specified team."
         );
 
@@ -458,9 +473,9 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get the index of a specific team found in the array 'teams'
+    // Get an index pointed to a specific team on the mapping 'teamsInfo'
     // ------------------------------------------------------------------------
-    function getTeamIndex(string _teamName) internal view onlyPizzaCoin returns (bool _found, uint256 _teamIndex) {
+    function getTeamIndex(string _teamName) internal view returns (bool _found, uint256 _teamIndex) {
         assert(_teamName.isEmpty() == false);
 
         _found = teamsInfo[_teamName].wasCreated;
@@ -473,8 +488,8 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     function getTotalTeams() external view returns (uint256 _total) {
         _total = 0;
         for (uint256 i = 0; i < teams.length; i++) {
-            // Team was not removed before
-            if (teams[i].isEmpty() == false && teamsInfo[teams[i]].wasCreated == true) {
+            // Team might not be removed before
+            if (teams[i].isEmpty() == false && teamsInfo[teams[i]].wasCreated) {
                 _total++;
             }
         }
@@ -505,8 +520,8 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         for (uint256 i = _startSearchingIndex; i < teams.length; i++) {
             string memory teamName = teams[i];
 
-            // Team was not removed before
-            if (teamName.isEmpty() == false && teamsInfo[teamName].wasCreated == true) {
+            // Team might not be removed before
+            if (teamName.isEmpty() == false && teamsInfo[teamName].wasCreated) {
                 _endOfList = false;
                 _nextStartSearchingIndex = i + 1;
                 _teamName = teamName;
@@ -517,7 +532,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get a total number of voters to a specified team
+    // Get a total number of all voters to a specified team
     // ------------------------------------------------------------------------
     function getTotalVotersToTeam(string _teamName) external view returns (uint256 _total) {
         require(
@@ -526,7 +541,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         );
 
         require(
-            teamsInfo[_teamName].wasCreated == true,
+            teamsInfo[_teamName].wasCreated,
             "Cannot find the specified team."
         );
 
@@ -534,7 +549,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get a voting result (by the index of voters) to a specified team
+    // Get a voting result to a specified team pointed by _voterIndex
     // ------------------------------------------------------------------------
     function getVoteResultAtIndexToTeam(string _teamName, uint256 _voterIndex) 
         external view
@@ -550,7 +565,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         );
 
         require(
-            teamsInfo[_teamName].wasCreated == true,
+            teamsInfo[_teamName].wasCreated,
             "Cannot find the specified team."
         );
 
@@ -569,7 +584,9 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     // Allow a staff or a player to give a vote to the specified team
     // ------------------------------------------------------------------------
-    function voteToTeam(string _teamName, address _voter, uint256 _votingWeight) external onlyVotingState onlyPizzaCoin {
+    function voteToTeam(string _teamName, address _voter, uint256 _votingWeight) 
+        external onlyVotingState onlyPizzaCoin 
+    {
         require(
             _teamName.isEmpty() == false,
             "'_teamName' might not be empty."
@@ -586,16 +603,16 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         );
 
         require(
-            teamsInfo[_teamName].wasCreated == true,
+            teamsInfo[_teamName].wasCreated,
             "Cannot find the specified team."
         );
 
         // If teamsInfo[_teamName].votesWeight[_voter] > 0 is true, this implies that 
         // the voter was used to give a vote to the specified team previously
         if (teamsInfo[_teamName].votesWeight[_voter] == 0) {
-            // The voter has never been given a vote to the specified team before
+            // The voter has never given a vote to the specified team before
             // We, therefore, have to add a new voter to the 'voters' array
-            // which is in the 'teamsInfo' mapping
+            // of the specified team
             teamsInfo[_teamName].voters.push(_voter);
         }
 
@@ -616,8 +633,8 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     function __getMaxTeamVotingPoints() internal view onlyVotingFinishedState returns (uint256 _maxTeamVotingPoints) {
         _maxTeamVotingPoints = 0;
         for (uint256 i = 0; i < teams.length; i++) {
-            // Team was not removed before
-            if (teams[i].isEmpty() == false && teamsInfo[teams[i]].wasCreated == true) {
+            // Team might not be removed before
+            if (teams[i].isEmpty() == false && teamsInfo[teams[i]].wasCreated) {
                 // Find a new maximum points
                 if (teamsInfo[teams[i]].totalVoted > _maxTeamVotingPoints) {
                     _maxTeamVotingPoints = teamsInfo[teams[i]].totalVoted;
@@ -627,17 +644,17 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get a total number of team winners after voting is finished
-    // It is possible to have several teams that got the equal maximum voting points 
+    // Get a total number of winner teams after voting is finished
+    // It is possible to have several teams that get the equal maximum voting points 
     // ------------------------------------------------------------------------
-    function getTotalTeamWinners() external view onlyVotingFinishedState returns (uint256 _total) {
+    function getTotalWinnerTeams() external view onlyVotingFinishedState returns (uint256 _total) {
         uint256 maxTeamVotingPoints = __getMaxTeamVotingPoints();
 
         _total = 0;
         for (uint256 i = 0; i < teams.length; i++) {
-            // Team was not removed before
-            if (teams[i].isEmpty() == false && teamsInfo[teams[i]].wasCreated == true) {
-                // Count the team winners up
+            // Team might not be removed before
+            if (teams[i].isEmpty() == false && teamsInfo[teams[i]].wasCreated) {
+                // Count the winner teams up
                 if (teamsInfo[teams[i]].totalVoted == maxTeamVotingPoints) {
                     _total++;
                 }
@@ -646,11 +663,11 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get the first found team winner
+    // Get the first found winner team
     // (start searching at _startSearchingIndex)
-    // It is possible to have several teams that got the equal maximum voting points 
+    // It is possible to have several teams that get the equal maximum voting points 
     // ------------------------------------------------------------------------
-    function getFirstFoundTeamWinner(uint256 _startSearchingIndex) 
+    function getFirstFoundWinnerTeam(uint256 _startSearchingIndex) 
         external view onlyVotingFinishedState
         returns (
             bool _endOfList,
@@ -672,9 +689,9 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         for (uint256 i = _startSearchingIndex; i < teams.length; i++) {
             string memory teamName = teams[i];
 
-            // Team was not removed before
-            if (teamName.isEmpty() == false && teamsInfo[teamName].wasCreated == true) {
-                // Find a team winner
+            // Team might not be removed before
+            if (teamName.isEmpty() == false && teamsInfo[teamName].wasCreated) {
+                // Find a winner team
                 if (teamsInfo[teamName].totalVoted == maxTeamVotingPoints) {
                     _endOfList = false;
                     _nextStartSearchingIndex = i + 1;
