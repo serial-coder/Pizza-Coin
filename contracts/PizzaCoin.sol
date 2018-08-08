@@ -36,7 +36,7 @@ contract PizzaCoin is ERC20, Owned {
     event PlayerKicked();
     event FirstFoundPlayerInTeamKicked(uint256 _nextStartSearchingIndex);
     event TeamKicked();
-    event TeamVoted();
+    event TeamVoted(string _teamName, uint256 _totalVoted);
 
 
     // Token info
@@ -391,8 +391,15 @@ contract PizzaCoin is ERC20, Owned {
     // Allow any staff or any player in other different teams to vote to a team
     // ------------------------------------------------------------------------
     function voteTeam(string _teamName, uint256 _votingWeight) public onlyVotingState onlyRegistered {
-        PizzaCoinCodeLib.voteTeam(_teamName, _votingWeight, staffContract, playerContract, teamContract);
-        emit TeamVoted();
+        uint256 totalVoted;
+        totalVoted = PizzaCoinCodeLib.voteTeam(
+            _teamName, 
+            _votingWeight, 
+            staffContract, 
+            playerContract, 
+            teamContract
+        );
+        emit TeamVoted(_teamName, totalVoted);
     }
 
 

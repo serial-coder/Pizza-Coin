@@ -204,7 +204,9 @@ library PizzaCoinCodeLib {
         address _staffContract,
         address _playerContract,
         address _teamContract
-    ) public {
+    ) 
+        public returns (uint256 _totalVoted) 
+    {
 
         assert(_staffContract != address(0));
         assert(_teamContract != address(0));
@@ -230,11 +232,11 @@ library PizzaCoinCodeLib {
 
         if (staffContractInstance.isStaff(msg.sender)) {
             // Voter is a staff
-            voteTeamByStaff(_teamName, _votingWeight, _staffContract, _teamContract);
+            return voteTeamByStaff(_teamName, _votingWeight, _staffContract, _teamContract);
         }
         else {
             // Voter is a team player
-            voteTeamByDifferentTeamPlayer(_teamName, _votingWeight, _playerContract, _teamContract);
+            return voteTeamByDifferentTeamPlayer(_teamName, _votingWeight, _playerContract, _teamContract);
         }
     }
 
@@ -246,7 +248,9 @@ library PizzaCoinCodeLib {
         uint256 _votingWeight,
         address _staffContract,
         address _teamContract
-    ) internal {
+    ) 
+        internal returns (uint256 _totalVoted) 
+    {
 
         assert(_staffContract != address(0));
         assert(_teamContract != address(0));
@@ -266,9 +270,12 @@ library PizzaCoinCodeLib {
             "Insufficient voting balance."
         );
 
-        // Staff commits to vote to a team
+        // Staff commits to vote to the team
         staffContractInstance.commitToVote(voter, _votingWeight, _teamName);
         teamContractInstance.voteToTeam(_teamName, voter, _votingWeight);
+
+        // Get a current voting point for the team
+        _totalVoted = teamContractInstance.getVotingPointForTeam(_teamName);
     }
 
     // ------------------------------------------------------------------------
@@ -280,7 +287,7 @@ library PizzaCoinCodeLib {
         address _playerContract,
         address _teamContract
     ) 
-    internal
+        internal returns (uint256 _totalVoted) 
     {
         assert(_playerContract != address(0));
         assert(_teamContract != address(0));
@@ -305,8 +312,11 @@ library PizzaCoinCodeLib {
             "Insufficient voting balance."
         );
 
-        // Player commits to vote to a team
+        // Player commits to vote to the team
         playerContractInstance.commitToVote(voter, _votingWeight, _teamName);
         teamContractInstance.voteToTeam(_teamName, voter, _votingWeight);
+
+        // Get a current voting point for the team
+        _totalVoted = teamContractInstance.getVotingPointForTeam(_teamName);
     }
 }

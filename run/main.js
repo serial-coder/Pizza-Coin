@@ -200,8 +200,13 @@ function subscribeEvent() {
             throw new Error(err);
         }
         
+        let teamName, totalVoted;
+        teamName = result.returnValues._teamName;
+        totalVoted = result.returnValues._totalVoted;
+
         console.log('***** Event catched *****');
-        console.log(result);
+        console.log('teamName: ' + teamName);
+        console.log('totalVoted: ' + totalVoted);
     });
 
     return subscription;
