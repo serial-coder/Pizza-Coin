@@ -45,7 +45,7 @@ interface IPlayerContract {
             uint256 _voteWeight
         );
     function getTokenBalance(address _player) external view returns (uint256 _tokenBalance);
-    function commitToVote(address _player, uint256 _votingWeight, string _teamName) external;
+    function commitToVote(string _teamName, address _player, uint256 _votingWeight) external;
 }
 
 
@@ -484,9 +484,14 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     // ------------------------------------------------------------------------
     // Allow a player in other different teams vote to the specified team
     // ------------------------------------------------------------------------
-    function commitToVote(address _player, uint256 _votingWeight, string _teamName) 
+    function commitToVote(string _teamName, address _player, uint256 _votingWeight) 
         external onlyVotingState onlyPizzaCoin 
     {
+        require(
+            _teamName.isNotEmpty(),
+            "'_teamName' might not be empty."
+        );
+        
         require(
             _player != address(0),
             "'_player' contains an invalid address."
@@ -495,11 +500,6 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
         require(
             _votingWeight > 0,
             "'_votingWeight' must be larger than 0."
-        );
-
-        require(
-            _teamName.isNotEmpty(),
-            "'_teamName' might not be empty."
         );
 
         require(
