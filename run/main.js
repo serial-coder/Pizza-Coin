@@ -158,9 +158,9 @@ async function main() {
         // Change all contracts' state from Voting to VotingFinished
         await stopVoting(ethAccounts[0]);
 
-        // Get a maximum voting points
-        let maxTeamVotingPoints = await getMaxTeamVotingPoints(PizzaCoinTeam);
-        console.log('maxTeamVotingPoints: ' + maxTeamVotingPoints);
+        // Get a maximum voting point
+        let maxTeamVotingPoint = await getMaxTeamVotingPoint(PizzaCoinTeam);
+        console.log('maxTeamVotingPoint: ' + maxTeamVotingPoint);
 
         // Get a total number of winner teams
         let totalWinners = await getTotalWinnerTeams(PizzaCoinTeam);
@@ -256,12 +256,12 @@ async function getTotalWinnerTeams(PizzaCoinTeam) {
     return totalWinners;
 }
 
-async function getMaxTeamVotingPoints(PizzaCoinTeam) {
+async function getMaxTeamVotingPoint(PizzaCoinTeam) {
     let err, maxTeamVotingPoints;
 
-    console.log('\nQuerying for a maximum voting points ...');
+    console.log('\nQuerying for a maximum voting point ...');
     [err, maxTeamVotingPoints] = await callContractFunction(
-        PizzaCoinTeam.methods.getMaxTeamVotingPoints().call({})
+        PizzaCoinTeam.methods.getMaxTeamVotingPoint().call({})
     );
 
     if (err) {
