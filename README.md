@@ -24,5 +24,5 @@ npm install
 ## To execute Node.JS based lazy-web3-wrapper functions (for demo)
 ```
 cd run
-./main.js
+node main.js
 ```
