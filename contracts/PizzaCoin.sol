@@ -63,7 +63,7 @@ contract PizzaCoin is ERC20, Owned {
     // ------------------------------------------------------------------------
     constructor(string _ownerName, uint256 _voterInitialTokens) public {
         require(
-            _ownerName.isEmpty() == false,
+            _ownerName.isNotEmpty(),
             "'_ownerName' might not be empty."
         );
 

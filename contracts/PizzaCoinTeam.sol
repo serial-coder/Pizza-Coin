@@ -202,7 +202,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     function doesTeamExist(string _teamName) external view returns (bool bTeamExist) {
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
 
@@ -214,7 +214,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     function createTeam(string _teamName) external onlyRegistrationState onlyPizzaCoin {
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
         
@@ -253,7 +253,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         );
 
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
 
@@ -274,7 +274,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     function kickTeam(string _teamName) external onlyRegistrationState onlyPizzaCoin {
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
 
@@ -318,7 +318,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         );
 
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
 
@@ -352,7 +352,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         ) 
     {
         assert(_player != address(0));
-        assert(_teamName.isEmpty() == false);
+        assert(_teamName.isNotEmpty());
         assert(teamsInfo[_teamName].wasCreated);
 
         _playerIndex = teamsInfo[_teamName].playerIdMap[_player];
@@ -364,7 +364,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     function getArrayLengthOfPlayersInTeam(string _teamName) external view returns (uint256 _length) {
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
 
@@ -388,7 +388,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     function __getTotalPlayersInTeam(string _teamName) internal view returns (uint256 _total) {
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
 
@@ -413,7 +413,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         ) 
     {
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
 
@@ -454,7 +454,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         ) 
     {
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
 
@@ -477,7 +477,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // Get an index pointed to a specific team on the mapping 'teamsInfo'
     // ------------------------------------------------------------------------
     function getTeamIndex(string _teamName) internal view returns (bool _found, uint256 _teamIndex) {
-        assert(_teamName.isEmpty() == false);
+        assert(_teamName.isNotEmpty());
 
         _found = teamsInfo[_teamName].wasCreated;
         _teamIndex = teamsInfo[_teamName].id;
@@ -490,7 +490,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         _total = 0;
         for (uint256 i = 0; i < teams.length; i++) {
             // Team might not be removed before
-            if (teams[i].isEmpty() == false && teamsInfo[teams[i]].wasCreated) {
+            if (teams[i].isNotEmpty() && teamsInfo[teams[i]].wasCreated) {
                 _total++;
             }
         }
@@ -522,7 +522,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
             string memory teamName = teams[i];
 
             // Team might not be removed before
-            if (teamName.isEmpty() == false && teamsInfo[teamName].wasCreated) {
+            if (teamName.isNotEmpty() && teamsInfo[teamName].wasCreated) {
                 _endOfList = false;
                 _nextStartSearchingIndex = i + 1;
                 _teamName = teamName;
@@ -537,7 +537,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     function getVotingPointForTeam(string _teamName) external view returns (uint256 _totalVoted) {
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
 
@@ -554,7 +554,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     function getTotalVotersToTeam(string _teamName) external view returns (uint256 _total) {
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
 
@@ -578,7 +578,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         ) 
     {
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
 
@@ -606,7 +606,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         external onlyVotingState onlyPizzaCoin 
     {
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
 
@@ -652,7 +652,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         _maxTeamVotingPoint = 0;
         for (uint256 i = 0; i < teams.length; i++) {
             // Team might not be removed before
-            if (teams[i].isEmpty() == false && teamsInfo[teams[i]].wasCreated) {
+            if (teams[i].isNotEmpty() && teamsInfo[teams[i]].wasCreated) {
                 // Find a new maximum point
                 if (teamsInfo[teams[i]].totalVoted > _maxTeamVotingPoint) {
                     _maxTeamVotingPoint = teamsInfo[teams[i]].totalVoted;
@@ -671,7 +671,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
         _total = 0;
         for (uint256 i = 0; i < teams.length; i++) {
             // Team might not be removed before
-            if (teams[i].isEmpty() == false && teamsInfo[teams[i]].wasCreated) {
+            if (teams[i].isNotEmpty() && teamsInfo[teams[i]].wasCreated) {
                 // Count the winner teams up
                 if (teamsInfo[teams[i]].totalVoted == maxTeamVotingPoint) {
                     _total++;
@@ -708,7 +708,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
             string memory teamName = teams[i];
 
             // Team might not be removed before
-            if (teamName.isEmpty() == false && teamsInfo[teamName].wasCreated) {
+            if (teamName.isNotEmpty() && teamsInfo[teamName].wasCreated) {
                 // Find a winner team
                 if (teamsInfo[teamName].totalVoted == maxTeamVotingPoint) {
                     _endOfList = false;

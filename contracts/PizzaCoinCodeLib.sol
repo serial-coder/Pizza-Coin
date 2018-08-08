@@ -216,7 +216,7 @@ library PizzaCoinCodeLib {
         ITeamContract teamContractInstance = ITeamContract(_teamContract);
 
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
 
@@ -260,7 +260,7 @@ library PizzaCoinCodeLib {
         ITeamContract teamContractInstance = ITeamContract(_teamContract);
 
         address voter = msg.sender;
-        assert(_teamName.isEmpty() == false);
+        assert(_teamName.isNotEmpty());
         assert(_votingWeight > 0);
         assert(teamContractInstance.doesTeamExist(_teamName));
         assert(staffContractInstance.isStaff(voter));
@@ -297,7 +297,7 @@ library PizzaCoinCodeLib {
         ITeamContract teamContractInstance = ITeamContract(_teamContract);
         
         address voter = msg.sender;
-        assert(_teamName.isEmpty() == false);
+        assert(_teamName.isNotEmpty());
         assert(_votingWeight > 0);
         assert(teamContractInstance.doesTeamExist(_teamName));
         assert(playerContractInstance.isPlayer(voter));

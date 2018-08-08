@@ -225,7 +225,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
         );
 
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
 
@@ -281,12 +281,12 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
         );
 
         require(
-            _playerName.isEmpty() == false,
+            _playerName.isNotEmpty(),
             "'_playerName' might not be empty."
         );
 
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
 
@@ -322,7 +322,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
         );
 
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
         
@@ -498,7 +498,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
         );
 
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
 

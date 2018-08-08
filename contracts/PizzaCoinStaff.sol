@@ -250,7 +250,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
         );
 
         require(
-            _staffName.isEmpty() == false,
+            _staffName.isNotEmpty(),
             "'_staffName' might not be empty."
         );
 
@@ -458,7 +458,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
         );
 
         require(
-            _teamName.isEmpty() == false,
+            _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
         );
 
