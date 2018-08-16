@@ -15,7 +15,7 @@
 // See <http://truffleframework.com/docs/advanced/configuration>
 // to customize your Truffle configuration!
 
-module.exports = {
+/*module.exports = {
   networks: {
     dev_ganache: {
       host: 'localhost',
@@ -32,5 +32,36 @@ module.exports = {
       gas: 7000000,   // 7500000
       gasPrice: 10000000000
     }
+  }
+};*/
+
+
+var HDWalletProvider = require('truffle-hdwallet-provider');
+var mnemonic = require('./mnemonic.secret')
+
+module.exports = {
+  networks: {
+    ropsten: {
+      provider: function() {
+        return new HDWalletProvider(mnemonic, 'https://ropsten.infura.io/3ikLuZwohJ81nAe4aPyI');
+      },
+      network_id: '3',
+      gas: 7000000,
+      gasPrice: 10000000000
+    },
+    rinkeby: {
+      provider: function() {
+        //return new HDWalletProvider(mnemonic, 'http://localhost:8545');
+        return new HDWalletProvider(mnemonic, 'https://rinkeby.infura.io/3ikLuZwohJ81nAe4aPyI');
+      },
+      network_id: '4',
+      gas: 7000000,
+      gasPrice: 10000000000
+    },
+    ganache: {
+      host: 'localhost',
+      port: 7545,
+      network_id: '*' // Match any network id
+    } 
   }
 };
