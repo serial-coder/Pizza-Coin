@@ -33,7 +33,7 @@ library BasicStringUtils {
     // Determine if two strings are equal or not
     // ------------------------------------------------------------------------
     function isEqual(string self, string other) internal pure returns (bool bEqual) {
-        return keccak256(self) == keccak256(other);
+        return keccak256(abi.encodePacked(self)) == keccak256(abi.encodePacked(other));
     }
 
     // ------------------------------------------------------------------------
@@ -265,17 +265,17 @@ contract PizzaCoin is ERC20Interface, Owned {
     // Initial a state mapping
     // ------------------------------------------------------------------------
     function initStateMap() internal onlyRegistrationState onlyOwner {
-        stateMap[keccak256(State.Registration)] = "Registration";
-        stateMap[keccak256(State.RegistrationLocked)] = "Registration Locked";
-        stateMap[keccak256(State.Voting)] = "Voting";
-        stateMap[keccak256(State.VotingFinished)] = "Voting Finished";
+        stateMap[keccak256(abi.encodePacked(State.Registration))] = "Registration";
+        stateMap[keccak256(abi.encodePacked(State.RegistrationLocked))] = "Registration Locked";
+        stateMap[keccak256(abi.encodePacked(State.Voting))] = "Voting";
+        stateMap[keccak256(abi.encodePacked(State.VotingFinished))] = "Voting Finished";
     }
 
     // ------------------------------------------------------------------------
     // Convert a state to a readable string
     // ------------------------------------------------------------------------
     function convertStateToString() internal view returns (string _state) {
-        return stateMap[keccak256(state)];
+        return stateMap[keccak256(abi.encodePacked(state))];
     }
 
     // ------------------------------------------------------------------------
