@@ -13,7 +13,7 @@ npm install
 ```
 
 ## To get Infura API for free
-<a href="https://infura.io">Register to get a free api.</a> The api will be sent to your registered e-mail.
+<a href="https://infura.io">Register to get a free api.</a> Note that, the api will be sent to your registered e-mail.
 
 ## To set up 'infura-api.secret' file
 ```
