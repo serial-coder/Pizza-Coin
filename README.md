@@ -5,11 +5,19 @@
 # Pizza Coin developed for the 1st Thailand's blockchain hackathon (Pizza Hackathon 2018)
 
 ## To install Truffle Framework
-<a href="https://truffleframework.com/docs/truffle/getting-started/installation">follow this link</a>
+<a href="https://truffleframework.com/docs/truffle/getting-started/installation">Follow this link</a>
 
 ## To install Node.JS packages required by Truffle
 ```
 npm install
+```
+
+## To get Infura API for free
+<a href="https://infura.io">Register to get a free api.</a> The api will be sent to your registered e-mail.
+
+## To set up 'infura-api.secret' file
+```
+echo "'your-infura-api'" > infura-api.secret  // Your Infura api must be marked with single quotes
 ```
 
 ## To set up 'mnemonic.secret' file
