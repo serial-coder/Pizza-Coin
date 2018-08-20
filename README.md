@@ -1,9 +1,7 @@
 # Pizza Coin developed for the 1st Thailand's blockchain hackathon (Pizza Hackathon 2018)
 
 ## To install Truffle Framework
-```
 <a href="https://truffleframework.com/docs/truffle/getting-started/installation">follow this link</a>
-```
 
 ## To install Node.JS packages required by Truffle
 ```
