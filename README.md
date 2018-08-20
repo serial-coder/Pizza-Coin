@@ -1,3 +1,7 @@
+<p align="center"><a href="#" target="_blank" rel="noopener noreferrer"><img width="100" src="/doc/images/Pizza_Hackathon_Logo.png"></a></p>
+
+<h2 align="center">Pizza Coin</h2>
+
 # Pizza Coin developed for the 1st Thailand's blockchain hackathon (Pizza Hackathon 2018)
 
 ## To install Truffle Framework
