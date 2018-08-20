@@ -6,6 +6,12 @@ var mnemonic = require('./mnemonic.secret');
 
 module.exports = {
   networks: {
+    mainnet: {
+      provider: function() {
+        return new HDWalletProvider(mnemonic, 'https://mainnet.infura.io/3ikLuZwohJ81nAe4aPyI');
+      },
+      network_id: '1'
+    },
     ropsten: {
       provider: function() {
         return new HDWalletProvider(mnemonic, 'https://ropsten.infura.io/3ikLuZwohJ81nAe4aPyI');
@@ -18,6 +24,12 @@ module.exports = {
         return new HDWalletProvider(mnemonic, 'https://rinkeby.infura.io/3ikLuZwohJ81nAe4aPyI');
       },
       network_id: '4'
+    },
+    kovan: {
+      provider: function() {
+        return new HDWalletProvider(mnemonic, 'https://kovan.infura.io/3ikLuZwohJ81nAe4aPyI');
+      },
+      network_id: '42'
     },
     rinkeby_localsync: {
       host: 'localhost',

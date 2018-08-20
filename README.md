@@ -24,11 +24,19 @@ truffle compile
 
 ## To deploy PizzaCoin contract and its dependencies
 ```
+truffle migrate --network mainnet  // Deploy to Ethereum public main network via Infura
+```
+
+```
 truffle migrate --network ropsten  // Deploy to Ropsten testnet via Infura
 ```
 
 ```
 truffle migrate --network rinkeby  // Deploy to Rinkeby testnet via Infura
+```
+
+```
+truffle migrate --network kovan  // Deploy to Kovan testnet via Infura
 ```
 
 ```
