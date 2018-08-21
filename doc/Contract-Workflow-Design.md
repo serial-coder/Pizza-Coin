@@ -1,4 +1,4 @@
-## Brief Synopsis of the Project
+## Brief Synopsis of Pizza Hackathon Project
 
 The Pizza Coin (PZC) is a voting system based on Ethereum blockchain's smart contract compatible with ERC-20 token standard which would be used in the 1st Blockchain hackathon event in Thailand on 25-26 August 2018.
 
@@ -12,21 +12,18 @@ The PZC contract consists of eight dependencies including Staff contract, Player
 
 The PZC contract acts as the mother contract of all dependencies. the PZC has three children contracts, namely Staff, Player and Team contracts which would be respectively deployed by the libraries named Staff Deployer, Player Deployer, Team Deployer. Furthermore, the PZC also has another two libraries named CodeLib and CodeLib2 which would be used as the external source code libraries for the PZC mother contract itself.
 
-
-    Figure 1. << PZC contract deployment (transparent).png >>
-
+<p align="center"><img src="Diagrams/PZC contract deployment (transparent).png"></p>
+<h3 align="center">Figure 1. deployment of Pizza Coin contract</h3><br />
 
 There are two stages when deploying the PZC contract to the blockchain. At the first stage, the PZC mother contract's dependencies (including Player Deployer, Team Deployer, CodeLib and CodeLib2 libraries) have to seperately deploy to the blockchain. The previously deployed instances would be linked and then injected as dependency objects in order to deploy the PZC mother contract to Ethereum network as shown in Figure 1. 
-
-
-    Figure 2. << PZC contract initialization (transparent).png >>
-
+    
+<p align="center"><img src="Diagrams/PZC contract initialization (transparent).png"></p>
+<h3 align="center">Figure 2. initialization of Pizza Coin contract</h3><br />
 
 At the second stage, the deployed PZC mother contract has to be initialized by creating its children contracts--including Staff, Player and Team contracts--as shown in Figure 2. At this point, we employ the contract deployer libraries (i.e., Staff Deployer, Player Deployer, Team Deployer) to deploy each corresponding child contract. The resulting children contract instances would be returned to store on the PZC contract.
 
-
-    Figure 3. << PZC contract with its children contracts and libs (transparent).png >>
-
+<p align="center"><img src="Diagrams/PZC contract with its children contracts and libs (transparent).png"></p>
+<h3 align="center">Figure 3. Pizza Coin contract acts as a contract coordinator for the Staff, Player and Team contracts</h3><br />
 
 This way, the PZC mother contract would be considered as a contract coordinator or a reverse proxy contract for the Staff, Player and Team contracts. When a user need to interact with any contract function, he/she just makes a call to the PZC mother contract. For example, a user wants to join in some specific team, he/she can achieve this by invoking the registerPlayer() function of the PZC contract. The PZC contract would then interact with its children contracts in order to register the contract calling user as a player to the specified team.
 
