@@ -10,13 +10,19 @@
 
 // Import libraries
 const Web3             = require('web3'),
-      HDWalletProvider = require("truffle-hdwallet-provider"),
+      HDWalletProvider = require('truffle-hdwallet-provider'),
       contract         = require('truffle-contract'),
+      fs               = require('fs'),
       PizzaCoinJson    = require('./build/contracts/PizzaCoin.json'),
       mnemonic         = require('./mnemonic.secret'),
       infuraApi        = require('./infura-api.secret');
 
 const network = process.argv[2];
+if (!network) {
+    console.error('Please specify Ethereum network...');
+    process.exit(1);
+}
+
 const provider = new HDWalletProvider(
     mnemonic, 
     'https://' + network + '.infura.io/' + infuraApi, 
@@ -35,7 +41,10 @@ async function main() {
         // Initial PizzaCoin contract instance
         const contractInstance = await initContractInstance();
 
-        console.log('PizzaCoin address: ' + PizzaCoinJson.networks[4].address);
+        let pizzaCoinAddr, pizzaCoinStaffAddr, pizzaCoinPlayerAddr, pizzaCoinTeamAddr;
+
+        pizzaCoinAddr = contractInstance.address;
+        console.log('PizzaCoin address: ' + pizzaCoinAddr);
 
         let contractState = await contractInstance.getContractState();
         console.log('Contract state: ' + contractState);
@@ -47,6 +56,7 @@ async function main() {
             gas: 4000000,
             gasPrice: 10000000000
         });
+        pizzaCoinStaffAddr = staffContractAddr.logs[0].args._contract;
         console.log('... succeeded');
 
         // Create PizzaCoinPlayer contract
@@ -65,6 +75,7 @@ async function main() {
             gas: 4000000,
             gasPrice: 10000000000
         });
+        pizzaCoinPlayerAddr = playerContractAddr.logs[0].args._contract;
         console.log('... succeeded');
 
         // Change all contracts' state from Initial to Registration
@@ -74,6 +85,7 @@ async function main() {
             gas: 1000000,
             gasPrice: 10000000000
         });
+        pizzaCoinTeamAddr = teamContractAddr.logs[0].args._contract;
         console.log('... succeeded');
 
         contractState = await contractInstance.getContractState();
@@ -82,15 +94,28 @@ async function main() {
         console.log('--------------- All done ---------------');
         console.log('Project deployer address: ' + projectDeployerAddr);
         console.log('Network: ' + network);
-        console.log('PizzaCoin address: ' + PizzaCoinJson.networks[4].address);
-        console.log('PizzaCoinStaff address: ' + staffContractAddr.logs[0].args._contract);
-        console.log('PizzaCoinPlayer address: ' + playerContractAddr.logs[0].args._contract);
-        console.log('PizzaCoinTeam address: ' + teamContractAddr.logs[0].args._contract);
+        console.log('PizzaCoin address: ' + pizzaCoinAddr);
+        console.log('PizzaCoinStaff address: ' + pizzaCoinStaffAddr);
+        console.log('PizzaCoinPlayer address: ' + pizzaCoinPlayerAddr);
+        console.log('PizzaCoinTeam address: ' + pizzaCoinTeamAddr);
+
+        // Writing a config file
+        /*console.log('\nWriting a config file...');
+        await writeContractConfigFile(
+            'contract-settings.js',
+            network, 
+            pizzaCoinAddr, 
+            pizzaCoinStaffAddr, 
+            pizzaCoinPlayerAddr, 
+            pizzaCoinTeamAddr
+        );
+        console.log('... succeeded');*/
 
         process.exit(0);
     }
     catch (err) {
-        return console.error(err);
+        console.error(err);
+        process.exit(1);
     }
 }
 
@@ -108,7 +133,7 @@ async function initContractInstance() {
         return contractInstance;
     }
     catch (err) {
-        console.error('err: ' + err);
+        throw new Error(err);
     }
 }
 
@@ -128,4 +153,34 @@ function fixTruffleContractCompatibilityIssue (contract) {
     }
 
     return contract;
+}
+
+function writeContractConfigFile(
+    configFilePath,
+    network, 
+    pizzaCoinAddr, 
+    pizzaCoinStaffAddr, 
+    pizzaCoinPlayerAddr, 
+    pizzaCoinTeamAddr
+) {
+    try {
+        const fd = fs.openSync(configFilePath, 'w+');
+        fs.appendFileSync(fd, "const state = {\n");
+        fs.appendFileSync(fd, "    network: '" + network + "',\n");
+        fs.appendFileSync(fd, "    etherscanPrefix: 'https://" + network + ".etherscan.io',\n");
+        fs.appendFileSync(fd, "    ethereumNode: 'wss://" + network + ".infura.io/_ws', // Only websocker endpoint\n");
+        fs.appendFileSync(fd, "    pizzaCoinAddr: '" + pizzaCoinAddr + "',\n");
+        fs.appendFileSync(fd, "    pizzaCoinStaffAddr: '" + pizzaCoinStaffAddr + "',\n");
+        fs.appendFileSync(fd, "    pizzaCoinPlayerAddr: '" + pizzaCoinPlayerAddr + "',\n");
+        fs.appendFileSync(fd, "    pizzaCoinTeamAddr: '" + pizzaCoinTeamAddr + "'\n");
+        fs.appendFileSync(fd, "  }\n");
+        fs.appendFileSync(fd, "\n");
+        fs.appendFileSync(fd, "export default {\n");
+        fs.appendFileSync(fd, "    namespaced: true,\n");
+        fs.appendFileSync(fd, "    state\n");
+        fs.appendFileSync(fd, "}\n");
+    }
+    catch (err) {
+        throw new Error(err);
+    }
 }
