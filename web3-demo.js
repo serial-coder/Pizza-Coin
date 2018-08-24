@@ -176,6 +176,8 @@ async function main() {
 
         // Unsubscribe to 'TeamVoted' event (this is not working??)
         unsubscribeEvent(subscription);
+
+        process.exit(0);
     }
     catch (err) {
         return console.error(err);
