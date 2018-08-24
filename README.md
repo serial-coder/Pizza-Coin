@@ -88,7 +88,7 @@ truffle migrate --network ganache  // Deploy to Ganache local test environment
 
 ## To initial PizzaCoin contract (use this when integrating the contract with DApp)
 ```
-node init-contract.js <<ethereum_network>>  // For example, node init-contract.js rinkeby
+node init-contract.js <<ethereum_network>>  // For example, run 'node init-contract.js rinkeby'
 ```
 
 ## To execute Node.JS based lazy-web3-wrapper functions (for demonstrating how to interact the contract with web3 node.js backend)
