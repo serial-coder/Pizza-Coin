@@ -10,10 +10,10 @@
 
 // Import libraries
 var Web3                = require('web3'),
-    PizzaCoinJson       = require('../build/contracts/PizzaCoin.json'),
-    PizzaCoinStaffJson  = require('../build/contracts/PizzaCoinStaff.json'),
-    PizzaCoinPlayerJson = require('../build/contracts/PizzaCoinPlayer.json'),
-    PizzaCoinTeamJson   = require('../build/contracts/PizzaCoinTeam.json'),
+    PizzaCoinJson       = require('./build/contracts/PizzaCoin.json'),
+    PizzaCoinStaffJson  = require('./build/contracts/PizzaCoinStaff.json'),
+    PizzaCoinPlayerJson = require('./build/contracts/PizzaCoinPlayer.json'),
+    PizzaCoinTeamJson   = require('./build/contracts/PizzaCoinTeam.json'),
     pe                  = require('parse-error');
 
 var web3 = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:7545'));    // Ganache
