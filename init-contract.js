@@ -16,7 +16,12 @@ const Web3             = require('web3'),
       mnemonic         = require('./mnemonic.secret'),
       infuraApi        = require('./infura-api.secret');
 
-const provider = new HDWalletProvider(mnemonic, 'https://rinkeby.infura.io/' + infuraApi, 0);
+const network = process.argv[2];
+const provider = new HDWalletProvider(
+    mnemonic, 
+    'https://' + network + '.infura.io/' + infuraApi, 
+    0
+);
 const web3 = new Web3(provider);
 
 main();
@@ -25,6 +30,7 @@ async function main() {
     try {
         const projectDeployerAddr = provider.getAddresses()[0];
         console.log('Project deployer address: ' + projectDeployerAddr);
+        console.log('Network: ' + network);
 
         // Initial PizzaCoin contract instance
         const contractInstance = await initContractInstance();
@@ -37,28 +43,36 @@ async function main() {
         // Create PizzaCoinStaff contract
         console.log('Creating PizzaCoinStaff contract...');
         const staffContractAddr = await contractInstance.createStaffContract({
-            from: projectDeployerAddr
+            from: projectDeployerAddr,
+            gas: 4000000,
+            gasPrice: 10000000000
         });
         console.log('... succeeded');
 
         // Create PizzaCoinPlayer contract
         console.log('Creating PizzaCoinPlayer contract...');
         const playerContractAddr = await contractInstance.createPlayerContract({
-            from: projectDeployerAddr
+            from: projectDeployerAddr,
+            gas: 4000000,
+            gasPrice: 10000000000
         });
         console.log('... succeeded');
 
         // Create PizzaCoinTeam contract
         console.log('Creating PizzaCoinTeam contract...');
         const teamContractAddr = await contractInstance.createTeamContract({
-            from: projectDeployerAddr
+            from: projectDeployerAddr,
+            gas: 4000000,
+            gasPrice: 10000000000
         });
         console.log('... succeeded');
 
         // Change all contracts' state from Initial to Registration
         console.log('Changing a contract state to Registration...');
         await contractInstance.startRegistration({
-            from: projectDeployerAddr
+            from: projectDeployerAddr,
+            gas: 1000000,
+            gasPrice: 10000000000
         });
         console.log('... succeeded');
 
@@ -67,6 +81,7 @@ async function main() {
 
         console.log('--------------- All done ---------------');
         console.log('Project deployer address: ' + projectDeployerAddr);
+        console.log('Network: ' + network);
         console.log('PizzaCoin address: ' + PizzaCoinJson.networks[4].address);
         console.log('PizzaCoinStaff address: ' + staffContractAddr.logs[0].args._contract);
         console.log('PizzaCoinPlayer address: ' + playerContractAddr.logs[0].args._contract);
