@@ -1174,8 +1174,8 @@ interface ITeamContract {
         );
     function voteToTeam(string _teamName, address _voter, uint256 _votingWeight) external;
     function getMaxTeamVotingPoint() external view returns (uint256 _maxTeamVotingPoint);
-    function getTotalWinnerTeams() external view returns (uint256 _total);
-    function getFirstFoundWinnerTeam(uint256 _startSearchingIndex) 
+    function getTotalWinningTeams() external view returns (uint256 _total);
+    function getFirstFoundWinningTeam(uint256 _startSearchingIndex) 
         external view
         returns (
             bool _endOfList,
@@ -1785,17 +1785,17 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get a total number of winner teams after voting is finished
+    // Get a total number of winning teams after voting is finished
     // It is possible to have several teams that get the equal maximum voting points 
     // ------------------------------------------------------------------------
-    function getTotalWinnerTeams() external view onlyVotingFinishedState returns (uint256 _total) {
+    function getTotalWinningTeams() external view onlyVotingFinishedState returns (uint256 _total) {
         uint256 maxTeamVotingPoint = __getMaxTeamVotingPoint();
 
         _total = 0;
         for (uint256 i = 0; i < teams.length; i++) {
             // Team might not be removed before
             if (teams[i].isNotEmpty() && teamsInfo[teams[i]].wasCreated) {
-                // Count the winner teams up
+                // Count up the winning teams
                 if (teamsInfo[teams[i]].totalVoted == maxTeamVotingPoint) {
                     _total++;
                 }
@@ -1804,11 +1804,11 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get the first found winner team
+    // Get the first found winning team
     // (start searching at _startSearchingIndex)
     // It is possible to have several teams that get the equal maximum voting points 
     // ------------------------------------------------------------------------
-    function getFirstFoundWinnerTeam(uint256 _startSearchingIndex) 
+    function getFirstFoundWinningTeam(uint256 _startSearchingIndex) 
         external view onlyVotingFinishedState
         returns (
             bool _endOfList,
@@ -1832,7 +1832,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
 
             // Team might not be removed before
             if (teamName.isNotEmpty() && teamsInfo[teamName].wasCreated) {
-                // Find a winner team
+                // Find a winning team
                 if (teamsInfo[teamName].totalVoted == maxTeamVotingPoint) {
                     _endOfList = false;
                     _nextStartSearchingIndex = i + 1;

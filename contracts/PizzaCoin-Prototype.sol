@@ -1199,17 +1199,17 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get a total number of team winners after voting is finished
+    // Get a total number of winning teams after voting is finished
     // It is possible to have several teams that got the equal maximum voting points 
     // ------------------------------------------------------------------------
-    function getTotalTeamWinners() public view onlyVotingFinishedState returns (uint256 _total) {
+    function getTotalWinningTeams() public view onlyVotingFinishedState returns (uint256 _total) {
         uint256 maxTeamVotingPoints = getMaxTeamVotingPoints();
 
         _total = 0;
         for (uint256 i = 0; i < teams.length; i++) {
             // Team was not removed before
             if (teams[i].isEmpty() == false && teamsInfo[teams[i]].wasCreated == true) {
-                // Count the team winners up
+                // Count up the winning teams
                 if (teamsInfo[teams[i]].totalVoted == maxTeamVotingPoints) {
                     _total++;
                 }
@@ -1218,11 +1218,11 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
     
     // ------------------------------------------------------------------------
-    // Get the first found team winner
+    // Get the first found winning team
     // (start searching at _startSearchingIndex)
     // It is possible to have several teams that got the equal maximum voting points 
     // ------------------------------------------------------------------------
-    function getFirstFoundTeamWinner(uint256 _startSearchingIndex) 
+    function getFirstFoundWinningTeam(uint256 _startSearchingIndex) 
         public view onlyVotingFinishedState 
         returns (
             bool _endOfList,
@@ -1246,7 +1246,7 @@ contract PizzaCoin is ERC20Interface, Owned {
 
             // Team was not removed before
             if (teamName.isEmpty() == false && teamsInfo[teamName].wasCreated == true) {
-                // Find a team winner
+                // Find a winning team
                 if (teamsInfo[teamName].totalVoted == maxTeamVotingPoints) {
                     _endOfList = false;
                     _nextStartSearchingIndex = i + 1;
