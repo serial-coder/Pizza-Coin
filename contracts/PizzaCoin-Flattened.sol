@@ -431,7 +431,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get an index pointed to a specific staff on the mapping 'staffsInfo'
+    // Get an index pointing to a specific staff on the mapping 'staffsInfo'
     // ------------------------------------------------------------------------
     function getStaffIndex(address _staff) internal view returns (bool _found, uint256 _staffIndex) {
         assert(_staff != address(0));
@@ -1163,7 +1163,7 @@ interface ITeamContract {
             string _teamName,
             uint256 _totalVoted
         );
-    function getVotingPointForTeam(string _teamName) external view returns (uint256 _totalVoted);
+    function getVotingPointsForTeam(string _teamName) external view returns (uint256 _totalVoted);
     function getTotalVotersToTeam(string _teamName) external view returns (uint256 _total);
     function getVoteResultAtIndexToTeam(string _teamName, uint256 _voterIndex) 
         external view
@@ -1173,7 +1173,7 @@ interface ITeamContract {
             uint256 _voteWeight
         );
     function voteToTeam(string _teamName, address _voter, uint256 _votingWeight) external;
-    function getMaxTeamVotingPoint() external view returns (uint256 _maxTeamVotingPoint);
+    function getMaxTeamVotingPoints() external view returns (uint256 _maxTeamVotingPoints);
     function getTotalWinningTeams() external view returns (uint256 _total);
     function getFirstFoundWinningTeam(uint256 _startSearchingIndex) 
         external view
@@ -1458,7 +1458,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get an index pointed to a specific player on the mapping 'playerIdMap' in a given team
+    // Get an index pointing to a specific player on the mapping 'playerIdMap' in a given team
     // ------------------------------------------------------------------------
     function getPlayerIndexInTeam(address _player, string _teamName) 
         internal view 
@@ -1590,7 +1590,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get an index pointed to a specific team on the mapping 'teamsInfo'
+    // Get an index pointing to a specific team on the mapping 'teamsInfo'
     // ------------------------------------------------------------------------
     function getTeamIndex(string _teamName) internal view returns (bool _found, uint256 _teamIndex) {
         assert(_teamName.isNotEmpty());
@@ -1656,9 +1656,9 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get a voting point for a specified team
+    // Get voting points for a specified team
     // ------------------------------------------------------------------------
-    function getVotingPointForTeam(string _teamName) external view returns (uint256 _totalVoted) {
+    function getVotingPointsForTeam(string _teamName) external view returns (uint256 _totalVoted) {
         require(
             _teamName.isNotEmpty(),
             "'_teamName' might not be empty."
@@ -1762,23 +1762,23 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Find a maximum voting point from each team after voting is finished (external)
+    // Find maximum voting points from each team after voting is finished (external)
     // ------------------------------------------------------------------------
-    function getMaxTeamVotingPoint() external view onlyVotingFinishedState returns (uint256 _maxTeamVotingPoint) {
-        return __getMaxTeamVotingPoint();
+    function getMaxTeamVotingPoints() external view onlyVotingFinishedState returns (uint256 _maxTeamVotingPoints) {
+        return __getMaxTeamVotingPoints();
     }
 
     // ------------------------------------------------------------------------
-    // Find a maximum voting point from each team after voting is finished (internal)
+    // Find maximum voting points from each team after voting is finished (internal)
     // ------------------------------------------------------------------------
-    function __getMaxTeamVotingPoint() internal view onlyVotingFinishedState returns (uint256 _maxTeamVotingPoint) {
-        _maxTeamVotingPoint = 0;
+    function __getMaxTeamVotingPoints() internal view onlyVotingFinishedState returns (uint256 _maxTeamVotingPoints) {
+        _maxTeamVotingPoints = 0;
         for (uint256 i = 0; i < teams.length; i++) {
             // Team might not be removed before
             if (teams[i].isNotEmpty() && teamsInfo[teams[i]].wasCreated) {
-                // Find a new maximum point
-                if (teamsInfo[teams[i]].totalVoted > _maxTeamVotingPoint) {
-                    _maxTeamVotingPoint = teamsInfo[teams[i]].totalVoted;
+                // Find new maximum points
+                if (teamsInfo[teams[i]].totalVoted > _maxTeamVotingPoints) {
+                    _maxTeamVotingPoints = teamsInfo[teams[i]].totalVoted;
                 }
             }
         }
@@ -1789,14 +1789,14 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // It is possible to have several teams that get the equal maximum voting points 
     // ------------------------------------------------------------------------
     function getTotalWinningTeams() external view onlyVotingFinishedState returns (uint256 _total) {
-        uint256 maxTeamVotingPoint = __getMaxTeamVotingPoint();
+        uint256 maxTeamVotingPoints = __getMaxTeamVotingPoints();
 
         _total = 0;
         for (uint256 i = 0; i < teams.length; i++) {
             // Team might not be removed before
             if (teams[i].isNotEmpty() && teamsInfo[teams[i]].wasCreated) {
                 // Count up the winning teams
-                if (teamsInfo[teams[i]].totalVoted == maxTeamVotingPoint) {
+                if (teamsInfo[teams[i]].totalVoted == maxTeamVotingPoints) {
                     _total++;
                 }
             }
@@ -1826,14 +1826,14 @@ contract PizzaCoinTeam is ITeamContract, Owned {
             return;
         }
 
-        uint256 maxTeamVotingPoint = __getMaxTeamVotingPoint();
+        uint256 maxTeamVotingPoints = __getMaxTeamVotingPoints();
         for (uint256 i = _startSearchingIndex; i < teams.length; i++) {
             string memory teamName = teams[i];
 
             // Team might not be removed before
             if (teamName.isNotEmpty() && teamsInfo[teamName].wasCreated) {
                 // Find a winning team
-                if (teamsInfo[teamName].totalVoted == maxTeamVotingPoint) {
+                if (teamsInfo[teamName].totalVoted == maxTeamVotingPoints) {
                     _endOfList = false;
                     _nextStartSearchingIndex = i + 1;
                     _teamName = teamName;
@@ -2175,8 +2175,8 @@ library PizzaCoinCodeLib {
         staffContractInstance.commitToVote(_teamName, voter, _votingWeight);
         teamContractInstance.voteToTeam(_teamName, voter, _votingWeight);
 
-        // Get a current voting point for the team
-        _totalVoted = teamContractInstance.getVotingPointForTeam(_teamName);
+        // Get the current voting points for the team
+        _totalVoted = teamContractInstance.getVotingPointsForTeam(_teamName);
     }
 
     // ------------------------------------------------------------------------
@@ -2217,8 +2217,8 @@ library PizzaCoinCodeLib {
         playerContractInstance.commitToVote(_teamName, voter, _votingWeight);
         teamContractInstance.voteToTeam(_teamName, voter, _votingWeight);
 
-        // Get a current voting point for the team
-        _totalVoted = teamContractInstance.getVotingPointForTeam(_teamName);
+        // Get the current voting points for the team
+        _totalVoted = teamContractInstance.getVotingPointsForTeam(_teamName);
     }
 }
 

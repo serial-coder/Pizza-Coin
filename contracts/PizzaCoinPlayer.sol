@@ -350,7 +350,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get an index pointed to a specific player on the mapping 'playersInfo'
+    // Get an index pointing to a specific player on the mapping 'playersInfo'
     // ------------------------------------------------------------------------
     function getPlayerIndex(address _player) internal view returns (bool _found, uint256 _playerIndex) {
         assert(_player != address(0));

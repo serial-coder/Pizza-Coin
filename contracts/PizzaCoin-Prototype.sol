@@ -1183,14 +1183,14 @@ contract PizzaCoin is ERC20Interface, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Find a maximum voting points from each team after voting is finished
+    // Find maximum voting points from each team after voting is finished
     // ------------------------------------------------------------------------
     function getMaxTeamVotingPoints() public view onlyVotingFinishedState returns (uint256 _maxTeamVotingPoints) {
         _maxTeamVotingPoints = 0;
         for (uint256 i = 0; i < teams.length; i++) {
             // Team was not removed before
             if (teams[i].isEmpty() == false && teamsInfo[teams[i]].wasCreated == true) {
-                // Find a new maximum points
+                // Find new maximum points
                 if (teamsInfo[teams[i]].totalVoted > _maxTeamVotingPoints) {
                     _maxTeamVotingPoints = teamsInfo[teams[i]].totalVoted;
                 }
