@@ -31,7 +31,7 @@ interface IStaffContract {
             uint256 _nextStartSearchingIndex,
             address _staff,
             string _name,
-            uint256 _tokensBalance
+            uint256 _tokenBalance
         );
     function getTotalTeamsVotedByStaff(address _staff) external view returns (uint256 _total);
     function getVoteResultAtIndexByStaff(address _staff, uint256 _votingIndex) 
@@ -64,7 +64,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     struct StaffInfo {
         bool wasRegistered;    // Check if a specific staff is being registered or not
         string name;
-        uint256 tokensBalance; // Amount of tokens left for voting
+        uint256 tokenBalance;  // Amount of tokens left for voting
         string[] teamsVoted;   // Record all the teams voted by this staff
         
         // mapping(team => votes)
@@ -264,7 +264,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
         staffsInfo[_staff] = StaffInfo({
             wasRegistered: true,
             name: _staffName,
-            tokensBalance: voterInitialTokens,
+            tokenBalance: voterInitialTokens,
             teamsVoted: new string[](0),
             /*
                 Omit 'votesWeight'
@@ -346,14 +346,14 @@ contract PizzaCoinStaff is IStaffContract, Owned {
             uint256 _nextStartSearchingIndex,
             address _staff,
             string _name,
-            uint256 _tokensBalance
+            uint256 _tokenBalance
         ) 
     {
         _endOfList = true;
         _nextStartSearchingIndex = staffs.length;
         _staff = address(0);
         _name = "";
-        _tokensBalance = 0;
+        _tokenBalance = 0;
 
         if (_startSearchingIndex >= staffs.length) {
             return;
@@ -368,7 +368,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
                 _nextStartSearchingIndex = i + 1;
                 _staff = staff;
                 _name = staffsInfo[staff].name;
-                _tokensBalance = staffsInfo[staff].tokensBalance;
+                _tokenBalance = staffsInfo[staff].tokenBalance;
                 return;
             }
         }
@@ -425,7 +425,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get a token balance of the specified staff
+    // Get the token balance of the specified staff
     // ------------------------------------------------------------------------
     function getTokenBalance(address _staff) external view returns (uint256 _tokenBalance) {
         require(
@@ -438,7 +438,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
             "Cannot find the specified staff."
         );
 
-        return staffsInfo[_staff].tokensBalance;
+        return staffsInfo[_staff].tokenBalance;
     }
 
     // ------------------------------------------------------------------------
@@ -468,11 +468,11 @@ contract PizzaCoinStaff is IStaffContract, Owned {
         );
 
         require(
-            _votingWeight <= staffsInfo[_staff].tokensBalance,
+            _votingWeight <= staffsInfo[_staff].tokenBalance,
             "Insufficient voting balance."
         );
 
-        staffsInfo[_staff].tokensBalance = staffsInfo[_staff].tokensBalance.sub(_votingWeight);
+        staffsInfo[_staff].tokenBalance = staffsInfo[_staff].tokenBalance.sub(_votingWeight);
 
         // If staffsInfo[_staff].votesWeight[_teamName] > 0 is true, this implies that 
         // the staff was used to give a vote to the specified team previously

@@ -33,7 +33,7 @@ interface IPlayerContract {
             uint256 _nextStartSearchingIndex,
             address _player,
             string _name,
-            uint256 _tokensBalance,
+            uint256 _tokenBalance,
             string _teamName
         );
     function getTotalTeamsVotedByPlayer(address _player) external view returns (uint256 _total);
@@ -65,7 +65,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     struct PlayerInfo {
         bool wasRegistered;    // Check if a specific player is being registered or not
         string name;
-        uint256 tokensBalance; // Amount of tokens left for voting
+        uint256 tokenBalance;  // Amount of tokens left for voting
         string teamName;       // A team this player associates with
         string[] teamsVoted;   // Record all the teams voted by this player
         
@@ -300,7 +300,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
         playersInfo[_player] = PlayerInfo({
             wasRegistered: true,
             name: _playerName,
-            tokensBalance: voterInitialTokens,
+            tokenBalance: voterInitialTokens,
             teamName: _teamName,
             teamsVoted: new string[](0),
             /*
@@ -383,7 +383,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
             uint256 _nextStartSearchingIndex,
             address _player,
             string _name,
-            uint256 _tokensBalance,
+            uint256 _tokenBalance,
             string _teamName
         ) 
     {
@@ -391,7 +391,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
         _nextStartSearchingIndex = players.length;
         _player = address(0);
         _name = "";
-        _tokensBalance = 0;
+        _tokenBalance = 0;
         _teamName = "";
 
         if (_startSearchingIndex >= players.length) {
@@ -407,7 +407,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
                 _nextStartSearchingIndex = i + 1;
                 _player = player;
                 _name = playersInfo[player].name;
-                _tokensBalance = playersInfo[player].tokensBalance;
+                _tokenBalance = playersInfo[player].tokenBalance;
                 _teamName = playersInfo[player].teamName;
                 return;
             }
@@ -465,7 +465,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     }
 
     // ------------------------------------------------------------------------
-    // Get a token balance of the specified player
+    // Get the token balance of the specified player
     // ------------------------------------------------------------------------
     function getTokenBalance(address _player) external view returns (uint256 _tokenBalance) {
         require(
@@ -478,7 +478,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
             "Cannot find the specified player."
         );
 
-        return playersInfo[_player].tokensBalance;
+        return playersInfo[_player].tokenBalance;
     }
 
     // ------------------------------------------------------------------------
@@ -513,11 +513,11 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
         );
 
         require(
-            _votingWeight <= playersInfo[_player].tokensBalance,
+            _votingWeight <= playersInfo[_player].tokenBalance,
             "Insufficient voting balance."
         );
 
-        playersInfo[_player].tokensBalance = playersInfo[_player].tokensBalance.sub(_votingWeight);
+        playersInfo[_player].tokenBalance = playersInfo[_player].tokenBalance.sub(_votingWeight);
 
         // If playersInfo[_player].votesWeight[_teamName] > 0 is true, this implies that 
         // the player was used to give a vote to the specified team previously
