@@ -63,17 +63,17 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
 
 
     struct PlayerInfo {
-        bool wasRegistered;    // Check if a specific player is being registered or not
+        // This is used to reduce the potential gas cost consumption when kicking a player
+        uint256 id;  // A pointing index to a particular player on the 'players' array
+
         string name;
-        uint256 tokenBalance;  // Amount of tokens left for voting
+        bool wasRegistered;    // Check if a specific player is being registered or not
         string teamName;       // A team this player associates with
+        uint256 tokenBalance;  // Amount of tokens left for voting
         string[] teamsVoted;   // Record all the teams voted by this player
         
         // mapping(team => votes)
         mapping(string => uint256) votesWeight;  // A collection of teams with voting weight approved by this player
-
-        // The following is used to reduce the potential gas cost consumption when kicking a player
-        uint256 id;  // A pointing index to a particular player on the 'players' array
     }
 
     address[] private players;

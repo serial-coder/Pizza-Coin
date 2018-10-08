@@ -62,16 +62,16 @@ contract PizzaCoinStaff is IStaffContract, Owned {
 
 
     struct StaffInfo {
-        bool wasRegistered;    // Check if a specific staff is being registered or not
+        // This is used to reduce the potential gas cost consumption when kicking a staff
+        uint256 id;  // A pointing index to a particular staff on the 'staffs' array
+
         string name;
+        bool wasRegistered;    // Check if a specific staff is being registered or not
         uint256 tokenBalance;  // Amount of tokens left for voting
         string[] teamsVoted;   // Record all the teams voted by this staff
         
         // mapping(team => votes)
         mapping(string => uint256) votesWeight;  // A collection of teams with voting weight approved by this staff
-
-        // The following is used to reduce the potential gas cost consumption when kicking a staff
-        uint256 id;  // A pointing index to a particular staff on the 'staffs' array
     }
 
     address[] private staffs;                          // staffs[0] denotes a project deployer (i.e., PizzaCoin's owner)

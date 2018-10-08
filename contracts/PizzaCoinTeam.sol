@@ -86,19 +86,22 @@ contract PizzaCoinTeam is ITeamContract, Owned {
 
     // Team with players
     struct TeamInfo {
+        // This is used to reduce the potential gas cost consumption when kicking a team
+        uint256 id;  // A pointing index to a particular team on the 'teams' array
+
         bool wasCreated;    // Check if the team was created or not (for uniqueness)
         address[] players;  // A list of team members (the first list member is the team leader who creates the team)
-        address[] voters;   // A list of staffs and other teams' members who gave votes to this team
+
+        // mapping(player => id)
+        mapping(address => uint256) playerIdMap;  // This is used to reduce the potential gas cost consumption when kicking a player in a team
+
+        uint256 totalPlayers;  // Total players in a team
+        address[] voters;  // A list of staffs and other teams' members who gave votes to this team
 
         // mapping(voter => votes)
         mapping(address => uint256) votesWeight;  // A collection of team voting weights from each voter (i.e., staffs + other teams' members)
         
         uint256 totalVoted;  // Total voting weight got from all voters
-
-        // The following are used to reduce the potential gas cost consumption when kicking a team and/or a player in a team
-        uint256 id;            // A pointing index to a particular team on the 'teams' array
-        uint256 totalPlayers;  // Total players in a team
-        mapping(address => uint256) playerIdMap;  // mapping(player => id)
     }
 
     string[] private teams;
