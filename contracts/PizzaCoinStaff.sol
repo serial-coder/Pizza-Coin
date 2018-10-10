@@ -34,7 +34,7 @@ interface IStaffContract {
             uint256 _tokenBalance
         );
     function getTotalTeamsVotedByStaff(address _staff) external view returns (uint256 _total);
-    function getVoteResultAtIndexByStaff(address _staff, uint256 _votingIndex) 
+    function getVotingResultByStaffAtIndex(address _staff, uint256 _votingIndex) 
         external view
         returns (
             bool _endOfList,
@@ -394,7 +394,7 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     // ------------------------------------------------------------------------
     // Get a voting result to a team pointed by _votingIndex committed by the specified staff
     // ------------------------------------------------------------------------
-    function getVoteResultAtIndexByStaff(address _staff, uint256 _votingIndex) 
+    function getVotingResultByStaffAtIndex(address _staff, uint256 _votingIndex) 
         external view
         returns (
             bool _endOfList,

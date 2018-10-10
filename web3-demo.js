@@ -136,7 +136,7 @@ async function main() {
         let i = 0;
         while (true) 
         {
-            let [endOfList, voter, voteWeight] = await getVoteResultAtIndexToTeam(PizzaCoinTeam, 'pizzaCoin', i);
+            let [endOfList, voter, voteWeight] = await getVotingResultToTeamAtIndex(PizzaCoinTeam, 'pizzaCoin', i);
             if (endOfList) {
                 break;
             }
@@ -268,13 +268,13 @@ async function getMaxTeamVotingPoints(PizzaCoinTeam) {
     return maxTeamVotingPoints;
 }
 
-async function getVoteResultAtIndexToTeam(PizzaCoinTeam, teamName, voterIndex) {
+async function getVotingResultToTeamAtIndex(PizzaCoinTeam, teamName, voterIndex) {
     let err;
     let tupleReturned;
 
     //console.log('\nQuerying for a voting result (by the index of voters) to a specified team --> "' + teamName + '" ...');
     [err, tupleReturned] = await callContractFunction(
-        PizzaCoinTeam.methods.getVoteResultAtIndexToTeam(teamName, voterIndex).call({})
+        PizzaCoinTeam.methods.getVotingResultToTeamAtIndex(teamName, voterIndex).call({})
     );
 
     if (err) {

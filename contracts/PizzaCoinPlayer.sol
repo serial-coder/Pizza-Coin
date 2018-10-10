@@ -37,7 +37,7 @@ interface IPlayerContract {
             string _teamName
         );
     function getTotalTeamsVotedByPlayer(address _player) external view returns (uint256 _total);
-    function getVoteResultAtIndexByPlayer(address _player, uint256 _votingIndex) 
+    function getVotingResultByPlayerAtIndex(address _player, uint256 _votingIndex) 
         external view
         returns (
             bool _endOfList,
@@ -434,7 +434,7 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     // ------------------------------------------------------------------------
     // Get a voting result to a team pointed by _votingIndex committed by the specified player
     // ------------------------------------------------------------------------
-    function getVoteResultAtIndexByPlayer(address _player, uint256 _votingIndex) 
+    function getVotingResultByPlayerAtIndex(address _player, uint256 _votingIndex) 
         external view
         returns (
             bool _endOfList,

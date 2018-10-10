@@ -50,7 +50,7 @@ interface ITeamContract {
         );
     function getVotingPointsForTeam(string _teamName) external view returns (uint256 _totalVoted);
     function getTotalVotersToTeam(string _teamName) external view returns (uint256 _total);
-    function getVoteResultAtIndexToTeam(string _teamName, uint256 _voterIndex) 
+    function getVotingResultToTeamAtIndex(string _teamName, uint256 _voterIndex) 
         external view
         returns (
             bool _endOfList,
@@ -580,7 +580,7 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     // Get a voting result to a specified team pointed by _voterIndex
     // ------------------------------------------------------------------------
-    function getVoteResultAtIndexToTeam(string _teamName, uint256 _voterIndex) 
+    function getVotingResultToTeamAtIndex(string _teamName, uint256 _voterIndex) 
         external view
         returns (
             bool _endOfList,
