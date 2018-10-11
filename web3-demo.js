@@ -97,9 +97,8 @@ async function main() {
         // Kick a player
         await kickPlayer(ethAccounts[0], ethAccounts[6], 'pizzaHack');
 
-        // Kick the first found player in team
-        let nextStartSearchingIndex = await kickFirstFoundPlayerInTeam(ethAccounts[0], 'pizzaHack', 0);
-        console.log('nextStartSearchingIndex: ' + nextStartSearchingIndex);
+        // Kick the first player in team
+        await kickFirstPlayerInTeam(ethAccounts[0], 'pizzaHack');
 
         // Kick a team
         //await kickTeam(ethAccounts[0], 'pizzaHack');
@@ -459,13 +458,13 @@ async function kickPlayer(kickerAddr, playerAddr, teamName) {
     console.log('... succeeded');
 }
 
-async function kickFirstFoundPlayerInTeam(kickerAddr, teamName, startSearchingIndex) {
+async function kickFirstPlayerInTeam(kickerAddr, teamName) {
     let err, receipt;
-    console.log('\nKicking the first found player in team --> "' + teamName + '" ...');
+    console.log('\nKicking the first player in team --> "' + teamName + '" ...');
 
-    // Kick the first found player in team
+    // Kick the first player in team
     [err, receipt] = await callContractFunction(
-        PizzaCoin.methods.kickFirstFoundPlayerInTeam(teamName, startSearchingIndex).send({
+        PizzaCoin.methods.kickFirstPlayerInTeam(teamName).send({
             from: kickerAddr,
             gas: 6500000,
             gasPrice: 10000000000
@@ -476,7 +475,6 @@ async function kickFirstFoundPlayerInTeam(kickerAddr, teamName, startSearchingIn
         throw new Error(err.message);
     }
     console.log('... succeeded');
-    return receipt.events.FirstFoundPlayerInTeamKicked.returnValues._nextStartSearchingIndex;
 }
 
 async function createTeam(creatorAddr, creatorName, teamName) {
