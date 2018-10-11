@@ -253,8 +253,8 @@ library PizzaCoinCodeLib {
         );
 
         // Staff commits to vote to the team
-        staffContractInstance.commitToVote(_teamName, voter, _votingWeight);
-        teamContractInstance.voteToTeam(_teamName, voter, _votingWeight);
+        staffContractInstance.commitToVote(voter, _teamName, _votingWeight);
+        teamContractInstance.voteToTeam(voter, _teamName, _votingWeight);
 
         // Get the current voting points of the team
         _totalVoted = teamContractInstance.getVotingPointsOfTeam(_teamName);
@@ -295,8 +295,8 @@ library PizzaCoinCodeLib {
         );
 
         // Player commits to vote to the team
-        playerContractInstance.commitToVote(_teamName, voter, _votingWeight);
-        teamContractInstance.voteToTeam(_teamName, voter, _votingWeight);
+        playerContractInstance.commitToVote(voter, _teamName, _votingWeight);
+        teamContractInstance.voteToTeam(voter, _teamName, _votingWeight);
 
         // Get the current voting points of the team
         _totalVoted = teamContractInstance.getVotingPointsOfTeam(_teamName);

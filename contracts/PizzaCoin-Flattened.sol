@@ -159,7 +159,7 @@ interface IStaffContract {
             uint256 _voteWeight
         );
     function getTokenBalance(address _staff) external view returns (uint256 _tokenBalance);
-    function commitToVote(string _teamName, address _staff, uint256 _votingWeight) external;
+    function commitToVote(address _staff, string _teamName, uint256 _votingWeight) external;
 }
 
 
@@ -542,17 +542,17 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     // ------------------------------------------------------------------------
     // Allow a staff give a vote to the specified team
     // ------------------------------------------------------------------------
-    function commitToVote(string _teamName, address _staff, uint256 _votingWeight) 
+    function commitToVote(address _staff, string _teamName, uint256 _votingWeight) 
         external onlyVotingState onlyPizzaCoin 
     {
         require(
-            _teamName.isNotEmpty(),
-            "'_teamName' might not be empty."
+            _staff != address(0),
+            "'_staff' contains an invalid address."
         );
 
         require(
-            _staff != address(0),
-            "'_staff' contains an invalid address."
+            _teamName.isNotEmpty(),
+            "'_teamName' might not be empty."
         );
 
         require(
@@ -618,7 +618,7 @@ interface IPlayerContract {
             uint256 _voteWeight
         );
     function getTokenBalance(address _player) external view returns (uint256 _tokenBalance);
-    function commitToVote(string _teamName, address _player, uint256 _votingWeight) external;
+    function commitToVote(address _player, string _teamName, uint256 _votingWeight) external;
 }
 
 
@@ -1040,17 +1040,17 @@ contract PizzaCoinPlayer is IPlayerContract, Owned {
     // ------------------------------------------------------------------------
     // Allow a player vote to other different teams
     // ------------------------------------------------------------------------
-    function commitToVote(string _teamName, address _player, uint256 _votingWeight) 
+    function commitToVote(address _player, string _teamName, uint256 _votingWeight) 
         external onlyVotingState onlyPizzaCoin 
     {
         require(
-            _teamName.isNotEmpty(),
-            "'_teamName' might not be empty."
-        );
-        
-        require(
             _player != address(0),
             "'_player' contains an invalid address."
+        );
+
+        require(
+            _teamName.isNotEmpty(),
+            "'_teamName' might not be empty."
         );
 
         require(
@@ -1124,7 +1124,7 @@ interface ITeamContract {
             address _voter,
             uint256 _voteWeight
         );
-    function voteToTeam(string _teamName, address _voter, uint256 _votingWeight) external;
+    function voteToTeam(address _voter, string _teamName, uint256 _votingWeight) external;
     function getMaxTeamVotingPoints() external view returns (uint256 _maxTeamVotingPoints);
     function getTotalWinningTeams() external view returns (uint256 _total);
     function getFirstFoundWinningTeam(uint256 _startSearchingIndex) 
@@ -1602,17 +1602,17 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     // Allow a staff or player to give a vote to the specified team
     // ------------------------------------------------------------------------
-    function voteToTeam(string _teamName, address _voter, uint256 _votingWeight) 
+    function voteToTeam(address _voter, string _teamName, uint256 _votingWeight) 
         external onlyVotingState onlyPizzaCoin 
     {
         require(
-            _teamName.isNotEmpty(),
-            "'_teamName' might not be empty."
+            _voter != address(0),
+            "'_voter' contains an invalid address."
         );
 
         require(
-            _voter != address(0),
-            "'_voter' contains an invalid address."
+            _teamName.isNotEmpty(),
+            "'_teamName' might not be empty."
         );
 
         require(
@@ -2021,8 +2021,8 @@ library PizzaCoinCodeLib {
         );
 
         // Staff commits to vote to the team
-        staffContractInstance.commitToVote(_teamName, voter, _votingWeight);
-        teamContractInstance.voteToTeam(_teamName, voter, _votingWeight);
+        staffContractInstance.commitToVote(voter, _teamName, _votingWeight);
+        teamContractInstance.voteToTeam(voter, _teamName, _votingWeight);
 
         // Get the current voting points of the team
         _totalVoted = teamContractInstance.getVotingPointsOfTeam(_teamName);
@@ -2063,8 +2063,8 @@ library PizzaCoinCodeLib {
         );
 
         // Player commits to vote to the team
-        playerContractInstance.commitToVote(_teamName, voter, _votingWeight);
-        teamContractInstance.voteToTeam(_teamName, voter, _votingWeight);
+        playerContractInstance.commitToVote(voter, _teamName, _votingWeight);
+        teamContractInstance.voteToTeam(voter, _teamName, _votingWeight);
 
         // Get the current voting points of the team
         _totalVoted = teamContractInstance.getVotingPointsOfTeam(_teamName);

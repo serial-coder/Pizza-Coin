@@ -47,7 +47,7 @@ interface ITeamContract {
             address _voter,
             uint256 _voteWeight
         );
-    function voteToTeam(string _teamName, address _voter, uint256 _votingWeight) external;
+    function voteToTeam(address _voter, string _teamName, uint256 _votingWeight) external;
     function getMaxTeamVotingPoints() external view returns (uint256 _maxTeamVotingPoints);
     function getTotalWinningTeams() external view returns (uint256 _total);
     function getFirstFoundWinningTeam(uint256 _startSearchingIndex) 
@@ -525,17 +525,17 @@ contract PizzaCoinTeam is ITeamContract, Owned {
     // ------------------------------------------------------------------------
     // Allow a staff or player to give a vote to the specified team
     // ------------------------------------------------------------------------
-    function voteToTeam(string _teamName, address _voter, uint256 _votingWeight) 
+    function voteToTeam(address _voter, string _teamName, uint256 _votingWeight) 
         external onlyVotingState onlyPizzaCoin 
     {
         require(
-            _teamName.isNotEmpty(),
-            "'_teamName' might not be empty."
+            _voter != address(0),
+            "'_voter' contains an invalid address."
         );
 
         require(
-            _voter != address(0),
-            "'_voter' contains an invalid address."
+            _teamName.isNotEmpty(),
+            "'_teamName' might not be empty."
         );
 
         require(

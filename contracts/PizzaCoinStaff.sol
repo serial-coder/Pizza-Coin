@@ -41,7 +41,7 @@ interface IStaffContract {
             uint256 _voteWeight
         );
     function getTokenBalance(address _staff) external view returns (uint256 _tokenBalance);
-    function commitToVote(string _teamName, address _staff, uint256 _votingWeight) external;
+    function commitToVote(address _staff, string _teamName, uint256 _votingWeight) external;
 }
 
 
@@ -424,17 +424,17 @@ contract PizzaCoinStaff is IStaffContract, Owned {
     // ------------------------------------------------------------------------
     // Allow a staff give a vote to the specified team
     // ------------------------------------------------------------------------
-    function commitToVote(string _teamName, address _staff, uint256 _votingWeight) 
+    function commitToVote(address _staff, string _teamName, uint256 _votingWeight) 
         external onlyVotingState onlyPizzaCoin 
     {
         require(
-            _teamName.isNotEmpty(),
-            "'_teamName' might not be empty."
+            _staff != address(0),
+            "'_staff' contains an invalid address."
         );
 
         require(
-            _staff != address(0),
-            "'_staff' contains an invalid address."
+            _teamName.isNotEmpty(),
+            "'_teamName' might not be empty."
         );
 
         require(
