@@ -18,11 +18,13 @@ PizzaCoin contract consists of eight dependencies including **three contracts**:
 
 PizzaCoin contract acts as a mother contract of all dependencies. In more detail, the contract has three special children contracts, namely **PizzaCoinStaff**, **PizzaCoinPlayer** and **PizzaCoinTeam** contracts which would be deployed by the three deployer libraries named **PizzaCoinStaffDeployer**, **PizzaCoinPlayerDeployer** and **PizzaCoinTeamDeployer** respectively. Furthermore, PizzaCoin contract also has another two proxy libraries named **PizzaCoinCodeLib** and **PizzaCoinCodeLib2** which would be used as libraries for migrating source code of PizzaCoin mother contract.
 
+<br />
 <p align="center"><img src="doc/Diagrams/PZC contract deployment (transparent).png" width="600"></p>
 <h3 align="center">Figure 1. Deployment of PizzaCoin contract</h3><br />
 
 There are two stages when deploying PizzaCoin contract onto the blockchain. In the first stage, PizzaCoin contract's dependencies including **PizzaCoinStaffDeployer**, **PizzaCoinPlayerDeployer**, **PizzaCoinTeamDeployer**, **PizzaCoinCodeLib** and **PizzaCoinCodeLib2** libraries have to be deployed onto the blockchain one by one as separate transactions. The previously deployed libraries' addresses would then be linked and injected as dependency instances in order to deploy PizzaCoin mother contract to the ethereum network as illustrated in Figure 1.
 
+<br />
 <p align="center"><img src="doc/Diagrams/PZC contract initialization-2 (transparent).png"></p>
 <h3 align="center">Figure 2. Initialization of PizzaCoin contract</h3><br />
 
