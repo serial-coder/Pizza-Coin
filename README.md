@@ -41,7 +41,7 @@ In more technical detail when a user makes a call to **PizzaCoin.registerPlayer(
 
 <br />
 
-## State transition on PizzaCoin contract
+## State Transition on PizzaCoin Contract
 
 <p align="center"><img src="doc/Diagrams/States on the PZC contract (transparent).png"></p>
 <h3 align="center">Figure 4. State transition on PizzaCoin contract</h3><br />
@@ -59,7 +59,7 @@ Let's say a staff changes PizzaCoin contract's state from **Registration Locked*
 
 <br />
 
-## Deploy PizzaCoin contract
+## Deploy PizzaCoin Contract
 
 ### To install Truffle Framework
 &emsp;<a href="https://truffleframework.com/docs/truffle/getting-started/installation">Follow this link</a>
@@ -134,7 +134,7 @@ node web3-demo.js  // This script supports a connection to Ganache or local Geth
 
 <br />
 
-## List of PizzaCoin contract address and its dependency addresses
+## List of PizzaCoin Contract Address and Its Dependency Addresses
 The following addresses point to PizzaCoin contract as well as its dependencies that were used at the hackathon event.
 
 - <b>Ethereum network:</b> <a href="https://kovan.etherscan.io/">Kovan</a>
