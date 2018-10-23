@@ -18,19 +18,16 @@ PizzaCoin contract consists of eight dependencies including **three contracts**:
 
 PizzaCoin contract acts as a mother contract of all dependencies. In more detail, the contract has three special children contracts, namely **PizzaCoinStaff**, **PizzaCoinPlayer** and **PizzaCoinTeam** contracts which would be deployed by the three deployer libraries named **PizzaCoinStaffDeployer**, **PizzaCoinPlayerDeployer** and **PizzaCoinTeamDeployer** respectively. Furthermore, PizzaCoin contract also has another two proxy libraries named **PizzaCoinCodeLib** and **PizzaCoinCodeLib2** which would be used as libraries for migrating source code of PizzaCoin mother contract.
 
-<-- <br /> -->
 <p align="center"><img src="doc/Diagrams/PZC contract deployment (transparent).png" width="600"></p>
 <h3 align="center">Figure 1. Deployment of PizzaCoin contract</h3><br />
 
 There are two stages when deploying PizzaCoin contract onto the blockchain. In the first stage, PizzaCoin contract's dependencies including **PizzaCoinStaffDeployer**, **PizzaCoinPlayerDeployer**, **PizzaCoinTeamDeployer**, **PizzaCoinCodeLib** and **PizzaCoinCodeLib2** libraries have to be deployed onto the blockchain one by one as separate transactions. The previously deployed libraries' addresses would then be linked and injected as dependency instances in order to deploy PizzaCoin mother contract to the ethereum network as illustrated in Figure 1.
 
-<-- <br /> -->
 <p align="center"><img src="doc/Diagrams/PZC contract initialization-2 (transparent).png"></p>
 <h3 align="center">Figure 2. Initialization of PizzaCoin contract</h3><br />
 
 In the second stage, the previously deployed PizzaCoin mother contract must get initialized by a project deployer (a staff who previously deployed PizzaCoin contract). A project deployer initiates three transactions (steps 1.1, 2.1 and 3.1) in order to deploy PizzaCoin children contracts--including **PizzaCoinStaff**, **PizzaCoinPlayer** and **PizzaCoinTeam** contracts--as shown in Figure 2. At this point, we employed a contract factory pattern using the deployer libraries, i.e. **PizzaCoinStaffDeployer**, **PizzaCoinPlayerDeployer** and **PizzaCoinTeamDeployer**, to deploy each corresponding child contract (steps 1.2 - 1.3, 2.2 - 2.3 and 3.2 - 3.3). The resulting children contracts' addresses would then be returned to store on PizzaCoin contract (steps 1.4, 2.4 and 3.4). This way makes PizzaCoin contract know where its children contracts are located on the ethereum blockchain.
 
-<-- <br /> -->
 <p align="center"><img src="doc/Diagrams/PZC contract with its children contracts and libs (transparent).png" width="800"></p>
 <h3 align="center">Figure 3. PizzaCoin contract acts as a contract coordinator for PizzaCoinStaff, PizzaCoinPlayer and PizzaCoinTeam contracts</h3><br />
 
@@ -44,7 +41,6 @@ In more technical detail when a user makes a call to **PizzaCoin.registerPlayer(
 
 ## State transition on PizzaCoin contract
 
-<-- <br /> -->
 <p align="center"><img src="doc/Diagrams/States on the PZC contract (transparent).png"></p>
 <h3 align="center">Figure 4. State transition on PizzaCoin contract</h3><br />
 
@@ -54,7 +50,6 @@ There are five states representing the status of PizzaCoin contract including **
 
 Once PizzaCoin contract's state is changed to **Registration**, the contract is opened for registration. During this state, a staff can register a selected user as a new staff. A player can create a team and/or join to an existing team. Furthermore, a staff is allowed to revoke some player from a specific team or even revoke a whole team if necessary. PizzaCoin contract would be closed for registration once the state is changed to **Registration Locked**. Later, a staff can enable voting by changing the contract state to **Voting**. The vote would be opened until the contract state is moved to **Voting Finished**. In this state, PizzaCoin contract would determine the winning team automatically.
 
-<-- <br /> -->
 <p align="center"><img src="doc/Diagrams/Staff changes the contract state (transparent).png" width="800"></p>
 <h3 align="center">Figure 5. An interaction among contracts when a staff changes the contract state</h3><br />
 
