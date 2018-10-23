@@ -10,7 +10,7 @@ To find the winning team, we developed a voting system named PizzaCoin. PizzaCoi
 
 <br />
 
-## Workflow Design of Pizza Coin Contract
+## Workflow Design for PizzaCoin Contract
 
 One of the biggest challenges when developing Ethereum smart contract is to find a solution to handling ‘***Out-of-Gas***’ error during deploying the contract onto the blockchain network, due to some block gas limits on Ethereum blockchain. The prototype of our PizzaCoin contract also confronted with these limitations since our contract requires several functional subsystems such as staff management, team and player management, and voting management subsystems. To avoid block gas limit problems, PizzaCoin contract was designed and developed using several advanced concepts and techniques.
 
