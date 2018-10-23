@@ -18,17 +18,20 @@ PizzaCoin contract consists of eight dependencies including **three contracts**:
 
 PizzaCoin contract acts as a mother contract of all dependencies. In more detail, the contract has three special children contracts, namely **PizzaCoinStaff**, **PizzaCoinPlayer** and **PizzaCoinTeam** contracts which would be deployed by the three deployer libraries named **PizzaCoinStaffDeployer**, **PizzaCoinPlayerDeployer** and **PizzaCoinTeamDeployer** respectively. Furthermore, PizzaCoin contract also has another two proxy libraries named **PizzaCoinCodeLib** and **PizzaCoinCodeLib2** which would be used as libraries for migrating source code of PizzaCoin mother contract.
 
-<br /><p align="center"><img src="doc/Diagrams/PZC contract deployment (transparent).png" width="600"></p>
+<-- <br /> -->
+<p align="center"><img src="doc/Diagrams/PZC contract deployment (transparent).png" width="600"></p>
 <h3 align="center">Figure 1. Deployment of PizzaCoin contract</h3><br />
 
 There are two stages when deploying PizzaCoin contract onto the blockchain. In the first stage, PizzaCoin contract's dependencies including **PizzaCoinStaffDeployer**, **PizzaCoinPlayerDeployer**, **PizzaCoinTeamDeployer**, **PizzaCoinCodeLib** and **PizzaCoinCodeLib2** libraries have to be deployed onto the blockchain one by one as separate transactions. The previously deployed libraries' addresses would then be linked and injected as dependency instances in order to deploy PizzaCoin mother contract to the ethereum network as illustrated in Figure 1.
-    
-<br /><p align="center"><img src="doc/Diagrams/PZC contract initialization-2 (transparent).png"></p>
+
+<-- <br /> -->
+<p align="center"><img src="doc/Diagrams/PZC contract initialization-2 (transparent).png"></p>
 <h3 align="center">Figure 2. Initialization of PizzaCoin contract</h3><br />
 
 In the second stage, the previously deployed PizzaCoin mother contract must get initialized by a project deployer (a staff who previously deployed PizzaCoin contract). A project deployer initiates three transactions (steps 1.1, 2.1 and 3.1) in order to deploy PizzaCoin children contracts--including **PizzaCoinStaff**, **PizzaCoinPlayer** and **PizzaCoinTeam** contracts--as shown in Figure 2. At this point, we employed a contract factory pattern using the deployer libraries, i.e. **PizzaCoinStaffDeployer**, **PizzaCoinPlayerDeployer** and **PizzaCoinTeamDeployer**, to deploy each corresponding child contract (steps 1.2 - 1.3, 2.2 - 2.3 and 3.2 - 3.3). The resulting children contracts' addresses would then be returned to store on PizzaCoin contract (steps 1.4, 2.4 and 3.4). This way makes PizzaCoin contract know where its children contracts are located on the ethereum blockchain.
 
-<br /><p align="center"><img src="doc/Diagrams/PZC contract with its children contracts and libs (transparent).png" width="800"></p>
+<-- <br /> -->
+<p align="center"><img src="doc/Diagrams/PZC contract with its children contracts and libs (transparent).png" width="800"></p>
 <h3 align="center">Figure 3. PizzaCoin contract acts as a contract coordinator for PizzaCoinStaff, PizzaCoinPlayer and PizzaCoinTeam contracts</h3><br />
 
 On the prototype of PizzaCoin contract, we faced '***Out-of-Gas***' error when deploying the contract because the contract contains too many function definitions. The solution to avoiding such the error we have used on a production version is `to migrate almost all the logical source code of each function on PizzaCoin contract to store on proxy libraries named PizzaCoinCodeLib and PizzaCoinCodeLib2 instead` as depicted in Figure 3.
@@ -41,7 +44,8 @@ In more technical detail when a user makes a call to **PizzaCoin.registerPlayer(
 
 ## State transition on PizzaCoin contract
 
-<br /><p align="center"><img src="doc/Diagrams/States on the PZC contract (transparent).png"></p>
+<-- <br /> -->
+<p align="center"><img src="doc/Diagrams/States on the PZC contract (transparent).png"></p>
 <h3 align="center">Figure 4. State transition on PizzaCoin contract</h3><br />
 
 There are five states representing the status of PizzaCoin contract including **Initial**, **Registration**, **Registration Locked**, **Voting** and **Voting Finished**. Each state defines a different working context to the contract and it is changable by a staff privilege only. The contract state is unidirectional as illustrated in Figure 4. This means that if the state has been changed from one to another, we cannot change it back to any previous state. 
@@ -50,7 +54,8 @@ There are five states representing the status of PizzaCoin contract including **
 
 Once PizzaCoin contract's state is changed to **Registration**, the contract is opened for registration. During this state, a staff can register a selected user as a new staff. A player can create a team and/or join to an existing team. Furthermore, a staff is allowed to revoke some player from a specific team or even revoke a whole team if necessary. PizzaCoin contract would be closed for registration once the state is changed to **Registration Locked**. Later, a staff can enable voting by changing the contract state to **Voting**. The vote would be opened until the contract state is moved to **Voting Finished**. In this state, PizzaCoin contract would determine the winning team automatically.
 
-<br /><p align="center"><img src="doc/Diagrams/Staff changes the contract state (transparent).png" width="800"></p>
+<-- <br /> -->
+<p align="center"><img src="doc/Diagrams/Staff changes the contract state (transparent).png" width="800"></p>
 <h3 align="center">Figure 5. An interaction among contracts when a staff changes the contract state</h3><br />
 
 Let's say a staff changes PizzaCoin contract's state from **Registration Locked** to **Voting**. Figure 5 illustrates how PizzaCoin contract interacts with its children contracts. What happens is that as soon as a staff executes **PizzaCoin.startVoting()** function on PizzaCoin contract (step 1), the function would call to the delegated function **PizzaCoinCodeLib2.signalChildrenContractsToStartVoting()** on PizzaCoinCodeLib2 library (step 2). Later, the delegated function would order all the three children contracts to change their state to **Voting** by respectively executing **PizzaCoinStaff.startVoting()**, **PizzaCoinPlayer.startVoting()** and **PizzaCoinTeam.startVoting()** (steps 3.1 - 3.3).
